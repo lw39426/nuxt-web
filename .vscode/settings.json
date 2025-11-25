@@ -3,8 +3,8 @@
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "vue"],
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.organizeImports": false
+    "source.fixAll.eslint": "explicit", // 仅手动保存时修复
+    "source.organizeImports": "never" // 完全关闭自动排序，交给 eslint 规则
   },
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

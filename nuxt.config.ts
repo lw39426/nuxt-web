@@ -13,5 +13,9 @@ export default defineNuxtConfig({
   },
   typescript: {
     strict: true
+  },
+  // 解决 element-plus 和 @popperjs/core 的模块兼容性问题
+  build: {
+    transpile: ['element-plus', '@popperjs/core']
   }
 })
