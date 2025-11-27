@@ -3,21 +3,17 @@
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup
-
+查询进程：
+netstat -ano | findstr :3000
+netstat -ano | findstr LISTENING | findstr :3000
+结束进程：taskkill /PID 进程号 /F
 Make sure to install dependencies:
 
 ```bash
 # npm
 npm install
-
 # pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
 ## Development Server

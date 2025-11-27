@@ -39,10 +39,10 @@ export function useOrderApi() {
    * 获取订单列表（GET /miniapp/api/orders）
    */
   async function list(page?: number, pageSize?: number) {
-    return await get<{ items: OrderBrief[]; page: number; pageSize: number; total: number }>(
-      '/miniapp/api/orders',
-      { page, pageSize }
-    )
+    return await get<{ items: OrderBrief[]; page: number; pageSize: number; total: number }>('/miniapp/api/orders', {
+      page,
+      pageSize
+    })
   }
 
   /**

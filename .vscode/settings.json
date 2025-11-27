@@ -1,10 +1,11 @@
 {
   "editor.formatOnSave": true,
+  "files.eol": "\n",
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "vue"],
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit", // 仅手动保存时修复
-    "source.organizeImports": "never" // 完全关闭自动排序，交给 eslint 规则
+    "source.fixAll.eslint": "never", // 禁用 ESLint 自动修复，避免冲突
+    "source.organizeImports": "never"
   },
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

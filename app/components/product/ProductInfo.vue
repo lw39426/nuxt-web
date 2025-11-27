@@ -64,11 +64,7 @@ const addToCart = () => {
           v-for="size in product.sizes"
           :key="size"
           class="py-3 text-sm font-medium border rounded-lg transition hover:border-gray-400"
-          :class="
-            selectedSize === size
-              ? 'bg-black text-white border-black'
-              : 'bg-white text-gray-900 border-gray-200'
-          "
+          :class="selectedSize === size ? 'bg-black text-white border-black' : 'bg-white text-gray-900 border-gray-200'"
           @click="selectedSize = size"
         >
           {{ size }}

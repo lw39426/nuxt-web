@@ -1,9 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
+  compatibilityDate: '2025-11-27',
   devtools: { enabled: true },
   srcDir: 'app',
-  css: ['@unocss/reset/tailwind.css', 'element-plus/dist/index.css'],
+  css: ['@unocss/reset/tailwind.css'],
   modules: ['@unocss/nuxt', '@nuxt/eslint'],
   runtimeConfig: {
     public: {
@@ -13,9 +13,5 @@ export default defineNuxtConfig({
   },
   typescript: {
     strict: true
-  },
-  // 解决 element-plus 和 @popperjs/core 的模块兼容性问题
-  build: {
-    transpile: ['element-plus', '@popperjs/core']
   }
 })

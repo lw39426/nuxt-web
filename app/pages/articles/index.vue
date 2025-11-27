@@ -9,8 +9,7 @@ const heroPost: BlogPost = {
   excerpt: 'Automatically update documentation with context from PRs, Slack threads, or links.',
   category: 'Product',
   date: 'September 29, 2025 • 2 min read',
-  image:
-    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop', // 抽象深色背景
+  image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop', // 抽象深色背景
   author: {
     name: 'Han Wang',
     role: 'Co-Founder',
@@ -75,8 +74,7 @@ const posts: BlogPost[] = [
     id: 5,
     category: 'Announcements',
     title: 'The role of good code blocks in documentation',
-    excerpt:
-      'Learn how Mintlify helps you ship best-in-class code blocks with Twoslash, Shiki and Ask AI.',
+    excerpt: 'Learn how Mintlify helps you ship best-in-class code blocks with Twoslash, Shiki and Ask AI.',
     image: 'https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=800&q=80',
     author: {
       name: 'Winona Rajamohan',
@@ -98,7 +96,6 @@ const posts: BlogPost[] = [
     }
   }
 ]
-
 const categories = [
   'All articles',
   'AI trends',
@@ -125,25 +122,18 @@ const activeCategory = ref('All articles')
             class="w-full h-full object-cover opacity-60 transition duration-700 group-hover:scale-105"
             alt="Hero"
           />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"
-          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         </div>
 
         <!-- Content -->
-        <div
-          class="absolute bottom-0 left-0 w-full p-8 md:p-12 max-w-3xl flex flex-col items-start"
-        >
+        <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 max-w-3xl flex flex-col items-start">
           <span class="text-gray-300 text-sm font-medium mb-3">{{ heroPost.date }}</span>
           <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4">{{ heroPost.title }}</h1>
           <p class="text-gray-300 text-lg mb-8 line-clamp-2 max-w-2xl">{{ heroPost.excerpt }}</p>
 
           <!-- Hero Author -->
           <div class="flex items-center gap-3">
-            <img
-              :src="heroPost.author.avatar"
-              class="w-10 h-10 rounded-full border border-white/20"
-            />
+            <img :src="heroPost.author.avatar" class="w-10 h-10 rounded-full border border-white/20" />
             <div>
               <div class="text-sm font-semibold">{{ heroPost.author.name }}</div>
               <div class="text-xs text-gray-400">{{ heroPost.author.role }}</div>
@@ -176,15 +166,9 @@ const activeCategory = ref('All articles')
 
       <!-- 4. Article Grid -->
       <section class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-16">
-        <article
-          v-for="post in posts"
-          :key="post.id"
-          class="group cursor-pointer flex flex-col h-full"
-        >
+        <article v-for="post in posts" :key="post.id" class="group cursor-pointer flex flex-col h-full">
           <!-- Image -->
-          <div
-            class="overflow-hidden rounded-2xl bg-gray-100 aspect-[16/9] mb-6 border border-gray-100"
-          >
+          <div class="overflow-hidden rounded-2xl bg-gray-100 aspect-[16/9] mb-6 border border-gray-100">
             <img
               :src="post.image"
               class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
@@ -204,10 +188,7 @@ const activeCategory = ref('All articles')
 
             <!-- Author (Pushed to bottom) -->
             <div class="mt-auto flex items-center gap-3">
-              <img
-                :src="post.author.avatar"
-                class="w-9 h-9 rounded-full bg-gray-200 object-cover"
-              />
+              <img :src="post.author.avatar" class="w-9 h-9 rounded-full bg-gray-200 object-cover" />
               <div class="flex flex-col">
                 <span class="text-sm font-semibold text-gray-900">{{ post.author.name }}</span>
                 <span class="text-xs text-gray-500">{{ post.author.role }}</span>
@@ -219,9 +200,7 @@ const activeCategory = ref('All articles')
 
       <!-- Pagination / Load More (Optional visual cue) -->
       <div class="mt-20 text-center hidden">
-        <button
-          class="px-6 py-3 border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 transition"
-        >
+        <button class="px-6 py-3 border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 transition">
           Load more articles
         </button>
       </div>

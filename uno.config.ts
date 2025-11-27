@@ -1,11 +1,4 @@
-import {
-  defineConfig,
-  presetUno,
-  presetAttributify,
-  presetIcons,
-  transformerDirectives,
-  presetWebFonts
-} from 'unocss'
+import { defineConfig, presetUno, presetAttributify, presetIcons, transformerDirectives, presetWebFonts } from 'unocss'
 
 export default defineConfig({
   presets: [
@@ -64,8 +57,7 @@ export default defineConfig({
     'text-gradient': 'bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-teal-500',
     'btn-primary':
       'px-6 py-2.5 rounded-full bg-green-500 text-black font-semibold hover:bg-green-400 transition shadow-[0_0_20px_-5px_rgba(34,197,94,0.6)]',
-    'btn-dark':
-      'bg-black text-white px-6 py-2.5 rounded-full font-medium hover:bg-gray-900 transition text-sm',
+    'btn-dark': 'bg-black text-white px-6 py-2.5 rounded-full font-medium hover:bg-gray-900 transition text-sm',
     'btn-secondary':
       'px-6 py-2.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition text-white font-medium backdrop-blur-sm',
     'card-glass': 'bg-brand-surface/50 border border-brand-border backdrop-blur-md rounded-2xl'
