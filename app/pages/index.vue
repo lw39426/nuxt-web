@@ -1,7 +1,42 @@
 <script setup lang="ts">
 // 模拟Logo墙数据
-const brands = ['Anthropic', 'Coinbase', 'Microsoft', 'Perplexity', 'HubSpot', 'X', 'Cursor', 'PayPal']
+const _brands = [
+  'Anthropic',
+  'Coinbase',
+  'Microsoft',
+  'Perplexity',
+  'HubSpot',
+  'X',
+  'Cursor',
+  'PayPal'
+]
 
+const routeLink = [
+  {
+    name: 'Home',
+    link: '/'
+  },
+  {
+    name: 'gsap-performance-test',
+    link: '/gsap-performance-test'
+  },
+  {
+    name: 'navbar-60fps-test',
+    link: '/navbar-60fps-test'
+  },
+  {
+    name: 'navbar-performance-comparison',
+    link: '/navbar-performance-comparison'
+  },
+  {
+    name: 'performance-test',
+    link: '/performance-test'
+  },
+  {
+    name: 'navbar-performance-simple',
+    link: '/navbar-performance-simple'
+  }
+]
 // 模拟特性数据
 const features = [
   {
@@ -28,12 +63,15 @@ useHead({
 
 <template>
   <main>
+    <AppNavbarLayout />
     <!-- 1. Hero Section -->
-    <!-- 背景模拟：使用渐变模拟天空插画，实际项目中应替换为 CSS background-image: url(...) -->
     <section class="relative overflow-hidden">
+      <!-- 背景模拟：使用渐变模拟天空插画，实际项目中应替换为 CSS background-image: url(...) -->
       <div class="bg-image-hero z-9 select-none pointer-events-none"></div>
       <!-- Overlay gradient to make text readable -->
-      <div class="flex flex-col items-center justify-center pt-[4.5rem] md:pb-24 pb-[4.5rem] max-md:px-6 dark" />
+      <div
+        class="flex flex-col items-center justify-center pt-[4.5rem] md:pb-24 pb-[4.5rem] max-md:px-6 dark"
+      />
 
       <div class="relative z-10 section-container text-center">
         <h1
@@ -42,8 +80,11 @@ useHead({
           The Intelligent <br />
           Documentation Platform
         </h1>
-        <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-10 font-medium drop-shadow-sm">
-          Meet the next generation of documentation. AI-native, beautiful out-of-the-box, and built for collaboration.
+        <p
+          class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-10 font-medium drop-shadow-sm"
+        >
+          Meet the next generation of documentation. AI-native, beautiful out-of-the-box, and built
+          for collaboration.
         </p>
 
         <!-- Email Input Form -->
@@ -88,7 +129,11 @@ useHead({
               <div class="w-64 border-r border-gray-100 p-6 hidden md:block text-left">
                 <div class="h-4 w-24 bg-gray-100 rounded mb-8"></div>
                 <div class="space-y-3">
-                  <div class="h-3 w-full bg-mint-50 text-mint-600 rounded px-2 py-1 text-xs font-bold">Get Started</div>
+                  <div
+                    class="h-3 w-full bg-mint-50 text-mint-600 rounded px-2 py-1 text-xs font-bold"
+                  >
+                    Get Started
+                  </div>
                   <div class="h-3 w-32 bg-gray-50 rounded ml-2"></div>
                   <div class="h-3 w-28 bg-gray-50 rounded ml-2"></div>
                 </div>
@@ -117,9 +162,14 @@ useHead({
           class="grid grid-cols-2 md:grid-cols-4 gap-12 items-center justify-items-center opacity-60 grayscale hover:grayscale-0 transition duration-500"
         >
           <!-- Mock Logos using text for demo -->
-          <h3 v-for="brand in brands" :key="brand" class="text-xl font-bold font-display text-gray-800">
-            {{ brand }}
-          </h3>
+          <NuxtLink
+            v-for="brand in routeLink"
+            :key="brand.name"
+            :to="brand.link"
+            class="text-xl font-bold font-display text-gray-800"
+          >
+            {{ brand.name }}
+          </NuxtLink>
         </div>
       </div>
     </section>
@@ -130,8 +180,8 @@ useHead({
         <div class="text-center max-w-3xl mx-auto mb-16">
           <h2 class="text-4xl font-bold font-display mb-4">Built for the intelligence age</h2>
           <p class="text-gray-500 text-lg">
-            Integrate AI into every part of your docs lifecycle. Woven into how your knowledge is written, maintained,
-            and understood.
+            Integrate AI into every part of your docs lifecycle. Woven into how your knowledge is
+            written, maintained, and understood.
           </p>
         </div>
 
@@ -151,16 +201,23 @@ useHead({
             <div
               class="mt-auto bg-gray-50 rounded-xl h-48 border border-gray-100 relative overflow-hidden flex items-center justify-center"
             >
-              <div v-if="feat.visualType === 'code'" class="text-xs font-mono text-gray-400 p-4 w-full">
+              <div
+                v-if="feat.visualType === 'code'"
+                class="text-xs font-mono text-gray-400 p-4 w-full"
+              >
                 <div class="bg-white p-3 rounded shadow-sm border border-gray-200 w-3/4 mx-auto">
                   $ npm install mintlify
                 </div>
               </div>
               <div v-else class="flex gap-4">
-                <div class="w-10 h-10 rounded-full bg-mint-500 text-white flex items-center justify-center shadow-lg">
+                <div
+                  class="w-10 h-10 rounded-full bg-mint-500 text-white flex items-center justify-center shadow-lg"
+                >
                   <div class="i-carbon-checkmark" />
                 </div>
-                <div class="w-10 h-10 rounded-full bg-mint-500 text-white flex items-center justify-center shadow-lg">
+                <div
+                  class="w-10 h-10 rounded-full bg-mint-500 text-white flex items-center justify-center shadow-lg"
+                >
                   <div class="i-carbon-idea" />
                 </div>
               </div>
@@ -169,7 +226,9 @@ useHead({
         </div>
 
         <!-- Assistant Feature (Full Width) -->
-        <div class="mt-8 bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-card text-center">
+        <div
+          class="mt-8 bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-card text-center"
+        >
           <span class="badge-green mb-4 inline-block">ASSISTANT</span>
           <h3 class="text-3xl font-bold mb-4">Intelligent assistance for your users</h3>
           <p class="text-gray-500 max-w-2xl mx-auto mb-12">
@@ -196,7 +255,9 @@ useHead({
       <div class="section-container">
         <div class="mb-12">
           <span class="badge-green mb-2 inline-block">ENTERPRISE-REINVENTION</span>
-          <h2 class="text-4xl font-bold font-display mb-4">Bring intelligence to enterprise knowledge</h2>
+          <h2 class="text-4xl font-bold font-display mb-4">
+            Bring intelligence to enterprise knowledge
+          </h2>
           <div class="flex justify-between items-end">
             <p class="text-gray-500 max-w-xl">
               Modernize without the rebuild with enterprise-grade professional service & security.
@@ -208,13 +269,20 @@ useHead({
         </div>
 
         <!-- Dark Banner Card -->
-        <div class="bg-dark-bg rounded-3xl overflow-hidden relative text-white min-h-[500px] flex flex-col md:flex-row">
+        <div
+          class="bg-dark-bg rounded-3xl overflow-hidden relative text-white min-h-[500px] flex flex-col md:flex-row"
+        >
           <div class="p-12 md:w-1/2 z-10 flex flex-col justify-center">
-            <span class="text-xs font-bold tracking-widest uppercase text-gray-400 mb-2">CUSTOMER STORY</span>
+            <span class="text-xs font-bold tracking-widest uppercase text-gray-400 mb-2"
+              >CUSTOMER STORY</span
+            >
             <h3 class="text-3xl md:text-4xl font-bold font-display mb-6">
               See how Anthropic accelerates AI development with Mintlify
             </h3>
-            <a href="#" class="flex items-center gap-2 text-mint-500 font-medium hover:text-mint-400">
+            <a
+              href="#"
+              class="flex items-center gap-2 text-mint-500 font-medium hover:text-mint-400"
+            >
               Read story
               <div class="i-carbon-arrow-right" />
             </a>
@@ -232,7 +300,9 @@ useHead({
           </div>
 
           <!-- Artistic visual (Right Side) - Using CSS Gradient/Shape to mimic the Yellow Arch -->
-          <div class="md:w-1/2 relative min-h-[300px] md:min-h-auto bg-gradient-to-br from-[#1a1d24] to-[#0B0C10]">
+          <div
+            class="md:w-1/2 relative min-h-[300px] md:min-h-auto bg-gradient-to-br from-[#1a1d24] to-[#0B0C10]"
+          >
             <!-- Abstract Arch Representation -->
             <div
               class="absolute bottom-0 right-10 w-64 h-96 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-full opacity-90 blur-sm"
@@ -252,7 +322,9 @@ useHead({
       <div class="section-container">
         <div class="text-center mb-16">
           <span class="text-mint-600 text-xs font-bold tracking-wider uppercase">CUSTOMERS</span>
-          <h2 class="text-4xl font-bold font-display mt-2 mb-4">Unlock knowledge for any industry</h2>
+          <h2 class="text-4xl font-bold font-display mt-2 mb-4">
+            Unlock knowledge for any industry
+          </h2>
         </div>
 
         <div class="grid md:grid-cols-3 gap-6">
@@ -270,7 +342,9 @@ useHead({
                 <h4 class="text-white text-xl font-bold">perplexity</h4>
               </div>
             </div>
-            <p class="text-sm text-gray-600 mb-2">How Perplexity transformed its documentation...</p>
+            <p class="text-sm text-gray-600 mb-2">
+              How Perplexity transformed its documentation...
+            </p>
             <span class="text-xs font-medium flex items-center gap-1"
               >Read story
               <div class="i-carbon-chevron-right"
@@ -310,7 +384,9 @@ useHead({
                 <h4 class="text-white text-xl font-bold">X</h4>
               </div>
             </div>
-            <p class="text-sm text-gray-600 mb-2">How X is using Mintlify to power the developer experience...</p>
+            <p class="text-sm text-gray-600 mb-2">
+              How X is using Mintlify to power the developer experience...
+            </p>
             <span class="text-xs font-medium flex items-center gap-1"
               >Read story
               <div class="i-carbon-chevron-right"
@@ -327,9 +403,13 @@ useHead({
           Make documentation your <br />
           winning advantage
         </h2>
-        <p class="text-gray-500 mb-10">Join the leaders of tomorrow to future proof your documentation today.</p>
+        <p class="text-gray-500 mb-10">
+          Join the leaders of tomorrow to future proof your documentation today.
+        </p>
         <div class="flex justify-center gap-4">
-          <button class="bg-black text-white px-8 py-3 rounded-full font-medium hover:scale-105 transition">
+          <button
+            class="bg-black text-white px-8 py-3 rounded-full font-medium hover:scale-105 transition"
+          >
             Get started for free
           </button>
           <button

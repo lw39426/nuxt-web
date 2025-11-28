@@ -1,6 +1,7 @@
 <template>
   <div class="font-sans text-gray-900 bg-white selection:bg-mint-500/20 selection:text-mint-900">
-    <AppNavbar />
+    <!-- 60 FPS 超优化导航栏 -->
+    <AppNavbarLayout />
 
     <slot />
 
@@ -15,13 +16,17 @@
         </div>
         <!-- Placeholder links -->
         <div v-for="i in 3" :key="i" class="flex flex-col gap-3 text-gray-500">
-          <span class="font-bold text-gray-900 uppercase tracking-wider text-xs mb-1">Column {{ i }}</span>
+          <span class="font-bold text-gray-900 uppercase tracking-wider text-xs mb-1"
+            >Column {{ i }}</span
+          >
           <a href="#">Link Item</a>
           <a href="#">Link Item</a>
           <a href="#">Link Item</a>
         </div>
       </div>
-      <div class="section-container mt-12 pt-8 border-t border-gray-200 flex justify-between text-xs text-gray-500">
+      <div
+        class="section-container mt-12 pt-8 border-t border-gray-200 flex justify-between text-xs text-gray-500"
+      >
         <span>© 2025 Mintlify, Inc.</span>
         <div class="flex gap-4">
           <div class="i-carbon-logo-twitter" />

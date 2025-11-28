@@ -4,7 +4,7 @@
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "vue"],
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "never", // 禁用 ESLint 自动修复，避免冲突
+    "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never"
   },
   "[vue]": {
@@ -16,5 +16,17 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "prettier.semi": false
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.configPath": ".prettierrc.json",
+  "prettier.requireConfig": true,
+  "prettier.semi": false,
+  "prettier.singleQuote": true,
+  "prettier.printWidth": 100,
+  "prettier.trailingComma": "none",
+  "prettier.arrowParens": "always",
+  "prettier.bracketSpacing": true,
+  "prettier.vueIndentScriptAndStyle": false,
+  "prettier.endOfLine": "lf"
 }
