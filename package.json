@@ -2,6 +2,7 @@
   "name": "NuxtWeb",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@10.14.0",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
