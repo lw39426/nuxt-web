@@ -1,8 +1,17 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
+// 菜单配置
+const menuItems = [
+  { name: 'Products', href: '/products' },
+  { name: 'Blog', href: '/blog' },
+  { name: 'Pricing', href: '#' },
+  { name: 'About Us', href: '/about' }
+]
+
 // 状态管理
 const isScrolled = ref(false)
+const isMobileMenuOpen = ref(false)
 const sentinelRef = ref(null)
 
 // IntersectionObserver 实例
@@ -15,21 +24,18 @@ const handleIntersection = (entries) => {
 
 onMounted(async () => {
   await nextTick()
-  
+
   // 创建 IntersectionObserver - 超性能优化
-  observer = new IntersectionObserver(
-    handleIntersection,
-    {
-      root: null,
-      threshold: 0,
-      rootMargin: '40px 0px 0px 0px'
-    }
-  )
-  
+  observer = new IntersectionObserver(handleIntersection, {
+    root: null,
+    threshold: 0,
+    rootMargin: '10px 0px 0px 0px'
+  })
+
   if (sentinelRef.value) {
     observer.observe(sentinelRef.value)
   }
-  
+
   onUnmounted(() => {
     if (observer) {
       observer.disconnect()
@@ -42,12 +48,15 @@ onMounted(async () => {
   <!-- 哨兵元素 -->
   <div
     ref="sentinelRef"
-    class="absolute top-0 left-0 h-4 w-full pointer-events-none bg-transparent z-0"
+    class="absolute top-0 left-0 h-1 w-full pointer-events-none bg-transparent z-0"
   ></div>
 
   <!-- 外层容器 -->
   <div class="sticky top-0 z-50 w-full">
-    <nav class="relative flex justify-center pt-2 sm:pt-4">
+    <nav
+      class="relative flex justify-center py-2"
+      :class="[isScrolled ? '' : 'backdrop-blur-[8px]']"
+    >
       <!-- 核心变形容器：超轻量级 CSS 动画 -->
       <div
         class="flex items-center justify-between transition-all duration-300 ease-out"
@@ -75,37 +84,25 @@ onMounted(async () => {
         <!-- 中间菜单 (桌面端显示) -->
         <div class="items-center justify-center gap-1 hidden md:flex">
           <a
-            href="#"
+            v-for="item in menuItems"
+            :key="item.name"
+            :href="item.href"
             class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
-            >Blog</a
           >
-          <a
-            href="#"
-            class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
-            >Features</a
-          >
-          <a
-            href="#"
-            class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
-            >Pricing</a
-          >
-          <a
-            href="#"
-            class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
-            >Docs</a
-          >
+            {{ item.name }}
+          </a>
         </div>
 
         <!-- 右侧 Sign In 按钮 -->
         <div class="flex items-center gap-2 shrink-0">
           <a
-            href="/auth/login"
+            href="/login"
             class="h-8 items-center justify-center relative mr-2 group hidden md:flex pl-4"
           >
             <div
-              class="flex gap-2 items-center relative z-20 text-sm font-medium text-gray-900 dark:text-white"
+              class="flex gap-2 items-center relative z-20 text-sm font-medium text-black-900 dark:text-white"
             >
-              <span class="mr-2">Sign In</span>
+              <span class="mr-2">登 录</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -129,26 +126,52 @@ onMounted(async () => {
           </a>
 
           <!-- 移动端菜单按钮 -->
-          <button
-            class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="4" x2="20" y1="12" y2="12" />
-              <line x1="4" x2="20" y1="6" y2="6" />
-              <line x1="4" x2="20" y1="18" y2="18" />
-            </svg>
-          </button>
+          <UButton
+            class="md:hidden rounded-full"
+            variant="ghost"
+            color="gray"
+            :icon="isMobileMenuOpen ? 'i-carbon-close' : 'i-carbon-menu'"
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
+          />
         </div>
+      </div>
+
+      <!-- 移动端菜单面板 -->
+      <div
+        v-show="isMobileMenuOpen"
+        class="absolute top-full left-1/2 -translate-x-1/2 flex flex-col gap-2 overflow-hidden transition-all duration-300 origin-top md:hidden"
+        :class="[
+          isScrolled
+            ? 'w-[92%] max-w-3xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md rounded-3xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2'
+            : 'w-full bg-white dark:bg-neutral-900 shadow-lg p-4 border-t border-gray-100 dark:border-gray-800'
+        ]"
+      >
+        <a
+          v-for="item in menuItems"
+          :key="item.name"
+          :href="item.href"
+          class="px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          @click="isMobileMenuOpen = false"
+        >
+          {{ item.name }}
+        </a>
+
+        <div class="h-px bg-gray-100 dark:bg-white/5 my-1"></div>
+
+        <a
+          href="/login"
+          class="px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          @click="isMobileMenuOpen = false"
+        >
+          Sign In
+        </a>
+        <a
+          href="/register"
+          class="px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          @click="isMobileMenuOpen = false"
+        >
+          Create Account
+        </a>
       </div>
     </nav>
   </div>
@@ -164,7 +187,7 @@ nav {
 }
 
 /* 确保合成层优化 */
-[style*="will-change"] {
+[style*='will-change'] {
   will-change: transform;
 }
 

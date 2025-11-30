@@ -17,24 +17,12 @@ const routeLink = [
     link: '/'
   },
   {
-    name: 'gsap-performance-test',
-    link: '/gsap-performance-test'
-  },
-  {
     name: 'navbar-60fps-test',
     link: '/navbar-60fps-test'
   },
   {
-    name: 'navbar-performance-comparison',
-    link: '/navbar-performance-comparison'
-  },
-  {
     name: 'performance-test',
     link: '/performance-test'
-  },
-  {
-    name: 'navbar-performance-simple',
-    link: '/navbar-performance-simple'
   }
 ]
 // 模拟特性数据
@@ -54,7 +42,7 @@ const features = [
 ]
 useHead({
   link: [
-    { rel: 'preload', as: 'image', href: '/bg-light.svg' },
+    { rel: 'preload', as: 'image', href: '/bg-light.png' },
     { rel: 'preconnect', href: 'https://images.unsplash.com' },
     { rel: 'dns-prefetch', href: 'https://images.unsplash.com' }
   ]
@@ -63,9 +51,8 @@ useHead({
 
 <template>
   <main>
-    <AppNavbarLayout />
     <!-- 1. Hero Section -->
-    <section class="relative overflow-hidden">
+    <section class="relative">
       <!-- 背景模拟：使用渐变模拟天空插画，实际项目中应替换为 CSS background-image: url(...) -->
       <div class="bg-image-hero z-9 select-none pointer-events-none"></div>
       <!-- Overlay gradient to make text readable -->
@@ -398,6 +385,14 @@ useHead({
 
     <!-- 6. Bottom CTA -->
     <section class="py-24 bg-white text-center">
+      <UMarquee :repeat="3" :duration="20000" class="mb-12">
+        <UIcon name="i-simple-icons-github" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-simple-icons-discord" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-simple-icons-x" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-simple-icons-instagram" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-simple-icons-linkedin" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-simple-icons-facebook" class="size-10 shrink-0 mx-8" />
+      </UMarquee>
       <div class="section-container">
         <h2 class="text-4xl md:text-5xl font-bold font-display mb-6">
           Make documentation your <br />
@@ -429,7 +424,7 @@ useHead({
   contain-intrinsic-size: 1px 800px;
 }
 .bg-image-hero {
-  background-image: url('/bg-light.svg');
+  background-image: url('/111.jpg');
   background-position: 50%;
   background-repeat: no-repeat;
   background-size: cover;
@@ -473,12 +468,6 @@ useHead({
     rgba(0, 0, 0, 0.01) 97.7%,
     transparent 100%
   );
-}
-.bg1 {
-  background-image: url('https://www.mintlify.com/_next/image?url=%2Fcustomers%2Ftogetherai.png&w=1080&q=75');
-  background-position: 50%;
-  background-repeat: no-repeat;
-  background-size: cover;
 }
 /* 简单的淡入上浮动画 */
 .animate-fade-in-up {

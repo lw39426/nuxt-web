@@ -1,59 +1,361 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-black">
     <!-- 使用优化后的导航栏 -->
-    <AppNavbarOptimized />
-    
-    <!-- 测试内容区域 -->
-    <div class="container mx-auto px-4 py-16">
-      <!-- 大标题区域 -->
-      <section class="text-center py-32">
-        <h1 class="text-6xl font-bold text-gray-900 dark:text-white mb-6">
-          60 FPS 导航栏测试
-        </h1>
-        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
-          滚动页面测试导航栏性能，体验丝滑切换效果
-        </p>
-        <div class="h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-3xl flex items-center justify-center">
-          <p class="text-white text-2xl font-semibold">Banner 区域</p>
+    <AppNavbarLayout />
+
+    <div v-if="true">
+      <!-- 1. Hero Section -->
+      <section class="relative overflow-hidden">
+        <div
+          style="background-image: url(/dashboard-dark-1.jpg)"
+          class="relative pt-[4.5rem] z-10 section-container text-center"
+        >
+          <h1
+            class="text-5xl md:text-7xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
+          >
+            The Intelligent <br />
+            Documentation Platform
+          </h1>
+          <p
+            class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-10 font-medium drop-shadow-sm"
+          >
+            Meet the next generation of documentation. AI-native, beautiful out-of-the-box, and
+            built for collaboration.
+          </p>
+
+          <!-- Email Input Form -->
+          <div
+            class="max-w-md mx-auto bg-white/20 backdrop-blur-md p-1.5 rounded-full border border-white/30 flex mb-20 shadow-lg"
+          >
+            <input
+              type="email"
+              placeholder="Email address"
+              class="flex-1 bg-transparent border-none outline-none text-white placeholder-white/70 px-4 text-sm"
+            />
+            <button
+              class="bg-white text-mint-900 px-6 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition"
+            >
+              Start now
+            </button>
+          </div>
+
+          <!-- Product Mockup (Browser Window) -->
+          <div
+            class="relative max-w-5xl mx-auto rounded-xl bg-white shadow-hero border-gray-200 overflow-hidden animate-fade-in-up"
+          >
+            <!-- Mockup Header -->
+            <div class="bg-gray-50 border-b border-gray-100 h-10 flex items-center px-4 gap-2">
+              <div class="flex gap-1.5">
+                <div class="w-3 h-3 rounded-full bg-red-400/80" />
+                <div class="w-3 h-3 rounded-full bg-yellow-400/80" />
+                <div class="w-3 h-3 rounded-full bg-green-400/80" />
+              </div>
+              <div
+                class="mx-auto bg-white border border-gray-200 rounded px-3 py-0.5 text-[10px] text-gray-400 flex items-center gap-1 w-64"
+              >
+                <div class="i-carbon-locked" />
+                mintlify.com/docs
+              </div>
+            </div>
+            <!-- Mockup Content (Simplified Image Placeholder) -->
+            <div class="bg-white p-0 aspect-[16/9] relative">
+              <!-- 实际开发中这里可以使用 img 标签引用你的截图，或者用 HTML 写出那个界面 -->
+              <div class="absolute inset-0 flex">
+                <!-- Sidebar -->
+                <div class="w-64 border-r border-gray-100 p-6 hidden md:block text-left">
+                  <div class="h-4 w-24 bg-gray-100 rounded mb-8"></div>
+                  <div class="space-y-3">
+                    <div
+                      class="h-3 w-full bg-mint-50 text-mint-600 rounded px-2 py-1 text-xs font-bold"
+                    >
+                      Get Started
+                    </div>
+                    <div class="h-3 w-32 bg-gray-50 rounded ml-2"></div>
+                    <div class="h-3 w-28 bg-gray-50 rounded ml-2"></div>
+                  </div>
+                </div>
+                <!-- Main -->
+                <div class="flex-1 p-8 text-left">
+                  <div class="h-8 w-48 bg-gray-100 rounded mb-4"></div>
+                  <div class="h-4 w-full max-w-lg bg-gray-50 rounded mb-2"></div>
+                  <div class="h-4 w-3/4 bg-gray-50 rounded mb-8"></div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 h-32 rounded-lg border border-gray-100"></div>
+                    <div class="bg-gray-50 h-32 rounded-lg border border-gray-100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- 2. Logos Section -->
+      <section class="py-16 bg-white content-visibility-auto">
+        <div class="section-container">
+          <div
+            class="grid grid-cols-2 md:grid-cols-4 gap-12 items-center justify-items-center opacity-60 grayscale hover:grayscale-0 transition duration-500"
+          >
+            <!-- Mock Logos using text for demo -->
+            <NuxtLink
+              v-for="brand in routeLink"
+              :key="brand.name"
+              :to="brand.link"
+              class="text-xl font-bold font-display text-gray-800"
+            >
+              {{ brand.name }}
+            </NuxtLink>
+          </div>
         </div>
       </section>
 
-      <!-- 大量内容用于滚动测试 -->
-      <section class="space-y-16">
-        <div v-for="i in 10" :key="i" class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            测试章节 {{ i }}
-          </h2>
-          <p class="text-gray-600 dark:text-gray-300 mb-6">
-            这是一段测试文本，用于验证导航栏在滚动时的性能表现。
-            优化后的导航栏使用 CSS 变量驱动，只改变合成层属性，
-            确保 60 FPS 流畅体验。
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 p-6 rounded-xl">
-              <h3 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">GPU 加速</h3>
-              <p class="text-sm text-blue-700 dark:text-blue-300">使用 transform 和 opacity 属性</p>
+      <!-- 3. Features Bento Grid -->
+      <section class="py-24 bg-gray-50/50 content-visibility-auto">
+        <div class="section-container">
+          <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-4xl font-bold font-display mb-4">Built for the intelligence age</h2>
+            <p class="text-gray-500 text-lg">
+              Integrate AI into every part of your docs lifecycle. Woven into how your knowledge is
+              written, maintained, and understood.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <div
+              v-for="(feat, idx) in features"
+              :key="idx"
+              class="bg-white rounded-3xl p-8 border border-gray-100 shadow-card flex flex-col h-full hover:shadow-lg transition duration-300"
+            >
+              <div class="mb-6">
+                <span class="badge-green">{{ feat.badge }}</span>
+              </div>
+              <h3 class="text-2xl font-bold mb-3">{{ feat.title }}</h3>
+              <p class="text-gray-500 leading-relaxed mb-8">{{ feat.desc }}</p>
+
+              <!-- Visual Mockup Area inside Card -->
+              <div
+                class="mt-auto bg-gray-50 rounded-xl h-48 border border-gray-100 relative overflow-hidden flex items-center justify-center"
+              >
+                <div
+                  v-if="feat.visualType === 'code'"
+                  class="text-xs font-mono text-gray-400 p-4 w-full"
+                >
+                  <div class="bg-white p-3 rounded shadow-sm border border-gray-200 w-3/4 mx-auto">
+                    $ npm install mintlify
+                  </div>
+                </div>
+                <div v-else class="flex gap-4">
+                  <div
+                    class="w-10 h-10 rounded-full bg-mint-500 text-white flex items-center justify-center shadow-lg"
+                  >
+                    <div class="i-carbon-checkmark" />
+                  </div>
+                  <div
+                    class="w-10 h-10 rounded-full bg-mint-500 text-white flex items-center justify-center shadow-lg"
+                  >
+                    <div class="i-carbon-idea" />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 p-6 rounded-xl">
-              <h3 class="font-semibold text-green-900 dark:text-green-100 mb-2">CSS 变量</h3>
-              <p class="text-sm text-green-700 dark:text-green-300">单条 transition 驱动所有变化</p>
-            </div>
-            <div class="bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 p-6 rounded-xl">
-              <h3 class="font-semibold text-purple-900 dark:text-purple-100 mb-2">IntersectionObserver</h3>
-              <p class="text-sm text-purple-700 dark:text-purple-300">原生节流，性能最优</p>
+          </div>
+
+          <!-- Assistant Feature (Full Width) -->
+          <div
+            class="mt-8 bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-card text-center"
+          >
+            <span class="badge-green mb-4 inline-block">ASSISTANT</span>
+            <h3 class="text-3xl font-bold mb-4">Intelligent assistance for your users</h3>
+            <p class="text-gray-500 max-w-2xl mx-auto mb-12">
+              Turn every documentation visit into a guided conversation.
+            </p>
+
+            <!-- Mock UI for Chat -->
+            <div
+              class="max-w-3xl bg1 mx-auto bg-gray-50 rounded-xl border border-gray-200 p-6 aspect-[2/1] flex items-center justify-center"
+            >
+              <div
+                class="bg-white rounded-full shadow-sm border border-gray-200 px-6 py-3 w-full max-w-md text-left text-gray-400 text-sm flex justify-between"
+              >
+                <span>Ask AI anything...</span>
+                <div class="i-carbon-send-filled text-mint-500" />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 底部大区域 -->
-      <section class="py-32 text-center">
-        <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-8">
-          性能测试完成
-        </h2>
-        <p class="text-lg text-gray-600 dark:text-gray-300">
-          导航栏在整个滚动过程中应该保持 60 FPS 流畅度
-        </p>
+      <!-- 4. Enterprise Dark Section -->
+      <section class="py-24 bg-white content-visibility-auto">
+        <div class="section-container">
+          <div class="mb-12">
+            <span class="badge-green mb-2 inline-block">ENTERPRISE-REINVENTION</span>
+            <h2 class="text-4xl font-bold font-display mb-4">
+              Bring intelligence to enterprise knowledge
+            </h2>
+            <div class="flex justify-between items-end">
+              <p class="text-gray-500 max-w-xl">
+                Modernize without the rebuild with enterprise-grade professional service & security.
+              </p>
+              <button class="bg-black text-white px-6 py-2.5 rounded-full text-sm font-medium">
+                Explore for enterprise
+              </button>
+            </div>
+          </div>
+
+          <!-- Dark Banner Card -->
+          <div
+            class="bg-dark-bg rounded-3xl overflow-hidden relative text-white min-h-[500px] flex flex-col md:flex-row"
+          >
+            <div class="p-12 md:w-1/2 z-10 flex flex-col justify-center">
+              <span class="text-xs font-bold tracking-widest uppercase text-gray-400 mb-2"
+                >CUSTOMER STORY</span
+              >
+              <h3 class="text-3xl md:text-4xl font-bold font-display mb-6">
+                See how Anthropic accelerates AI development with Mintlify
+              </h3>
+              <a
+                href="#"
+                class="flex items-center gap-2 text-mint-500 font-medium hover:text-mint-400"
+              >
+                Read story
+                <div class="i-carbon-arrow-right" />
+              </a>
+
+              <div class="mt-16 grid grid-cols-2 gap-12">
+                <div>
+                  <div class="text-4xl font-bold">2M+</div>
+                  <div class="text-sm text-gray-400 mt-1">Monthly active developers</div>
+                </div>
+                <div>
+                  <div class="text-4xl font-bold">3+</div>
+                  <div class="text-sm text-gray-400 mt-1">Products serviced: Claude API, MCP</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Artistic visual (Right Side) - Using CSS Gradient/Shape to mimic the Yellow Arch -->
+            <div
+              class="md:w-1/2 relative min-h-[300px] md:min-h-auto bg-gradient-to-br from-[#1a1d24] to-[#0B0C10]"
+            >
+              <!-- Abstract Arch Representation -->
+              <div
+                class="absolute bottom-0 right-10 w-64 h-96 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-full opacity-90 blur-sm"
+              ></div>
+              <div
+                class="absolute bottom-0 right-20 w-44 h-80 bg-dark-bg rounded-t-full z-10"
+              ></div>
+              <!-- Landscape overlay -->
+              <div
+                class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80')] mix-blend-overlay opacity-40"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Customers Carousel -->
+      <section class="py-24 content-visibility-auto">
+        <div class="section-container">
+          <div class="text-center mb-16">
+            <span class="text-mint-600 text-xs font-bold tracking-wider uppercase">CUSTOMERS</span>
+            <h2 class="text-4xl font-bold font-display mt-2 mb-4">
+              Unlock knowledge for any industry
+            </h2>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div class="group cursor-pointer">
+              <div class="bg-dark-card rounded-xl aspect-video mb-4 overflow-hidden relative">
+                <img
+                  src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80"
+                  class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition"
+                  loading="lazy"
+                  decoding="async"
+                  fetchpriority="low"
+                />
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <h4 class="text-white text-xl font-bold">perplexity</h4>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">
+                How Perplexity transformed its documentation...
+              </p>
+              <span class="text-xs font-medium flex items-center gap-1"
+                >Read story
+                <div class="i-carbon-chevron-right"
+              /></span>
+            </div>
+            <!-- Card 2 -->
+            <div class="group cursor-pointer">
+              <div class="bg-dark-card rounded-xl aspect-video mb-4 overflow-hidden relative">
+                <img
+                  src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80"
+                  class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition"
+                  loading="lazy"
+                  decoding="async"
+                  fetchpriority="low"
+                />
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <h4 class="text-white text-xl font-bold">CURSOR</h4>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">How Cursor scaled with just 12 employees...</p>
+              <span class="text-xs font-medium flex items-center gap-1"
+                >Read story
+                <div class="i-carbon-chevron-right"
+              /></span>
+            </div>
+            <!-- Card 3 -->
+            <div class="group cursor-pointer">
+              <div class="bg-dark-card rounded-xl aspect-video mb-4 overflow-hidden relative">
+                <img
+                  src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&q=80"
+                  class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition"
+                  loading="lazy"
+                  decoding="async"
+                  fetchpriority="low"
+                />
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <h4 class="text-white text-xl font-bold">X</h4>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">
+                How X is using Mintlify to power the developer experience...
+              </p>
+              <span class="text-xs font-medium flex items-center gap-1"
+                >Read story
+                <div class="i-carbon-chevron-right"
+              /></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Bottom CTA -->
+      <section class="py-24 bg-white text-center">
+        <div class="section-container">
+          <h2 class="text-4xl md:text-5xl font-bold font-display mb-6">
+            Make documentation your <br />
+            winning advantage
+          </h2>
+          <p class="text-gray-500 mb-10">
+            Join the leaders of tomorrow to future proof your documentation today.
+          </p>
+          <div class="flex justify-center gap-4">
+            <button
+              class="bg-black text-white px-8 py-3 rounded-full font-medium hover:scale-105 transition"
+            >
+              Get started for free
+            </button>
+            <button
+              class="bg-white border border-gray-200 text-gray-900 px-8 py-3 rounded-full font-medium hover:bg-gray-50 transition"
+            >
+              Get a demo
+            </button>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -62,3 +364,19 @@
 <script setup>
 // 这个页面专门用于测试优化后的导航栏性能
 </script>
+<style scoped>
+/* 导航栏性能测试专用样式 */
+.bg-image-hero {
+  background-image: url('/bg-light.png');
+  /* background-image: url('/111.jpg'); */
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.bg1 {
+  background-image: url('https://www.mintlify.com/_next/image?url=%2Fcustomers%2Ftogetherai.png&w=1080&q=75');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+</style>

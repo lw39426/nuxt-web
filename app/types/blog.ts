@@ -12,6 +12,7 @@ export interface BlogPost {
   category: string // e.g., 'Engineering', 'Announcements'
   image: string
   author: Author
-  date?: string // Hero post only
+  date: string
+  readTime?: string
   isHero?: boolean
 }

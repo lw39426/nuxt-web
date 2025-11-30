@@ -1,77 +1,90 @@
 <template>
-  <el-card class="card flex flex-col gap-2" shadow="hover">
-    <div class="thumb relative w-100% aspect-[1/1] overflow-hidden rounded-2">
-      <el-image :src="product.cover" fit="cover" lazy>
-        <template #error>
-          <div class="thumb-fallback flex items-center justify-center w-100% h-100% bg-[#f5f7fa] text-#999">无图</div>
-        </template>
-      </el-image>
-      <div class="quick absolute right-2 top-2 flex gap-1">
-        <el-tooltip content="收藏" placement="top">
-          <el-button circle size="small" @click.stop="onToggleFav">
-            <el-icon v-if="favorited"><StarFilled /></el-icon>
-            <el-icon v-else><Star /></el-icon>
-          </el-button>
-        </el-tooltip>
-        <el-tooltip content="详情" placement="top">
-          <el-button circle size="small" @click.stop="gotoDetail">
-            <el-icon><View /></el-icon>
-          </el-button>
-        </el-tooltip>
+  <div
+    class="group relative flex flex-col bg-white dark:bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 dark:border-gray-800"
+  >
+    <!-- Image Container -->
+    <div class="relative aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800/50">
+      <NuxtLink :to="`/products/${product.id}`" class="block w-full h-full">
+        <img
+          :src="product.images[0]"
+          :alt="product?.title"
+          class="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110"
+        />
+      </NuxtLink>
+
+      <!-- Floating Actions -->
+      <div
+        class="absolute top-3 right-3 flex flex-col gap-2 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+      >
+        <button
+          class="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 transition-colors"
+          @click.stop="toggleFavorite"
+        >
+          <div
+            :class="[
+              isFavorite ? 'i-carbon-favorite-filled text-red-500' : 'i-carbon-favorite',
+              'text-xl'
+            ]"
+          />
+        </button>
+        <button
+          class="w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          @click.stop="addToCart"
+        >
+          <div class="i-carbon-shopping-cart text-xl" />
+        </button>
       </div>
     </div>
-    <div class="info flex flex-col gap-1">
-      <div class="title font-600 truncate" :title="product.name">{{ product.name }}</div>
-      <div class="price text-#f56c6c font-700">￥{{ product.price }}</div>
-      <div class="ops">
-        <el-button size="small" type="primary" :loading="adding" @click="onAdd">加入购物车</el-button>
+
+    <!-- Content -->
+    <div class="p-5 flex flex-col flex-1">
+      <div class="mb-2">
+        <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">{{
+          product.brand || 'Brand'
+        }}</span>
+      </div>
+      <NuxtLink :to="`/products/${product.id}`" class="block mb-2">
+        <h3
+          class="text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-black/70 dark:group-hover:text-white/70 transition-colors"
+        >
+          {{ product?.title }}
+        </h3>
+      </NuxtLink>
+
+      <div class="mt-auto flex items-end justify-between">
+        <div class="flex flex-col">
+          <span class="text-lg font-bold text-gray-900 dark:text-white">${{ product.price }}</span>
+          <div class="flex items-center gap-1 mt-1">
+            <div class="flex text-yellow-400 text-xs">
+              <div
+                v-for="i in 5"
+                :key="i"
+                :class="i <= Math.round(product.rating) ? 'i-carbon-star-filled' : 'i-carbon-star'"
+              />
+            </div>
+            <span class="text-xs text-gray-400">({{ product.reviewCount }})</span>
+          </div>
+        </div>
       </div>
     </div>
-  </el-card>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { useCartApi } from '~/composables/api/cart'
+import type { Product } from '~/types/product'
 
-interface Props {
-  product: { id: number; name: string; price: number; cover?: string }
+const props = defineProps<{
+  product: Product
+}>()
+
+const isFavorite = ref(false)
+
+const toggleFavorite = () => {
+  isFavorite.value = !isFavorite.value
 }
 
-const props = defineProps<Props>()
-const favorited = ref(false)
-const adding = ref(false)
-const { add } = useCartApi()
-
-async function onAdd() {
-  try {
-    adding.value = true
-    await add({ productId: props.product.id, quantity: 1 })
-  } catch (e) {
-    console.error('加入购物车失败', e)
-  } finally {
-    adding.value = false
-  }
-}
-
-function onToggleFav() {
-  favorited.value = !favorited.value
-}
-
-/**
- * 跳转到商品详情
- */
-function gotoDetail() {
-  navigateTo(`/products/${props.product.id}`)
+const addToCart = () => {
+  // Implement add to cart logic
+  console.log('Added to cart:', props.product?.title)
 }
 </script>
-
-<style scoped>
-.thumb :deep(img) {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.ops {
-  display: flex;
-}
-</style>

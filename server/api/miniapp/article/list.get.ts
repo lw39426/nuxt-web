@@ -15,7 +15,10 @@ export default defineEventHandler(async (event) => {
     { id: 204, title: '彩妆新手必看', summary: '五分钟打造日常通勤妆。' }
   ]
 
-  if (q) items = items.filter((a) => a.title.toLowerCase().includes(q) || (a.summary || '').toLowerCase().includes(q))
+  if (q)
+    items = items.filter(
+      (a) => a.title.toLowerCase().includes(q) || (a.summary || '').toLowerCase().includes(q)
+    )
   if (sort === 'latest') items = items.sort((a, b) => b.id - a.id)
 
   const total = items.length

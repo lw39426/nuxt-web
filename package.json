@@ -22,10 +22,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@iconify-json/carbon": "^1.2.14",
+    "@iconify-json/lucide": "^1.2.77",
+    "@iconify-json/simple-icons": "^1.2.60",
     "@nuxt/eslint": "latest",
     "@nuxt/eslint-config": "latest",
+    "@nuxt/ui": "^4.2.1",
     "@typescript-eslint/parser": "^8.46.2",
-    "@unocss/nuxt": "^66.5.9",
+    "@unocss/nuxt": "66.5.10-beta.1",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.0",
@@ -34,12 +38,13 @@
     "prettier": "^3.3.3",
     "simple-git-hooks": "^2.9.0",
     "typescript": "^5.6.3",
-    "unocss": "^66.5.9",
+    "unocss": "66.5.10-beta.1",
     "vue-eslint-parser": "^10.2.0"
   },
   "lint-staged": {
     "*.{js,ts,vue}": [
-      "eslint --fix"
+      "eslint --fix",
+      "prettier --write"
     ],
     "*.{json,css,scss,md}": [
       "prettier --write"

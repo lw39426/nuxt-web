@@ -54,7 +54,9 @@ export function useArticleApi() {
    * 分类列表（GET /miniapp/article/categories）
    */
   async function categories() {
-    return await get<{ id: number; name: string; children?: any[] }[]>('/miniapp/article/categories')
+    return await get<{ id: number; name: string; children?: any[] }[]>(
+      '/miniapp/article/categories'
+    )
   }
 
   /**
