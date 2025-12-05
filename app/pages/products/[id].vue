@@ -159,22 +159,23 @@
             <div class="border-t border-gray-100 dark:border-gray-800 pt-6 space-y-4">
               <UAccordion
                 :items="[
-                  { label: 'Description', slot: 'desc' },
-                  { label: 'Specifications', slot: 'specs' },
-                  { label: 'Reviews', slot: 'reviews' }
+                  { label: 'Icons', icon: 'i-lucide-smile', slot: 'desc' },
+                  { label: 'Colors', icon: 'i-lucide-swatch-book', slot: 'specs' },
+                  { label: 'Components', icon: 'i-lucide-box', slot: 'reviews' }
                 ]"
-                variant="ghost"
-                :ui="{ item: { padding: 'py-4' }, button: { padding: 'py-4 font-bold text-lg' } }"
+                :ui="{
+                  item: 'py-4 border-b border-gray-100 dark:border-gray-800'
+                }"
               >
                 <template #desc>
                   <div
-                    class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 pb-4"
+                    class="prose dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 py-4"
                   >
                     <p>{{ product?.description }}</p>
                   </div>
                 </template>
                 <template #specs>
-                  <dl class="grid grid-cols-1 gap-y-4 pb-4">
+                  <dl class="grid grid-cols-1 gap-y-4 py-4">
                     <div class="flex justify-between">
                       <dt class="text-gray-500">Screen Size</dt>
                       <dd class="font-medium text-gray-900 dark:text-white">6.7"</dd>
@@ -186,7 +187,7 @@
                   </dl>
                 </template>
                 <template #reviews>
-                  <div class="space-y-6 pb-4">
+                  <div class="space-y-6 py-4">
                     <div v-for="i in 2" :key="i" class="flex gap-4">
                       <div
                         class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-500"
@@ -226,7 +227,7 @@
       <div class="text-center">
         <h1 class="text-2xl font-bold mb-4">Product not found</h1>
         <NuxtLink to="/products">
-          <UButton color="black">Back to Catalog</UButton>
+          <UButton color="neutral">Back to Catalog</UButton>
         </NuxtLink>
       </div>
     </div>

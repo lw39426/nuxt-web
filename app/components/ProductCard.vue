@@ -1,10 +1,12 @@
 <template>
   <div
-    class="group relative flex flex-col bg-white dark:bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 dark:border-gray-800"
+    class="group relative flex flex-col shadow-xl dark:border-gray-800 bg-white dark:bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 dark:border-gray-800"
   >
     <!-- Image Container -->
-    <div class="relative aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800/50">
-      <NuxtLink :to="`/products/${product.id}`" class="block w-full h-full">
+    <div
+      class="relative w-full h-[256px] aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800/50"
+    >
+      <NuxtLink :to="`/products/${product.id}`" class="block mx-auto">
         <img
           :src="product.images[0]"
           :alt="product?.title"

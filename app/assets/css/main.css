@@ -1,3 +1,6 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
 /* Custom utilities */
 .content-visibility-auto {
   content-visibility: auto;

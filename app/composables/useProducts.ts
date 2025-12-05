@@ -131,7 +131,7 @@ export const useProducts = () => {
   ])
 
   const getProductById = (id: number) => {
-    return products.value.find((p) => p.id === id)
+    return products.value.find((p) => p.id === id) || products.value[0]
   }
 
   return {

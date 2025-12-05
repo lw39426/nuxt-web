@@ -1,6 +1,7 @@
+import type { IconifyJSON } from '@iconify/types'
 import {
   defineConfig,
-  presetUno,
+  presetWind3,
   presetAttributify,
   presetIcons,
   transformerDirectives
@@ -8,15 +9,20 @@ import {
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetWind3(),
     presetAttributify(),
     presetIcons({
       scale: 1.2,
       warn: true,
       collections: {
-        carbon: () => import('@iconify-json/carbon/icons.json').then((i) => i.default),
-        lucide: () => import('@iconify-json/lucide/icons.json').then((i) => i.default),
-        'simple-icons': () => import('@iconify-json/simple-icons/icons.json').then((i) => i.default)
+        carbon: async (): Promise<IconifyJSON> => {
+          const i = await import('@iconify-json/carbon/icons.json')
+          return i.default as any as IconifyJSON
+        },
+        lucide: async (): Promise<IconifyJSON> => {
+          const i = await import('@iconify-json/lucide/icons.json')
+          return i.default as any as IconifyJSON
+        }
       }
     })
   ],

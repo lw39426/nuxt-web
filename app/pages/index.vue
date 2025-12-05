@@ -386,12 +386,12 @@ useHead({
     <!-- 6. Bottom CTA -->
     <section class="py-24 bg-white text-center">
       <UMarquee :repeat="3" :duration="20000" class="mb-12">
-        <UIcon name="i-simple-icons-github" class="size-10 shrink-0 mx-8" />
-        <UIcon name="i-simple-icons-discord" class="size-10 shrink-0 mx-8" />
-        <UIcon name="i-simple-icons-x" class="size-10 shrink-0 mx-8" />
-        <UIcon name="i-simple-icons-instagram" class="size-10 shrink-0 mx-8" />
-        <UIcon name="i-simple-icons-linkedin" class="size-10 shrink-0 mx-8" />
-        <UIcon name="i-simple-icons-facebook" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-carbon-logo-github" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-carbon-logo-discord" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-carbon-logo-twitter" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-carbon-logo-instagram" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-carbon-logo-linkedin" class="size-10 shrink-0 mx-8" />
+        <UIcon name="i-carbon-logo-facebook" class="size-10 shrink-0 mx-8" />
       </UMarquee>
       <div class="section-container">
         <h2 class="text-4xl md:text-5xl font-bold font-display mb-6">
