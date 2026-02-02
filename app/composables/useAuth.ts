@@ -1,5 +1,3 @@
-import type { ApiResponse } from '../composables/useApi'
-
 export interface LoginPayload {
   username: string
   password: string
@@ -28,28 +26,28 @@ export function useAuth() {
   /**
    * 用户名密码登录（POST /loginByUsername）
    */
-  async function loginByUsername(payload: LoginPayload): Promise<ApiResponse<AuthData>> {
+  async function loginByUsername(payload: LoginPayload): Promise<AuthData> {
     return await post<AuthData>('/loginByUsername', payload)
   }
 
   /**
    * 刷新 Token（POST /miniapp/user/auth/refreshToken）
    */
-  async function refreshToken(): Promise<ApiResponse<{ token: string }>> {
+  async function refreshToken(): Promise<{ token: string }> {
     return await post<{ token: string }>('/miniapp/user/auth/refreshToken')
   }
 
   /**
    * 退出登录（GET /miniapp/user/auth/logout）
    */
-  async function logout(): Promise<ApiResponse<null>> {
+  async function logout(): Promise<null> {
     return await get<null>('/miniapp/user/auth/logout')
   }
 
   /**
    * 获取用户信息（GET /miniapp/user/info）
    */
-  async function getUserInfo(): Promise<ApiResponse<{ id: number; username: string }>> {
+  async function getUserInfo(): Promise<{ id: number; username: string }> {
     return await get<{ id: number; username: string }>('/miniapp/user/info')
   }
 
@@ -57,7 +55,7 @@ export function useAuth() {
    * 用户注册（POST /miniapp/user/register）
    * 说明：后端未给出注册接口细节，此处先约定。
    */
-  async function register(payload: RegisterPayload): Promise<ApiResponse<AuthData>> {
+  async function register(payload: RegisterPayload): Promise<AuthData> {
     return await post<AuthData>('/miniapp/user/register', payload)
   }
 

@@ -353,10 +353,10 @@ watch(
 )
 
 watchEffect(() => {
-  if (data.value?.data) {
-    console.log('Data updated:', data.value.data.items.length, 'items')
-    products.value = data.value.data.items
-    total.value = data.value.data.total
+  if (data.value) {
+    console.log('Data updated:', data.value.items.length, 'items')
+    products.value = data.value.items
+    total.value = data.value.total
   }
 })
 

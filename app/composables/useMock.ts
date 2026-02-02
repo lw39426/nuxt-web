@@ -1,13 +1,8 @@
-import type { ApiResponse } from '~/composables/useApi'
-
-/**
- * 前端本地 Mock 数据与方法
- */
 export function useMock() {
   /**
    * Mock 分类数据
    */
-  async function getCategories(): Promise<ApiResponse<any[]>> {
+  async function getCategories(): Promise<any[]> {
     const data = [
       {
         id: 1,
@@ -43,7 +38,7 @@ export function useMock() {
         ]
       }
     ]
-    return { code: 200, message: 'success', data }
+    return data
   }
 
   /**
@@ -57,7 +52,7 @@ export function useMock() {
     sort?: 'price_asc' | 'price_desc' | 'latest' | 'popular'
     page?: number
     pageSize?: number
-  }): Promise<ApiResponse<{ items: any[]; page: number; pageSize: number; total: number }>> {
+  }): Promise<{ items: any[]; page: number; pageSize: number; total: number }> {
     const all = [
       { id: 101, name: 'iPhone 15', price: 6999, cover: '/images/placeholder.svg', categoryId: 11 },
       {
@@ -93,13 +88,13 @@ export function useMock() {
     const total = items.length
     const start = (page - 1) * pageSize
     const pageItems = items.slice(start, start + pageSize)
-    return { code: 200, message: 'success', data: { items: pageItems, page, pageSize, total } }
+    return { items: pageItems, page, pageSize, total }
   }
 
   /**
    * Mock 商品详情
    */
-  async function getProductDetail(id: number): Promise<ApiResponse<any>> {
+  async function getProductDetail(id: number): Promise<any> {
     const map: Record<number, any> = {
       101: {
         id: 101,
@@ -123,19 +118,19 @@ export function useMock() {
       cover: '/images/placeholder.svg',
       description: '暂无描述'
     }
-    return { code: 200, message: 'success', data }
+    return data
   }
 
   /**
    * Mock 最新文章
    */
-  async function getLatestArticles(): Promise<ApiResponse<any[]>> {
+  async function getLatestArticles(): Promise<any[]> {
     const data = [
       { id: 201, title: '数码潮流趋势', summary: '探索今年热门数码产品与技术变革。' },
       { id: 202, title: '居家收纳指南', summary: '让家更整洁的实用收纳技巧。' },
       { id: 203, title: '跑步入门教程', summary: '如何科学跑步，避免受伤。' }
     ]
-    return { code: 200, message: 'success', data }
+    return data
   }
 
   /**
@@ -146,7 +141,7 @@ export function useMock() {
     sort?: 'latest' | 'hot'
     page?: number
     pageSize?: number
-  }): Promise<ApiResponse<{ items: any[]; page: number; pageSize: number; total: number }>> {
+  }): Promise<{ items: any[]; page: number; pageSize: number; total: number }> {
     let items = [
       { id: 201, title: '数码潮流趋势', summary: '探索今年热门数码产品与技术变革。' },
       { id: 202, title: '居家收纳指南', summary: '让家更整洁的实用收纳技巧。' },
@@ -165,32 +160,32 @@ export function useMock() {
     const total = items.length
     const start = (page - 1) * pageSize
     const pageItems = items.slice(start, start + pageSize)
-    return { code: 200, message: 'success', data: { items: pageItems, page, pageSize, total } }
+    return { items: pageItems, page, pageSize, total }
   }
 
   /**
    * Mock 文章详情
    */
-  async function getArticleDetail(id: number): Promise<ApiResponse<any>> {
+  async function getArticleDetail(id: number): Promise<any> {
     const data = {
       id,
       title: `示例文章 ${id}`,
       summary: '这是一篇示例文章摘要。',
       content: '<p>这里是完整文章内容的 HTML 示例。</p><p>可包含图片、列表等富文本。</p>'
     }
-    return { code: 200, message: 'success', data }
+    return data
   }
 
   /**
    * Mock 相关文章
    */
-  async function getRelatedArticles(id: number): Promise<ApiResponse<any[]>> {
+  async function getRelatedArticles(id: number): Promise<any[]> {
     const data = [
       { id: id + 1, title: '相关主题 A' },
       { id: id + 2, title: '相关主题 B' },
       { id: id + 3, title: '相关主题 C' }
     ]
-    return { code: 200, message: 'success', data }
+    return data
   }
 
   return {
