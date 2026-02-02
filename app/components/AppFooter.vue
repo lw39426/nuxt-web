@@ -1,17 +1,4 @@
-<script setup lang="ts">
-import type { ThemeMode } from '~/composables/useThemeMode'
-
-const { mode, setMode } = useThemeMode()
-
-const modeIndex = computed(() => (mode.value === 'system' ? 0 : mode.value === 'light' ? 1 : 2))
-
-const buttonClass = (value: ThemeMode) =>
-  [
-    'w-8 h-7 rounded-full flex items-center justify-center transition-colors relative z-10',
-    'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
-    mode.value === value ? 'text-white' : 'text-gray-300 hover:text-white'
-  ].join(' ')
-</script>
+<script setup lang="ts"></script>
 <template>
   <footer class="bg-black text-white py-12 md:py-16 border-t border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,47 +73,9 @@ const buttonClass = (value: ThemeMode) =>
         class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4"
       >
         <p class="text-gray-300 text-sm">© 2025 CoreDB. All rights reserved.</p>
-        <div
-          class="inline-flex items-center rounded-full bg-white/10 border border-white/10 p-1 relative overflow-hidden"
-          role="group"
-          aria-label="主题切换"
-          :style="{ '--theme-index': String(modeIndex) }"
-        >
-          <div
-            class="theme-indicator absolute top-1 left-1 w-8 h-7 rounded-full bg-white/20 border border-white/10 transition-transform duration-200 ease-out will-change-transform motion-reduce:transition-none pointer-events-none"
-          />
-          <button
-            type="button"
-            :class="buttonClass('system')"
-            aria-label="跟随系统"
-            @click="setMode('system')"
-          >
-            <div class="i-carbon-screen w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            :class="buttonClass('light')"
-            aria-label="浅色模式"
-            @click="setMode('light')"
-          >
-            <div class="i-carbon-sun w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            :class="buttonClass('dark')"
-            aria-label="深色模式"
-            @click="setMode('dark')"
-          >
-            <div class="i-carbon-moon w-5 h-5" />
-          </button>
-        </div>
       </div>
     </div>
   </footer>
 </template>
 
-<style scoped>
-.theme-indicator {
-  transform: translate3d(calc(var(--theme-index) * 2rem), 0, 0);
-}
-</style>
+<style scoped></style>
