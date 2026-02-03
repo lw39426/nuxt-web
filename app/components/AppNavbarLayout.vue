@@ -3,10 +3,10 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 // 菜单配置
 const menuItems = [
-  { name: 'Products', href: '/products' },
-  { name: 'Blog', href: '/blog' },
-  { name: 'Pricing', href: '#' },
-  { name: 'About Us', href: '/about' }
+  { name: 'Products', href: '/products', icon: 'i-carbon-cube' },
+  { name: 'Blog', href: '/blog', icon: 'i-carbon-blog' },
+  { name: 'Pricing', href: '#', icon: 'i-carbon-pricing-consumption' },
+  { name: 'About Us', href: '/about', icon: 'i-carbon-group' }
 ]
 
 // 组件变量状态管理
@@ -22,6 +22,7 @@ let flipAnimation = null
 let isAnimating = false
 let pendingScrolled = null
 
+// 导航栏滚动动画
 const runFlip = async (nextScrolled) => {
   const shell = navShellRef.value
   const content = navContentRef.value
@@ -279,9 +280,15 @@ onUnmounted(() => {
           v-for="item in menuItems"
           :key="item.name"
           :href="item.href"
-          class="px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
           @click="isMobileMenuOpen = false"
         >
+          <div
+            :class="[
+              item.icon,
+              'w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300'
+            ]"
+          ></div>
           {{ item.name }}
         </a>
 
@@ -289,16 +296,22 @@ onUnmounted(() => {
 
         <a
           href="/login"
-          class="px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
           @click="isMobileMenuOpen = false"
         >
+          <div
+            class="i-carbon-login w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300"
+          ></div>
           Sign In
         </a>
         <a
           href="/register"
-          class="px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
           @click="isMobileMenuOpen = false"
         >
+          <div
+            class="i-carbon-user-follow w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300"
+          ></div>
           Create Account
         </a>
       </div>
