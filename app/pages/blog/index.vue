@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BlogPost } from '~/types/blog'
+import { useIntersectionObserver } from '@vueuse/core'
 
 // Mock Data
 const heroPost: BlogPost = {
@@ -12,14 +13,14 @@ const heroPost: BlogPost = {
   date: 'September 29, 2025 • 2 min read',
   author: {
     name: 'Han Wang',
-    role: 'Co-Founder',
+    role: '创始人',
     avatar:
       'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
   },
   isHero: true
 }
 
-const posts: BlogPost[] = [
+const MOCK_POSTS: BlogPost[] = [
   {
     id: 2,
     title: 'Impact of SHA1-Hulud: The Second Coming on the Mintlify CLI',
@@ -94,28 +95,73 @@ const categories = [
 ]
 const activeCategory = ref('All articles')
 
-// Pagination
-const currentPage = ref(1)
-const totalPages = 20
+// 无限滚动逻辑Infinite Scroll Logic
+const displayedPosts = ref<BlogPost[]>([...MOCK_POSTS]) // 已加载的文章列表
+const isLoading = ref(false)
+const hasMore = ref(true) // 是否还有更多数据可加载
+const loadMoreTrigger = ref<HTMLElement | null>(null) // 加载更多触发元素
+
+/**
+ * 加载更多数据
+ * 模拟异步请求和分页逻辑
+ */
+const loadMore = async () => {
+  if (isLoading.value || !hasMore.value) return
+  isLoading.value = true
+
+  // 模拟网络请求延迟
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  // 模拟加载更多数据 (复制 MOCK_POSTS 并生成新 ID)
+  const newPosts = MOCK_POSTS.map((post, index) => ({
+    ...post,
+    id: Date.now() + index + Math.random()
+  }))
+
+  displayedPosts.value.push(...newPosts)
+
+  // 模拟数据上限 (例如超过 40 条就不再加载)
+  if (displayedPosts.value.length > 40) {
+    hasMore.value = false
+  }
+
+  isLoading.value = false
+}
+
+// 监听滚动触底
+useIntersectionObserver(
+  loadMoreTrigger,
+  (entries) => {
+    const entry = entries[0]
+    if (entry && entry.isIntersecting) {
+      loadMore()
+    }
+  },
+  {
+    rootMargin: '0px 0px 300px 0px' // 提前 300px 触发加载，提升流畅度
+  }
+)
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-black pb-20">
+  <div class="min-h-screen bg-white dark:bg-black pb-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <!-- Hero Post -->
+      <!-- 头部宣传区域Hero Post -->
       <NuxtLink
         :to="`/blog/${heroPost.id}`"
-        class="group relative block w-full aspect-[2/1] md:aspect-[2.5/1] rounded-3xl overflow-hidden mb-12"
+        class="group relative block w-full aspect-[2/1] md:aspect-[2.5/1] rounded-3xl overflow-hidden mb-12 isolate transform-gpu"
       >
+        <!-- 底层背景图 -->
         <img
           :src="heroPost.image"
           :alt="heroPost.title"
           class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
+        <!-- 叠加层: 背景图加载失败时的渐变背景色 -->
         <div
           class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
         ></div>
-
+        <!-- 叠加层: 文章内容 Content -->
         <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-2/3">
           <div class="text-gray-300 text-sm mb-3 font-medium">{{ heroPost.date }}</div>
           <h1
@@ -139,9 +185,13 @@ const totalPages = 20
             </div>
           </div>
         </div>
+        <!-- 叠加层:边框效果Border Overlay for Anti-aliasing -->
+        <div
+          class="absolute inset-0 rounded-3xl ring-1 ring-inset ring-transparent dark:ring-[#686868] pointer-events-none z-10"
+        ></div>
       </NuxtLink>
 
-      <!-- Filter Tabs -->
+      <!-- 筛选器: 分类标签Filter Tabs -->
       <div class="flex flex-wrap items-center gap-2 mb-12 overflow-x-auto pb-2 scrollbar-hide">
         <button
           v-for="cat in categories"
@@ -157,24 +207,26 @@ const totalPages = 20
           {{ cat }}
         </button>
         <div class="flex-1"></div>
+        <!-- RSS 订阅按钮，未来可设置为用户订阅、加载更多 -->
         <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
           <div class="i-carbon-rss w-5 h-5"></div>
         </button>
       </div>
 
-      <!-- Blog Grid -->
+      <!-- 文章内容布局Blog Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20">
-        <BlogCard v-for="post in posts" :key="post.id" :post="post" />
+        <BlogCard v-for="post in displayedPosts" :key="post.id" :post="post" />
       </div>
 
-      <!-- Pagination -->
-      <div class="flex justify-center mt-12">
-        <UPagination
-          v-model:page="currentPage"
-          size="xl"
-          active-color="success"
-          :total="totalPages"
-        />
+      <!-- 加载更多触发器 / 底部状态 -->
+      <div ref="loadMoreTrigger" class="flex justify-center mt-12 py-8">
+        <div v-if="isLoading" class="flex items-center gap-2 text-gray-500">
+          <div class="i-carbon-circle-dash w-6 h-6 animate-spin"></div>
+          <span>加载中...</span>
+        </div>
+        <div v-else-if="!hasMore" class="text-gray-400 text-sm">- 到底了，没有更多内容了 -</div>
+        <!-- 这里的空 div 用于 IntersectionObserver 监听 -->
+        <div v-else class="h-4 w-full"></div>
       </div>
     </div>
   </div>
