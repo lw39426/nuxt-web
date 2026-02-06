@@ -7,14 +7,7 @@
   contain-intrinsic-size: 1px 800px;
 }
 
-/* Custom background colors */
-.bg-dark-bg {
-  background-color: #020305;
-}
-
-.bg-dark-card {
-  background-color: #121417;
-}
+/* theme colors */
 
 /* Hero background image */
 .bg-image-hero {

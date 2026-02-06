@@ -1,6 +1,6 @@
 <template>
   <div
-    class="font-sans text-gray-900 dark:text-white bg-white dark:bg-black selection:bg-mint-500/20 selection:text-900 flex flex-col min-h-screen"
+    class="font-sans text-gray-900 dark:text-white bg-white dark:bg-black selection:bg-[#0fba81]/20 selection:text-900 flex flex-col min-h-screen"
   >
     <!-- 导航栏 -->
     <AppNavbarLayout />
