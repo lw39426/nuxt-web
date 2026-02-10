@@ -162,7 +162,7 @@ const heroStyle = computed(() => {
           </div>
         </div>
         <!-- 客户案例卡片 -->
-        <NuxtLink to="/customers/anthropic">
+        <NuxtLink to="/">
           <div
             id="customer-story-panel"
             class="group relative w-full mx-auto max-w-full md:p-16 p-8 bg-background-main rounded-3xl flex flex-col h-[518px] overflow-hidden cursor-pointer"

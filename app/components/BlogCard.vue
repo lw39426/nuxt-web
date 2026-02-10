@@ -8,9 +8,9 @@ defineProps<{
 
 <template>
   <NuxtLink :to="`/blog/${post.id}`" class="group flex flex-col gap-4 cursor-pointer">
-    <!-- Image Container -->
+    <!-- Image Container 图片部分 -->
     <div
-      class="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800"
+      class="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-card-light dark:bg-card-dark"
     >
       <img
         :src="post.image"
@@ -19,7 +19,7 @@ defineProps<{
       />
     </div>
 
-    <!-- Content -->
+    <!-- Content 内容部分-->
     <div class="flex flex-col gap-3">
       <!-- Category -->
       <div class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">

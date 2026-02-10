@@ -95,7 +95,7 @@ const handleRegister = () => {
         type="button"
         class="flex w-full items-center justify-center gap-3 rounded-lg bg-gray-800 px-4 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800 transition-all duration-200 active:scale-[0.98]"
       >
-        <div class="i-logos-google-icon w-5 h-5" />
+        <div class="i-carbon:logo-google w-5 h-5" />
         <span class="text-white">Sign up with Google</span>
       </button>
     </div>

@@ -5,10 +5,12 @@
       Implemented based on Apple Store design
       Features: Gradient title, category navigation, responsive layout
     -->
-    <div class="bg-gray-50 dark:bg-neutral-900 pt-16 pb-8 mb-8">
+    <div class="bg-gray-50 dark:bg-neutral-900 pt-8 md:pt-16 md:pb-8 md:mb-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Title and Subtitle Area 标题副标题区域 -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-16">
+        <div
+          class="flex flex-col md:flex-row justify-between items-start md:items-end mb-4 md:mb-16"
+        >
           <div>
             <h1 class="text-5xl font-bold mb-2">
               <span
@@ -66,165 +68,79 @@
       </div>
     </div>
 
-    <!-- Header Section内容区域 -->
+    <!-- Header Section面包屑、筛选器、排序选择器区域 -->
     <div
-      class="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black sticky top-0 z-30 pt-16"
+      class="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black sticky top-0 pt-16 z-30"
     >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <UBreadcrumb
-          :items="links"
-          :ui="{
-            list: 'gap-x-2',
-            link: 'text-sm'
-          }"
-        />
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-0 min-h-16 flex flex-col lg:flex-row lg:items-center justify-between gap-y-4"
+      >
+        <!-- Breadcrumb面包屑 & Mobile Filter Toggle侧边栏切换 -->
+        <div class="flex items-center justify-between w-full lg:w-auto">
+          <UBreadcrumb
+            :items="links"
+            :ui="{
+              list: 'gap-x-2',
+              link: 'text-sm'
+            }"
+          />
+          <button
+            class="lg:hidden p-2 text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white"
+            @click="isFiltersOpen = true"
+          >
+            <div class="i-carbon-filter text-xl" />
+          </button>
+        </div>
 
-        <div class="flex items-center gap-4">
-          <span class="text-sm text-gray-500 hidden sm:block"> {{ total }} Products </span>
-          <div class="h-4 w-px bg-gray-200 dark:bg-gray-800 hidden sm:block" />
+        <!-- Right Side Tools 产品数、排序选择器 -->
+        <div class="flex items-center gap-4 w-full lg:w-auto">
+          <span class="text-sm text-gray-500 sm:block"> {{ total }} Products </span>
+          <div class="h-4 w-px bg-gray-200 dark:bg-gray-800 sm:block" />
           <USelect
             v-model="sortBy"
             :items="['最新', '价格: 低到高', '价格: 高到低', '评分']"
-            class="w-48 p-2"
+            class="w-full lg:w-48 p-2"
+            :ui="
+              {
+                color: {
+                  white: {
+                    outline:
+                      'shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-home-breadcrumb dark:ring-home-breadcrumbDark focus:ring-2 focus:ring-home-breadcrumb dark:focus:ring-home-breadcrumbDark'
+                  }
+                }
+              } as any
+            "
           />
         </div>
       </div>
     </div>
-
+    <!-- 产品列表区域 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="flex flex-col lg:flex-row gap-12">
         <!-- Sidebar Filters侧边栏筛选器 -->
-        <div class="w-full lg:w-64 flex-shrink-0 space-y-10">
-          <!-- Price -->
-          <div>
-            <h3 class="font-bold text-gray-900 dark:text-white mb-6">价格范围</h3>
-            <div class="space-y-6">
-              <USlider
-                v-model="priceRange[0]"
-                :min="0"
-                :max="2000"
-                size="sm"
-                color="neutral"
-                tooltip
-              />
-              <div class="flex items-center gap-4">
-                <div class="relative flex-1">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"
-                    >$</span
-                  >
-                  <input
-                    v-model="priceRange[0]"
-                    type="number"
-                    class="w-full pl-6 pr-2 py-2 bg-gray-50 dark:bg-gray-900 border-none rounded-lg text-sm focus:ring-1 focus:ring-black dark:focus:ring-white transition-all"
-                  />
-                </div>
-                <span class="text-gray-300">-</span>
-                <div class="relative flex-1">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"
-                    >$</span
-                  >
-                  <input
-                    v-model="priceRange[1]"
-                    type="number"
-                    class="w-full pl-6 pr-2 py-2 bg-gray-50 dark:bg-gray-900 border-none rounded-lg text-sm focus:ring-1 focus:ring-black dark:focus:ring-white transition-all"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Brands -->
-          <div>
-            <h3 class="font-bold text-gray-900 dark:text-white mb-4">品牌</h3>
-            <div class="relative mb-4">
-              <div class="i-carbon-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                v-model="brandSearch"
-                type="text"
-                placeholder="Search"
-                class="w-full pl-9 pr-3 py-2 bg-transparent border-b border-gray-200 dark:border-gray-800 text-sm focus:border-black dark:focus:border-white transition-colors outline-none"
-              />
-            </div>
-            <div class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-              <label
-                v-for="brand in filteredBrands"
-                :key="brand.name"
-                class="flex items-center justify-between cursor-pointer group"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="relative flex items-center">
-                    <input
-                      v-model="selectedBrands"
-                      type="checkbox"
-                      :value="brand.name"
-                      class="peer sr-only"
-                    />
-                    <div
-                      class="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded transition-colors peer-checked:bg-black peer-checked:border-black dark:peer-checked:bg-white dark:peer-checked:border-white"
-                    ></div>
-                    <div
-                      class="absolute inset-0 flex items-center justify-center text-white dark:text-black opacity-0 peer-checked:opacity-100 pointer-events-none"
-                    >
-                      <div class="i-carbon-checkmark text-xs" />
-                    </div>
-                  </div>
-                  <span
-                    class="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors"
-                    >{{ brand.name }}</span
-                  >
-                </div>
-                <span class="text-xs text-gray-400">{{ brand.count }}</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Memory -->
-          <div>
-            <h3 class="font-bold text-gray-900 dark:text-white mb-4">内存</h3>
-            <div class="space-y-3">
-              <label
-                v-for="mem in filteredMemory"
-                :key="mem.name"
-                class="flex items-center justify-between cursor-pointer group"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="relative flex items-center">
-                    <input
-                      v-model="selectedMemory"
-                      type="checkbox"
-                      :value="mem.name"
-                      class="peer sr-only"
-                    />
-                    <div
-                      class="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded transition-colors peer-checked:bg-black peer-checked:border-black dark:peer-checked:bg-white dark:peer-checked:border-white"
-                    ></div>
-                    <div
-                      class="absolute inset-0 flex items-center justify-center text-white dark:text-black opacity-0 peer-checked:opacity-100 pointer-events-none"
-                    >
-                      <div class="i-carbon-checkmark text-xs" />
-                    </div>
-                  </div>
-                  <span
-                    class="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors"
-                    >{{ mem.name }}</span
-                  >
-                </div>
-                <span class="text-xs text-gray-400">{{ mem.count }}</span>
-              </label>
-            </div>
-          </div>
+        <div class="hidden lg:block w-64 flex-shrink-0">
+          <ProductFilters
+            v-model:price-range="priceRange"
+            v-model:selected-brands="selectedBrands"
+            v-model:selected-memory="selectedMemory"
+            v-model:brand-search="brandSearch"
+            v-model:memory-search="memorySearch"
+            :brands="brands"
+            :memory-options="memoryOptions"
+          />
         </div>
 
         <!-- Grid 商品网格布局 -->
         <div class="flex-1">
+          <!-- Product List -->
           <div
             v-if="products.length > 0"
-            class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12"
+            class="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12"
           >
             <ProductCard v-for="product in products" :key="product.id" :product="product" />
           </div>
 
-          <!-- Empty State -->
+          <!-- Empty State 无商品时的提示 -->
           <div
             v-else
             class="flex flex-col h-full items-center justify-center py-20 text-gray-500 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800"
@@ -241,7 +157,7 @@
               清除筛选条件
             </button>
           </div>
-
+          <!-- Pagination 分页器 -->
           <div v-if="products.length > 0" class="mt-16 flex justify-center">
             <UPagination
               v-model:page="page"
@@ -253,6 +169,64 @@
         </div>
       </div>
     </div>
+    <!-- Mobile Filter Slideover 移动端筛选器侧边栏 -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-300 ease-in-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-300 ease-in-out"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div v-if="isFiltersOpen" class="fixed inset-0 z-50 flex justify-end">
+          <!-- Backdrop -->
+          <div
+            class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            @click="isFiltersOpen = false"
+          ></div>
+
+          <!-- Slideover Panel -->
+          <div
+            class="relative w-full max-w-md h-full bg-white dark:bg-black shadow-2xl flex flex-col"
+            @click.stop
+          >
+            <!-- Header (Fixed) -->
+            <div class="flex items-center justify-between p-6 pb-4 flex-shrink-0">
+              <h2 class="text-xl font-bold">筛选</h2>
+              <button @click="isFiltersOpen = false">
+                <div class="i-carbon-close text-xl" />
+              </button>
+            </div>
+
+            <!-- Content (Scrollable) -->
+            <div class="flex-1 overflow-y-auto px-6">
+              <ProductFilters
+                v-model:price-range="priceRange"
+                v-model:selected-brands="selectedBrands"
+                v-model:selected-memory="selectedMemory"
+                v-model:brand-search="brandSearch"
+                v-model:memory-search="memorySearch"
+                :brands="brands"
+                :memory-options="memoryOptions"
+              />
+            </div>
+
+            <!-- Footer (Fixed) -->
+            <div
+              class="p-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex-shrink-0 mt-auto"
+            >
+              <button
+                class="w-full py-3 bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl"
+                @click="isFiltersOpen = false"
+              >
+                显示结果 ({{ total }})
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -361,12 +335,26 @@ watchEffect(() => {
 })
 
 const links = computed(() => {
-  const base = [
-    { label: '首页', to: '/', icon: 'i-carbon:home' },
-    { label: '分类', to: '/products', icon: 'i-carbon:grid' }
+  const base: { label: string; to?: string; icon: string; class?: string }[] = [
+    {
+      label: '所有产品',
+      to: '/products',
+      icon: 'i-carbon:home',
+      class: 'text-home-breadcrumb dark:text-home-breadcrumbDark'
+    },
+    {
+      label: '分类',
+      to: '/products',
+      icon: 'i-carbon:grid',
+      class: 'text-home-breadcrumb dark:text-home-breadcrumbDark'
+    }
   ]
   if (selectedCategory.value) {
-    base.push({ label: selectedCategory.value, icon: 'i-carbon:tag', to: '' })
+    base.push({
+      label: selectedCategory.value,
+      icon: 'i-carbon:tag',
+      class: 'text-home-accent dark:text-home-accentDark font-semibold'
+    })
   }
   return base
 })
@@ -389,18 +377,12 @@ const memoryOptions = [
   { name: '64GB', count: 48 },
   { name: '128GB', count: 90 },
   { name: '256GB', count: 24 },
+  { name: '128GB', count: 90 },
+  { name: '256GB', count: 24 },
   { name: '512GB', count: 8 }
 ]
 
-const filteredBrands = computed(() => {
-  return brands.filter((b) => b.name.toLowerCase().includes(brandSearch.value.toLowerCase()))
-})
-
-const filteredMemory = computed(() => {
-  return memoryOptions.filter((m) =>
-    m.name.toLowerCase().includes(memorySearch.value.toLowerCase())
-  )
-})
+const isFiltersOpen = ref(false)
 
 const resetFilters = () => {
   brandSearch.value = ''

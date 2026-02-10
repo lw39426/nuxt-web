@@ -3,7 +3,7 @@
     <!-- Sticky Header for Product (optional, maybe just breadcrumbs) -->
 
     <div v-if="product" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <!-- Breadcrumbs -->
+      <!-- Breadcrumbs 面包屑部分 -->
       <nav class="flex text-sm text-gray-500 mb-12">
         <ol class="flex items-center space-x-2">
           <li>
@@ -35,7 +35,7 @@
       </nav>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-        <!-- Gallery (Left, larger) -->
+        <!-- Gallery (Left, larger) 商品图片展示区域 -->
         <div class="lg:col-span-7 space-y-6">
           <div
             class="aspect-[4/3] bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden flex items-center justify-center relative group"
@@ -67,7 +67,7 @@
           </div>
         </div>
 
-        <!-- Info (Right, Sticky) -->
+        <!-- Info (Right, Sticky) 商品详细信息区域 -->
         <div class="lg:col-span-5">
           <div class="sticky top-24 space-y-8">
             <div>
@@ -81,8 +81,8 @@
                     :key="i"
                     :class="
                       i <= Math.round(product?.rating || 0)
-                        ? 'i-carbon-star-filled'
-                        : 'i-carbon-star'
+                        ? 'i-carbon:star-filled'
+                        : 'i-carbon:star'
                     "
                   />
                 </div>
@@ -198,7 +198,7 @@
                         <div class="flex items-center gap-2 mb-1">
                           <span class="font-bold text-gray-900 dark:text-white">User {{ i }}</span>
                           <div class="flex text-yellow-400 text-xs">
-                            <div v-for="s in 5" :key="s" class="i-carbon-star-filled" />
+                            <div v-for="s in 5" :key="s" class="i-carbon:star-filled" />
                           </div>
                         </div>
                         <p class="text-gray-600 dark:text-gray-300 text-sm">Great product!</p>
@@ -212,7 +212,7 @@
         </div>
       </div>
 
-      <!-- Related Products -->
+      <!-- Related Products 推荐相关商品 -->
       <div class="mt-32 border-t border-gray-100 dark:border-gray-800 pt-20">
         <div class="flex items-center justify-between mb-12">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">You might also like</h2>
@@ -223,6 +223,7 @@
         </div>
       </div>
     </div>
+    <!-- Product Not Found 商品空状态 -->
     <div v-else class="flex items-center justify-center min-h-[50vh]">
       <div class="text-center">
         <h1 class="text-2xl font-bold mb-4">Product not found</h1>
