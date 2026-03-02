@@ -5,7 +5,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 const menuItems = [
   { name: 'Products', href: '/products', icon: 'i-carbon-cube' },
   { name: 'Blog', href: '/blog', icon: 'i-carbon-blog' },
-  { name: 'Pricing', href: '#', icon: 'i-carbon-pricing-consumption' },
+  { name: '元神', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
   { name: 'About Us', href: '/about', icon: 'i-carbon-group' }
 ]
 
