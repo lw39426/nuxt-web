@@ -2,6 +2,12 @@
 import { useCharacterData } from '~/composables/useCharacterData'
 import gsap from 'gsap'
 
+definePageMeta({
+  hideNavbar: true,
+  hideFooter: false,
+  hideFloatingMenu: false
+})
+
 const route = useRoute()
 const router = useRouter()
 const { regions } = useCharacterData()
