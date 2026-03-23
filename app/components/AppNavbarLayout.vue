@@ -1,5 +1,8 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 // 菜单配置
 const menuItems = [
@@ -138,13 +141,33 @@ const runFlip = async (nextScrolled) => {
 
 // 滚动状态切换 - 交给 FLIP 做 transform 动画
 const handleIntersection = (entries) => {
+  if (route.meta.forceCapsule) {
+    if (!isScrolled.value) void runFlip(true)
+    return
+  }
   const nextScrolled = !entries[0].isIntersecting
   if (nextScrolled === isScrolled.value) return
   void runFlip(nextScrolled)
 }
 
+watch(
+  () => route.meta.forceCapsule,
+  (newVal) => {
+    if (newVal) {
+      void runFlip(true)
+    } else {
+      // 重新检查 observer 状态
+      isScrolled.value = false
+    }
+  }
+)
+
 onMounted(async () => {
   await nextTick()
+
+  if (route.meta.forceCapsule) {
+    isScrolled.value = true
+  }
 
   // 创建 IntersectionObserver - 超性能优化
   observer = new IntersectionObserver(handleIntersection, {
@@ -175,7 +198,7 @@ onUnmounted(() => {
   ></div>
 
   <!-- 外层容器 -->
-  <div class="sticky top-0 z-50 w-full">
+  <div :class="[route.meta.forceCapsule ? 'fixed' : 'sticky', 'top-0 z-50 w-full']">
     <nav class="relative flex justify-center py-2">
       <!-- 导航壳：真实布局收缩（胶囊完整），动画用 FLIP 保持丝滑 -->
       <div
