@@ -7,7 +7,6 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 netstat -ano | findstr :3000
 netstat -ano | findstr LISTENING | findstr :3000
 结束进程：taskkill /PID 进程号 /F
-Make sure to install dependencies:
 
 ```bash
 # npm
@@ -66,6 +65,18 @@ yarn preview
 
 # bun
 bun run preview
+
+feat      新增功能
+fix       修复 bug
+docs      仅文档变更
+style     代码格式（空格、分号等）
+refactor  代码重构（非 bug 也非功能）
+perf      性能优化
+test      测试相关
+chore     构建/辅助工具变动
+build     构建系统或外部依赖
+ci        持续集成配置
+revert    回滚提交
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
@@ -110,15 +121,15 @@ pnpm run build
 **Linux / macOS (使用 rsync):**
 ```bash
 # 替换 ip 和路径
-rsync -avz --progress .output/ root@193.112.118.107:/data/www/nuxt-web/.output/
-scp package.json ecosystem.config.js root@193.112.118.107:/data/www/nuxt-web/
+rsync -avz --progress .output/ root@111.123.11.33:/data/www/nuxt-web/.output/
+scp package.json ecosystem.config.js root@111.123.11.33:/data/www/nuxt-web/
 ```
 
 **Windows (PowerShell 使用 scp):**
 ```powershell
 # 替换 ip 和路径
-scp -r .output root@193.112.118.107:/data/www/nuxt-web/
-scp package.json ecosystem.config.js root@193.112.118.107:/data/www/nuxt-web/
+scp -r .output root@111.123.11.33:/data/www/nuxt-web/
+scp package.json ecosystem.config.js root@111.123.11.33:/data/www/nuxt-web/
 ```
 
 #### 3.2 启动服务

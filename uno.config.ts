@@ -35,10 +35,10 @@ export default defineConfig({
         gray: '#666666',
         light: '#F7F7F8',
         border: '#E5E7EB',
-        breadcrumb: '#a350ecff', // 面包屑默认样式 #a350ecff
-        breadcrumbDark: '#8e4fc5ff', // 面包屑暗黑样式 #8e4fc5ff
-        accent: '#ac6ee3ff', // 面包屑激活样式 #a350ecff
-        accentDark: '#9360bfff' // 面包屑激活暗黑样式 #8e4fc5ff
+        breadcrumb: '#605995ff', // 面包屑默认样式 #a350ecff
+        breadcrumbDark: '#736dac', // 面包屑暗黑样式 #8e4fc5ff
+        accent: '#455293', // 面包屑激活样式 #a350ecff
+        accentDark: '#455293' // 面包屑激活暗黑样式 #8e4fc5ff
       },
       mingtext: {
         dark: '#0B0C10',

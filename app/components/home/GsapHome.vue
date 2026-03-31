@@ -3,14 +3,14 @@
 const features = [
   {
     badge: 'LLMS.TXT & MCP',
-    title: 'Built for both people and AI',
-    desc: 'Ensure your product shows up in the AI workflows users already rely on. We support llms.txt, MCP, and whatever comes next.',
+    title: '同时服务人类与 AI 的知识结构',
+    desc: '让你的产品信息自然进入用户常用的 AI 工作流。支持 llms.txt、MCP 以及后续生态标准。',
     visualType: 'code'
   },
   {
     badge: 'AGENT',
-    title: 'Self-updating knowledge management',
-    desc: 'Draft, edit, and maintain content with a context-aware agent. Move faster and more consistently without documentation debt.',
+    title: '可自更新的知识管理体系',
+    desc: '借助上下文感知智能体完成起草、编辑与维护，持续提速并减少文档债务。',
     visualType: 'icons'
   }
 ]
@@ -20,10 +20,9 @@ const features = [
   <section class="py-18 dark:bg-home-black content-visibility-auto">
     <div class="section-container">
       <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-4xl font-bold font-display mb-4">Built for the intelligence age</h2>
+        <h2 class="text-4xl font-bold font-display mb-4">为智能时代打造的文档底座</h2>
         <p class="text-gray-500 dark:text-home-gray text-lg">
-          Integrate AI into every part of your docs lifecycle. Woven into how your knowledge is
-          written, maintained, and understood.
+          将 AI 深度融入文档全生命周期，覆盖知识的编写、维护与理解全过程。
         </p>
       </div>
 
@@ -69,14 +68,14 @@ const features = [
         </div>
       </div>
 
-      <!-- Assistant Feature (Full Width) -->
+      <!-- 智能助手特性（全宽） -->
       <div
         class="mt-8 bg-white dark:bg-dark-card rounded-3xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 shadow-card text-center"
       >
-        <span class="badge-green mb-4 inline-block">ASSISTANT</span>
-        <h3 class="text-3xl font-bold mb-4">Intelligent assistance for your users</h3>
+        <span class="badge-green mb-4 inline-block">智能助手</span>
+        <h3 class="text-3xl font-bold mb-4">为你的用户提供上下文级智能帮助</h3>
         <p class="text-gray-500 dark:text-home-gray max-w-2xl mx-auto mb-12">
-          Turn every documentation visit into a guided conversation.
+          把每一次文档访问，转化成可追问、可引导的高质量对话。
         </p>
 
         <!-- Mock UI for Chat -->
@@ -86,7 +85,7 @@ const features = [
           <div
             class="bg-white dark:bg-home-black rounded-full shadow-sm border border-gray-200 dark:border-gray-700 px-6 py-3 w-full max-w-md text-left text-gray-400 text-sm flex justify-between"
           >
-            <span>Ask AI anything...</span>
+            <span>向 AI 提问任何与你的产品相关的问题...</span>
             <div class="i-carbon-send-filled dark:text-[#0fba81]" />
           </div>
         </div>

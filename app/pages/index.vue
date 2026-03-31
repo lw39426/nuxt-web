@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GsapHome from '~/components/home/GsapHome.vue'
 import { useHomeApi } from '~/composables/api/home'
 // 模拟Logo墙数据
 const _brands = [
@@ -56,21 +57,21 @@ const heroStyle = computed(() => {
     <section class="relative">
       <!-- 背景-->
       <div
-        class="bg-image-hero bg-cover lg:bg-contain bg-no-repeat z-9 select-none pointer-events-none"
+        class="bg-image-hero h-[80%] w-full absolute top-[-10rem] bg-cover lg:bg-contain bg-no-repeat z-9 select-none pointer-events-none"
         :style="heroStyle"
       />
       <!-- 英雄标题板块 -->
       <div class="relative z-10 section-container text-center">
         <h1
           class="text-5xl pt-[3rem] md:pt-24 md:text-7xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
-          v-html="homeConfig?.hero?.title || 'The Intelligent <br /> Documentation Platform'"
+          v-html="homeConfig?.hero?.title || 'AI 原生的 <br /> 智能知识平台'"
         ></h1>
         <p
           class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-2 md:mb-10 font-medium drop-shadow-sm"
         >
           {{
             homeConfig?.hero?.subtitle ||
-            'Meet the next generation of documentation. AI-native, beautiful out-of-the-box, and built for collaboration.'
+            '为团队打造下一代文档体验：从创建、协作到检索，全链路 AI 加速。'
           }}
         </p>
 
@@ -81,13 +82,13 @@ const heroStyle = computed(() => {
           <!-- 使用自定义文本颜色 -->
           <input
             type="email"
-            placeholder="Email address"
+            placeholder="请输入邮箱地址"
             class="flex-1 bg-transparent border-none outline-none text-mingtext-dark/70 dark:text-mingtext-gray placeholder-mingtext-dark/70 dark:placeholder-mingtext-gray px-4 text-sm"
           />
           <button
             class="bg-white text-mingtext-dark/70 px-6 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition"
           >
-            Start now
+            立即体验
           </button>
         </div>
 
@@ -100,7 +101,7 @@ const heroStyle = computed(() => {
             <!-- 实际开发中这里可以使用 img 标签引用你的截图，或者用 HTML 写出那个界面 -->
             <div class="absolute inset-0 flex">
               <img
-                alt="Hero illustration"
+                alt="首页主视觉示意图"
                 width="1080"
                 height="656"
                 decoding="async"
@@ -110,7 +111,7 @@ const heroStyle = computed(() => {
                 src="https://www.mintlify.com/hero/hero-image-light.svg"
               />
               <img
-                alt="Hero illustration"
+                alt="首页主视觉示意图"
                 width="1080"
                 height="656"
                 decoding="async"
@@ -139,25 +140,23 @@ const heroStyle = computed(() => {
     </section>
 
     <!-- 3. Features Bento Grid -->
-    <HomeFeaturesBentoGrid />
+    <GsapHome />
 
     <!-- 4. Enterprise Dark Section -->
     <section class="py-18 md:py-24 dark:bg-home-black content-visibility-auto">
       <div class="section-container">
         <!-- 企业级功能介绍 -->
         <div class="mb-12">
-          <span class="badge-green mb-2 inline-block">ENTERPRISE-REINVENTION</span>
-          <h2 class="text-4xl font-bold font-display mb-4">
-            Bring intelligence to enterprise knowledge
-          </h2>
+          <span class="badge-green mb-2 inline-block">企业智能升级</span>
+          <h2 class="text-4xl font-bold font-display mb-4">让企业知识真正可用、可管、可增长</h2>
           <div class="flex justify-between items-end">
             <p class="text-gray-500 dark:text-home-gray max-w-xl">
-              Modernize without the rebuild with enterprise-grade professional service & security.
+              无需推倒重来，也能完成知识体系现代化，兼顾安全、合规与规模化运营。
             </p>
             <button
               class="bg-black dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full text-sm font-medium"
             >
-              Explore for enterprise
+              查看企业方案
             </button>
           </div>
         </div>
@@ -171,7 +170,7 @@ const heroStyle = computed(() => {
           >
             <!-- 背景图 -->
             <img
-              alt="Anthropic background"
+              alt="企业客户案例背景"
               loading="lazy"
               decoding="async"
               data-nimg="fill"
@@ -190,17 +189,17 @@ const heroStyle = computed(() => {
             <p
               class="uppercase font-mono text-white text-xs/4.5 font-semibold tracking-[0.6px] relative z-10"
             >
-              Customer story
+              客户案例
             </p>
             <h3
               class="text-white text-2xl mt-4 font-medium tracking-[-0.24px] max-w-[28rem] relative z-10"
             >
-              See how Anthropic accelerates AI development with Mintlify
+              看 Anthropic 如何借助平台能力，加速 AI 产品文档协作
             </h3>
             <!-- 阅读更多按钮 -->
             <div class="mt-8 z-10 text-white hover:text-white w-fit">
               <a href="#" class="read-more-btn">
-                Read story
+                阅读案例
                 <div class="i-carbon-arrow-right" />
               </a>
             </div>
@@ -208,13 +207,11 @@ const heroStyle = computed(() => {
             <div class="mt-auto flex items-start gap-7 relative z-10">
               <div class="flex flex-col gap-2 w-[12rem]">
                 <p class="text-white text-[2.5rem] leading-[110%] tracking-[-0.8px]">2M+</p>
-                <p class="text-white/80 text-sm/6 text-balance">Monthly active developers</p>
+                <p class="text-white/80 text-sm/6 text-balance">月活开发者</p>
               </div>
               <div class="flex flex-col gap-2 w-[12rem]">
                 <p class="text-white text-[2.5rem] leading-[110%] tracking-[-0.8px]">3+</p>
-                <p class="text-white/80 text-sm/6">
-                  Products serviced: Claude API, MCP, and Claude Code
-                </p>
+                <p class="text-white/80 text-sm/6">已服务产品：Claude API、MCP、Claude Code</p>
               </div>
             </div>
             <div
@@ -226,14 +223,12 @@ const heroStyle = computed(() => {
       </div>
     </section>
 
-    <!-- 5. Customers Carousel -->
+    <!-- 5. 客户案例区 -->
     <section class="py-24 dark:bg-home-black content-visibility-auto">
       <div class="section-container">
         <div class="text-center mb-16">
-          <span class="badge-green">CUSTOMERS</span>
-          <h2 class="text-4xl font-bold font-display mt-2 mb-4">
-            Unlock knowledge for any industry
-          </h2>
+          <span class="badge-green">客户实践</span>
+          <h2 class="text-4xl font-bold font-display mt-2 mb-4">为各行业释放知识价值</h2>
         </div>
 
         <div class="grid md:grid-cols-3 gap-6">
@@ -252,10 +247,10 @@ const heroStyle = computed(() => {
               </div>
             </div>
             <p class="text-sm text-gray-600 dark:text-home-gray mb-2">
-              How Perplexity transformed its documentation...
+              Perplexity 如何重构其文档体系与知识入口...
             </p>
             <span class="text-xs font-medium flex items-center gap-1"
-              >Read story
+              >阅读案例
               <div class="i-carbon-chevron-right"
             /></span>
           </div>
@@ -274,10 +269,10 @@ const heroStyle = computed(() => {
               </div>
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-              How Cursor scaled with just 12 employees...
+              Cursor 如何在 12 人团队阶段完成规模化文档交付...
             </p>
             <span class="text-xs font-medium flex items-center gap-1"
-              >Read story
+              >阅读案例
               <div class="i-carbon-chevron-right"
             /></span>
           </div>
@@ -296,10 +291,10 @@ const heroStyle = computed(() => {
               </div>
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-              How X is using Mintlify to power the developer experience...
+              X 如何借助平台持续优化开发者体验...
             </p>
             <span class="text-xs font-medium flex items-center gap-1"
-              >Read story
+              >阅读案例
               <div class="i-carbon-chevron-right"
             /></span>
           </div>
@@ -319,22 +314,22 @@ const heroStyle = computed(() => {
       </UMarquee>
       <div class="section-container mt-12">
         <h2 class="text-4xl md:text-5xl font-bold font-display mb-6">
-          Make documentation your <br />
-          winning advantage
+          让文档成为你团队的 <br />
+          核心竞争力
         </h2>
         <p class="text-gray-500 dark:text-home-gray mb-10">
-          Join the leaders of tomorrow to future proof your documentation today.
+          与领先团队一起，用今天的建设能力，支撑未来的业务增长。
         </p>
         <div class="flex justify-center gap-4">
           <button
             class="bg-home-black dark:bg-home-white text-white dark:text-black px-8 py-3 rounded-full font-medium hover:scale-105 transition"
           >
-            Get started for free
+            免费开始
           </button>
           <button
             class="bg-white dark:bg-black border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:text-black px-8 py-3 rounded-full font-medium hover:bg-gray-50 transition"
           >
-            Get a demo
+            预约演示
           </button>
         </div>
       </div>
@@ -349,10 +344,6 @@ const heroStyle = computed(() => {
 }
 .bg-image-hero {
   background-position: 50%;
-  width: 100%;
-  height: 80%;
-  position: absolute;
-  top: -10rem;
   -webkit-mask-image: linear-gradient(
     #000 0%,
     rgba(0, 0, 0, 0.99) 18.5%,

@@ -67,27 +67,33 @@ const buttonClass = (value: ThemeMode) =>
 </script>
 
 <template>
-  <div ref="menuRef" class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-    <!-- Panel -->
+  <div ref="menuRef" class="fixed top-2/3 right-0 z-50">
+    <!-- Panel (展开时的面板) -->
     <Transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 translate-y-4 scale-95"
-      enter-to-class="opacity-100 translate-y-0 scale-100"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100 translate-y-0 scale-100"
-      leave-to-class="opacity-0 translate-y-4 scale-95"
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0 translate-x-8"
+      enter-to-class="opacity-100 translate-x-0"
+      leave-active-class="transition-all duration-300 ease-in-out"
+      leave-from-class="opacity-100 translate-x-0"
+      leave-to-class="opacity-0 translate-x-8"
     >
       <div
         v-show="isOpen"
-        class="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl p-4 w-48 mb-2"
+        class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-l-2xl shadow-[-4px_0_24px_rgba(0,0,0,0.1)] p-4 w-48 mr-2"
       >
         <div class="flex flex-col gap-4">
           <!-- Theme Switcher -->
           <div class="space-y-2">
             <div
-              class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1"
+              class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 flex justify-between items-center"
             >
-              外观
+              <span>外观</span>
+              <button
+                class="hover:text-gray-800 dark:hover:text-white transition-colors"
+                @click="isOpen = false"
+              >
+                <span class="i-carbon-close text-sm"></span>
+              </button>
             </div>
             <div
               class="flex items-center rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 p-1 relative"
@@ -125,21 +131,14 @@ const buttonClass = (value: ThemeMode) =>
       </div>
     </Transition>
 
-    <!-- Trigger Button -->
-    <UButton
-      size="xl"
-      square
-      class="rounded-full shadow-lg transition-all duration-300"
-      :class="
-        isOpen
-          ? 'bg-gray-900 dark:bg-white text-white dark:text-black rotate-90'
-          : 'bg-white dark:bg-black text-black dark:text-white'
-      "
+    <!-- Trigger Button (吸附在右侧边缘的半圆) -->
+    <button
+      class="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-12 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm border border-r-0 border-gray-200 dark:border-white/10 rounded-l-full shadow-[-2px_0_8px_rgba(0,0,0,0.05)] flex items-center justify-center text-gray-600 dark:text-gray-300 hover:w-10 hover:bg-white dark:hover:bg-zinc-800 transition-all duration-300 cursor-pointer group"
+      :class="isOpen ? 'translate-x-0 opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'"
       @click="toggleMenu"
     >
-      <div v-if="isOpen" class="i-carbon-close text-xl" />
-      <div v-else class="i-carbon-settings text-xl" />
-    </UButton>
+      <div class="i-carbon-settings text-lg group-hover:animate-spin-slow" />
+    </button>
   </div>
 </template>
 
