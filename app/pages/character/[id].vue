@@ -5,7 +5,7 @@ import gsap from 'gsap'
 definePageMeta({
   hideNavbar: false,
   forceCapsule: true,
-  hideFooter: false,
+  hideFooter: true,
   hideFloatingMenu: false
 })
 
@@ -40,6 +40,7 @@ const characterImageDebugGlobal = (() => {
 const regions = ref<Record<string, Region>>({})
 const displayBackground = ref(DEFAULT_BACKGROUND)
 const backgroundSwitchToken = ref(0)
+const carouselContainer = ref<HTMLElement | null>(null)
 
 const scheduleIdleTask = (task: () => void) => {
   if (typeof requestIdleCallback !== 'undefined') {
@@ -103,6 +104,23 @@ const CAROUSEL_VISIBLE_COUNT = 6
 const CAROUSEL_ITEM_WIDTH = 110
 const CAROUSEL_GAP = 32 // gap-8 = 32px
 const _CAROUSEL_STEP = CAROUSEL_ITEM_WIDTH + CAROUSEL_GAP
+
+// 移动端轮播设置
+const isMobile = ref(false)
+const MOBILE_CAROUSEL_ITEM_WIDTH = 96 // w-24 = 96px
+const MOBILE_CAROUSEL_GAP = 16 // gap-4 = 16px
+const MOBILE_CAROUSEL_STEP = MOBILE_CAROUSEL_ITEM_WIDTH + MOBILE_CAROUSEL_GAP
+const MOBILE_PRELOAD_LOOKAHEAD = 2
+
+// 处理窗口大小改变
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 640
+}
+
+// 获取当前轮播步长
+const carouselStep = computed(() => {
+  return isMobile.value ? MOBILE_CAROUSEL_STEP : _CAROUSEL_STEP
+})
 
 const maxCarouselOffset = computed(() => {
   const charCount = currentRegion.value.characters.length
@@ -273,10 +291,20 @@ const onMarkLeave = (el: Element, done: () => void) => {
 
 const onArtBeforeEnter = (el: Element) => {
   gsap.killTweensOf(el)
+  if (isMobile.value) {
+    ;(el as HTMLElement).style.opacity = '0'
+    return
+  }
   gsap.set(el, { opacity: 0, x: 56, force3D: true })
 }
 
 const onArtEnter = (el: Element, done: () => void) => {
+  if (isMobile.value) {
+    ;(el as HTMLElement).style.opacity = '1'
+    done()
+    return
+  }
+
   gsap.to(el, {
     opacity: 1,
     x: 0,
@@ -289,6 +317,12 @@ const onArtEnter = (el: Element, done: () => void) => {
 }
 
 const onArtLeave = (el: Element, done: () => void) => {
+  if (isMobile.value) {
+    ;(el as HTMLElement).style.opacity = '0'
+    done()
+    return
+  }
+
   gsap.to(el, {
     opacity: 0,
     x: -42,
@@ -301,7 +335,20 @@ const onArtLeave = (el: Element, done: () => void) => {
 }
 
 const onInfoBeforeEnter = (el: Element) => {
+  if (isMobile.value) {
+    // Keep mobile info visible even if enter hook gets interrupted.
+    const root = el as HTMLElement
+    root.style.opacity = '1'
+    const items = root.querySelectorAll<HTMLElement>('.info-item')
+    items.forEach((item) => {
+      item.style.opacity = '1'
+      item.style.transform = 'none'
+    })
+    return
+  }
+
   gsap.killTweensOf(el)
+
   gsap.killTweensOf((el as HTMLElement).querySelectorAll('.info-item'))
   gsap.set(el, { opacity: 0, x: -24, force3D: true })
   gsap.set((el as HTMLElement).querySelectorAll('.info-item'), {
@@ -312,6 +359,12 @@ const onInfoBeforeEnter = (el: Element) => {
 }
 
 const onInfoEnter = (el: Element, done: () => void) => {
+  if (isMobile.value) {
+    ;(el as HTMLElement).style.opacity = '1'
+    done()
+    return
+  }
+
   const infoItems = (el as HTMLElement).querySelectorAll('.info-item')
   const tl = gsap.timeline({ onComplete: done })
 
@@ -338,6 +391,12 @@ const onInfoEnter = (el: Element, done: () => void) => {
 }
 
 const onInfoLeave = (el: Element, done: () => void) => {
+  if (isMobile.value) {
+    ;(el as HTMLElement).style.opacity = '0'
+    done()
+    return
+  }
+
   gsap.killTweensOf((el as HTMLElement).querySelectorAll('.info-item'))
   gsap.to(el, {
     opacity: 0,
@@ -383,7 +442,7 @@ const imageCache = characterImageDebugGlobal.imageCache
 /**
  * @param url 预加载缓存的图片URL
  */
-const cacheImage = (url?: string): Promise<boolean> => {
+const cacheImage = (url?: string, options: { decode?: boolean } = {}): Promise<boolean> => {
   return new Promise((resolve) => {
     if (!url) {
       resolve(false)
@@ -415,7 +474,7 @@ const cacheImage = (url?: string): Promise<boolean> => {
 
     img.onload = async () => {
       try {
-        if ('decode' in img) {
+        if (options.decode !== false && 'decode' in img) {
           await img.decode()
         }
       } catch {
@@ -439,7 +498,8 @@ watch(
     if (newChar.id === oldChar?.id) return
 
     const token = ++switchToken
-    await Promise.all([cacheImage(newChar.coverImg), cacheImage(newChar.avatar)])
+    await cacheImage(newChar.coverImg, { decode: !isMobile.value })
+    void cacheImage(newChar.avatar, { decode: false })
 
     if (token !== switchToken) return
     displayCharacter.value = newChar
@@ -448,16 +508,48 @@ watch(
 )
 // Optimization: 预加载当前地区所有角色的立绘和头像，最小化等待时间
 const preloadImages = (region: Region | undefined) => {
-  console.log('Preload region:', region)
   if (!region?.characters) return
-  void cacheImage(region.bgDay)
-  region.characters.forEach((char) => {
-    void cacheImage(char.coverImg)
-    void cacheImage(char.avatar)
+  const chars = region.characters
+  const active = Number.isNaN(charIndex.value) ? 0 : Math.max(0, charIndex.value)
+
+  void cacheImage(region.bgDay, { decode: !isMobile.value })
+
+  if (!isMobile.value) {
+    chars.forEach((char) => {
+      void cacheImage(char.coverImg, { decode: false })
+      void cacheImage(char.avatar, { decode: false })
+    })
+    return
+  }
+
+  const highPriority = new Set<number>([active])
+  for (let i = 1; i <= MOBILE_PRELOAD_LOOKAHEAD; i++) {
+    if (active + i < chars.length) highPriority.add(active + i)
+    if (active - i >= 0) highPriority.add(active - i)
+  }
+
+  highPriority.forEach((index) => {
+    const char = chars[index]
+    if (!char) return
+    void cacheImage(char.coverImg, { decode: false })
+    void cacheImage(char.avatar, { decode: false })
+  })
+
+  // 其余资源放到空闲时段，避免移动端切换时触发主线程抢占
+  scheduleIdleTask(() => {
+    chars.forEach((char, index) => {
+      if (highPriority.has(index)) return
+      void cacheImage(char.coverImg, { decode: false })
+      void cacheImage(char.avatar, { decode: false })
+    })
   })
 }
 
 onMounted(async () => {
+  // 检查是否为移动设备
+  handleResize()
+  window.addEventListener('resize', handleResize)
+
   // 1. 获取所有地区列表（基础信息，无角色数据）
   const regionsList = await fetchRegionsList()
   regions.value = regionsList.reduce(
@@ -492,6 +584,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
   gsap.globalTimeline.clear()
 })
 </script>
@@ -525,7 +618,7 @@ onBeforeUnmount(() => {
       >
         <div
           :key="`wm-${currentRegion.id}`"
-          class="absolute right-10 top-20 text-9xl font-bold text-white/5 select-none pointer-events-none uppercase tracking-widest"
+          class="hidden sm:block absolute right-10 top-20 text-9xl font-bold text-white/5 select-none pointer-events-none uppercase tracking-widest"
         >
           {{ currentRegion.id.toUpperCase() }}
         </div>
@@ -533,7 +626,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- 2. 侧边栏 Sidebar (Region Selector) -->
-    <ul class="character__sidebar">
+    <ul class="character__sidebar hidden sm:block">
       <li
         v-for="city in sidebarCities"
         :key="city.slug"
@@ -550,10 +643,33 @@ onBeforeUnmount(() => {
       </li>
     </ul>
 
+    <!-- 移动端地区选择 -->
+    <select
+      class="sm:hidden absolute top-24 left-4 z-20 bg-black/55 text-white border border-white/30 rounded px-3 py-2 text-sm backdrop-blur-sm"
+      :value="currentRegionSlug"
+      @change="
+        (e) =>
+          router.push({ params: { id: (e.target as HTMLSelectElement).value }, query: { char: 0 } })
+      "
+    >
+      <option
+        v-for="city in sidebarCities"
+        :key="city.slug"
+        :value="city.slug"
+        :disabled="city.disabled"
+      >
+        {{ city.name }}
+      </option>
+    </select>
+
     <!-- 3. 主要内容 Main Content (Character Details) -->
-    <div class="absolute inset-0 z-10 pointer-events-none">
+    <div
+      class="absolute inset-0 z-10 pointer-events-none flex flex-col sm:block overflow-hidden sm:overflow-visible pb-36 sm:pb-0"
+    >
       <!-- Left: 文字信息 Text Info (Absolute Positioning) -->
-      <div class="absolute left-[15%] top-[18vh] w-[35%] pointer-events-auto z-20">
+      <div
+        class="sm:absolute sm:left-[15%] sm:top-[18vh] sm:w-[35%] sm:pointer-events-auto absolute left-4 top-[35vh] w-[50vw] sm:w-auto pt-0 sm:pt-0 px-0 sm:px-0 sm:z-20 z-30 pointer-events-auto"
+      >
         <Transition
           appear
           :css="false"
@@ -564,62 +680,70 @@ onBeforeUnmount(() => {
           <div
             v-if="currentCharacter"
             :key="`info-${currentCharacter.id}`"
-            class="absolute inset-0 will-change-transform will-change-opacity"
+            class="relative sm:absolute sm:inset-0 will-change-transform will-change-opacity left-0 right-0 max-w-none sm:max-w-none"
           >
             <!-- Name -->
-            <h1 class="info-item info-item-1 text-6xl font-bold mb-2 text-shadow-lg">
+            <h1
+              class="info-item info-item-1 text-6xl sm:text-6xl font-bold mb-2 sm:mb-2 text-shadow-lg leading-none"
+            >
               {{ currentCharacter.name }}
             </h1>
 
             <!-- CV Info + Entry Voice -->
             <div
-              class="info-item info-item-2 flex items-center flex-wrap gap-x-4 gap-y-1 mb-6 text-[#ffcb61]/80"
+              class="info-item info-item-2 flex items-center flex-wrap gap-x-2 sm:gap-x-4 gap-y-1 mb-3 sm:mb-6 text-[13px] sm:text-sm text-[#ffcb61]/80"
             >
               <div class="flex items-center gap-1.5">
                 <span class="i-carbon-microphone"></span>
-                <span class="text-sm">CN {{ currentCharacter.cv_cn }}</span>
+                <span class="hidden sm:inline">CN {{ currentCharacter.cv_cn }}</span>
+                <span class="sm:hidden">CN {{ currentCharacter.cv_cn?.substring(0, 6) }}</span>
                 <span class="text-white/30">|</span>
-                <span class="text-sm">JP {{ currentCharacter.cv_jp }}</span>
+                <span class="hidden sm:inline">JP {{ currentCharacter.cv_jp }}</span>
+                <span class="sm:hidden">JP {{ currentCharacter.cv_jp?.substring(0, 6) }}</span>
               </div>
               <div class="w-px h-4 bg-white/30 hidden sm:block"></div>
-              <div class="text-white/60 text-sm">{{ currentCharacter.element }}</div>
+              <div class="text-white/60 text-[13px] sm:text-sm">{{ currentCharacter.element }}</div>
               <!-- 入队语音按钮，有 audio_enter 才显示 -->
               <button
                 v-if="currentCharacter.audio_enter"
-                class="ml-auto flex items-center gap-1 text-xs text-white/40 hover:text-[#ffcb61] transition-colors duration-200"
+                class="flex items-center gap-1 text-xs text-white/40 hover:text-[#ffcb61] transition-colors duration-200"
                 title="播放入队语音"
                 @click="playEntryVoice"
               >
                 <span class="i-carbon-volume-up text-base"></span>
-                <span>入队语音</span>
+                <span class="hidden sm:inline">入队语音</span>
               </button>
             </div>
 
             <!-- Description Box (Frosted Glass) -->
             <div
-              class="info-item info-item-3 bg-black/40 backdrop-blur-md p-6 rounded-lg border-l-4 border-[#ffcb61] max-w-md mb-6"
+              class="info-item info-item-3 bg-black/58 backdrop-blur-md p-3 sm:p-6 rounded-lg border-l-4 border-[#ffcb61] w-[50vw] sm:max-w-md mb-3 sm:mb-6"
             >
-              <p class="text-gray-200 leading-relaxed text-sm">
+              <p class="text-gray-200 leading-relaxed text-xs sm:text-sm">
                 {{ currentCharacter.description }}
               </p>
             </div>
 
             <!-- Quote -->
             <div
-              class="info-item info-item-4 italic text-white/60 text-lg border-l-2 border-white/20 pl-4"
+              class="info-item info-item-4 italic text-white/60 text-sm sm:text-lg border-l-2 border-white/20 pl-4 pb-2 sm:pb-0 w-[50vw] sm:max-w-none leading-snug"
             >
               "{{ currentCharacter.quote }}"
             </div>
           </div>
 
-          <div v-else class="absolute inset-0 flex items-center text-white/70">暂无角色呢 ^-^</div>
+          <div v-else class="relative sm:absolute sm:inset-0 flex items-center text-white/70">
+            暂无角色呢 ^-^
+          </div>
         </Transition>
 
-        <div class="h-[360px]"></div>
+        <div class="h-[360px] hidden sm:block"></div>
       </div>
 
       <!-- Right: 人物图 Character Image (Absolute Positioning) -->
-      <div class="absolute right-0 top-0 h-full w-full pointer-events-none z-10 relative">
+      <div
+        class="hidden sm:block absolute right-0 top-0 h-full w-full pointer-events-none z-10 relative"
+      >
         <Transition
           appear
           :css="false"
@@ -637,40 +761,65 @@ onBeforeUnmount(() => {
           />
         </Transition>
       </div>
+
+      <!-- 移动端人物展示 -->
+      <div class="sm:hidden absolute top-[14vh] w-[100vw] h-[70vh] pointer-events-none z-[5]">
+        <Transition
+          appear
+          :css="false"
+          @before-enter="onArtBeforeEnter"
+          @enter="onArtEnter"
+          @leave="onArtLeave"
+        >
+          <img
+            v-if="currentCharacter"
+            :key="`art-mobile-${currentCharacter.id}`"
+            :src="currentCharacter.coverImg"
+            class="character-art-mobile w-full h-full object-cover object-bottom"
+            decoding="async"
+            fetchpriority="high"
+            alt="Character Art"
+          />
+        </Transition>
+      </div>
     </div>
 
     <!-- 4. 角色选择器 Bottom Carousel (Character Selector) -->
     <div
-      class="absolute bottom-0 left-0 w-full h-[190px] z-30 flex justify-center items-end pointer-events-auto pb-4"
+      class="absolute bottom-0 sm:bottom-4 left-0 w-full h-auto sm:h-[190px] z-30 flex justify-center items-end pointer-events-auto pb-6 sm:pb-4 px-2 sm:px-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent"
     >
-      <div class="relative flex items-center">
+      <div class="relative flex items-center w-full sm:w-auto">
         <!-- Left Arrow -->
         <button
           :disabled="carouselOffset === 0"
-          class="absolute -left-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-40"
+          class="hidden sm:flex absolute -left-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-40"
           @click="slideCarousel('left')"
         >
           <span class="i-carbon-chevron-left text-2xl"></span>
         </button>
 
-        <!-- Carousel Container (Fixed Width for 6 items) -->
-        <!-- 6 * 110px + 5 * 32px = 820px -->
-        <div class="w-[820px] overflow-hidden pt-6 -mt-6 pb-4 -mb-4">
+        <!-- Carousel Container -->
+        <!-- Desktop: 6 * 110px + 5 * 32px = 820px -->
+        <!-- Mobile: responsive width -->
+        <div
+          ref="carouselContainer"
+          class="w-full sm:w-[820px] overflow-x-auto pt-6 sm:pt-6 -mt-6 pb-4 -mb-4 snap-x snap-mandatory sm:overflow-hidden"
+        >
           <div
-            class="flex items-center gap-8 no-scrollbar transition-transform duration-500 ease-out"
-            :style="{ transform: `translateX(-${carouselOffset * 142}px)` }"
+            class="flex items-center gap-4 sm:gap-8 no-scrollbar transition-transform duration-500 ease-out px-2 sm:px-0"
+            :style="{ transform: `translateX(-${carouselOffset * carouselStep}px)` }"
           >
             <div
               v-for="(char, index) in currentRegion.characters"
               :key="char.id"
-              class="relative cursor-pointer transition-all duration-300 group flex-shrink-0"
+              class="relative cursor-pointer transition-all duration-300 group flex-shrink-0 snap-center"
               @click="switchCharacter(index)"
               @mouseenter="onAvatarEnter"
               @mouseleave="onAvatarLeave"
             >
               <!-- Card Container -->
               <div
-                class="w-[110px] rounded-md overflow-hidden border-2 flex flex-col transition-all duration-300 bg-gray-400"
+                class="w-24 sm:w-[110px] rounded-md overflow-hidden border-2 flex flex-col transition-all duration-300 bg-gray-400"
                 :class="
                   charIndex === index
                     ? 'border-white shadow-[0_0_12px_rgba(255,255,255,0.4)]'
@@ -679,17 +828,12 @@ onBeforeUnmount(() => {
               >
                 <!-- Avatar Image -->
                 <div class="relative w-full aspect-square bg-gray-900">
-                  <img :src="char.avatar" class="w-full h-full object-cover" />
-                  <!-- Unselected Overlay -->
-                  <!-- <div
-                    v-if="charIndex !== index"
-                    class="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors duration-300"
-                  ></div> -->
+                  <img :src="char.avatar" class="w-full h-full object-cover" loading="lazy" />
                 </div>
 
                 <!-- Name Tag -->
                 <div
-                  class="w-full py-1 text-center text-sm font-bold transition-colors duration-300"
+                  class="w-full py-1 text-center text-xs sm:text-sm font-bold transition-colors duration-300"
                   :class="charIndex === index ? 'bg-white text-black' : 'bg-black text-white '"
                 >
                   {{ char.name }}
@@ -702,7 +846,7 @@ onBeforeUnmount(() => {
         <!-- Right Arrow -->
         <button
           :disabled="carouselOffset >= maxCarouselOffset"
-          class="absolute -right-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-40"
+          class="hidden sm:flex absolute -right-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-40"
           @click="slideCarousel('right')"
         >
           <span class="i-carbon-chevron-right text-2xl"></span>
@@ -733,6 +877,14 @@ onBeforeUnmount(() => {
   will-change: opacity, transform;
   backface-visibility: hidden;
   transform: translateZ(0);
+}
+
+.character-art-mobile {
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  contain: layout paint style;
+  filter: none;
 }
 
 .info-item {
@@ -803,5 +955,12 @@ onBeforeUnmount(() => {
 
 .character__city--disable {
   opacity: 0.7;
+}
+
+/* 移动端响应式调整 */
+@media (max-width: 640px) {
+  .character__sidebar {
+    display: none;
+  }
 }
 </style>

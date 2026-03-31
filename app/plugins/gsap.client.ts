@@ -20,8 +20,8 @@ export default defineNuxtPlugin(() => {
     autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load'
   })
 
-  // 全局性能监控（开发环境）
-  if (import.meta.dev) {
+  // 全局性能监控（开发环境，仅桌面）
+  if (import.meta.dev && !window.matchMedia('(max-width: 768px)').matches) {
     let frameCount = 0
     let lastTime = performance.now()
 
