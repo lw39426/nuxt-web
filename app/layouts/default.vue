@@ -14,6 +14,21 @@
 
     <!-- Floating Menu -->
     <AppFloatingMenu v-if="!$route.meta.hideFloatingMenu" />
+
+    <!-- 小星AI入口 -->
+    <NuxtLink
+      to="/ai-page"
+      target="_blank"
+      class="fixed right-6 bottom-42 z-50 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center group"
+      title="小星AI专属陪伴"
+    >
+      <span class="i-lucide-sparkles text-2xl animate-pulse"></span>
+      <span
+        class="absolute right-full mr-3 bg-gray-800 dark:bg-gray-700 text-white text-xs px-2 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-sm"
+      >
+        小星AI专属陪伴
+      </span>
+    </NuxtLink>
   </div>
 </template>
 <script setup lang="ts"></script>

@@ -1,10 +1,24 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const isProd = process.env.NODE_ENV === 'production'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-11-27',
-  devtools: { enabled: true },
+  devtools: { enabled: !isProd },
+  sourcemap: {
+    client: process.env.NODE_ENV !== 'production',
+    server: process.env.NODE_ENV !== 'production'
+  },
   srcDir: 'app',
-  css: ['@unocss/reset/tailwind.css', '~/assets/css/main.css'],
-  modules: ['@unocss/nuxt', '@nuxt/eslint', '@nuxt/ui'],
+  css: ['~/assets/css/main.css'],
+  modules: ['@unocss/nuxt', '@nuxt/ui', ...(isProd ? [] : ['@nuxt/eslint'])],
+  icon: {
+    serverBundle: isProd
+      ? {
+          collections: ['carbon', 'lucide'],
+          externalizeIconsJson: true
+        }
+      : 'auto'
+  },
   fonts: {
     providers: {
       google: false,
@@ -19,5 +33,8 @@ export default defineNuxtConfig({
   },
   typescript: {
     strict: true
+  },
+  build: {
+    transpile: ['@ai-sdk/vue']
   }
 })

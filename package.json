@@ -1,10 +1,10 @@
 {
-  "name": "NuxtWeb",
+  "name": "nuxtweb",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "scripts": {
-    "build": "nuxt build",
+    "build": "set NODE_OPTIONS=--max-old-space-size=4096 && nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -15,9 +15,12 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.48",
+    "@ai-sdk/vue": "^3.0.137",
     "@nuxt/ui": "^4.2.1",
     "@popperjs/core": "^2.11.8",
     "@vueuse/core": "^14.2.0",
+    "ai": "^6.0.137",
     "gsap": "^3.13.0",
     "nuxt": "^4.2.1",
     "vue": "^3.5.24",
