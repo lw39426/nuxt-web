@@ -1,5 +1,6 @@
 <template>
   <UApp>
+    <AppGlobalLoader />
     <NuxtLayout>
       <NuxtRouteAnnouncer />
       <NuxtPage />
