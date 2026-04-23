@@ -9,5 +9,13 @@
   "endOfLine": "lf",
   "tabWidth": 2,
   "bracketSameLine": false,
-  "htmlWhitespaceSensitivity": "css"
+  "htmlWhitespaceSensitivity": "css",
+  "overrides": [
+    {
+      "files": "*.vue",
+      "options": {
+        "semi": true
+      }
+    }
+  ]
 }

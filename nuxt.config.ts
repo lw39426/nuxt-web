@@ -14,8 +14,7 @@ export default defineNuxtConfig({
   icon: {
     serverBundle: isProd
       ? {
-          collections: ['carbon', 'lucide'],
-          externalizeIconsJson: true
+          collections: ['carbon', 'lucide']
         }
       : 'auto'
   },

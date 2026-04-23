@@ -5,9 +5,9 @@ export default defineEventHandler(async () => {
     data: {
       hero: {
         backgroundImage: '/futuristic-moon-background.jpg',
-        title: '李晚晚是傻子 <br /> 哈哈哈哈哈',
+        title: 'This website can be anything! <br /> It depends on what you want it to become.',
         subtitle:
-          'Meet the next generation of documentation. AI-native, beautiful out-of-the-box, and built for collaboration.'
+          'It is wonderful, and at the same time it is also terrible. Please be more tolerant, thank you very much.'
       }
     }
   }
