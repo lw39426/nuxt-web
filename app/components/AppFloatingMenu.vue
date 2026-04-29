@@ -1,60 +1,63 @@
 <script setup lang="ts">
-import type { ThemeMode } from '~/composables/useThemeMode'
+import type { ThemeMode } from '~/stores/theme';
+import { useThemeStore } from '~/stores/theme';
 
 // Theme Logic
-const { mode, setMode } = useThemeMode()
-const modeIndex = computed(() => (mode.value === 'system' ? 0 : mode.value === 'light' ? 1 : 2))
+const themeStore = useThemeStore();
+const mode = computed(() => themeStore.mode);
+const setMode = (value: ThemeMode) => themeStore.setMode(value);
+const modeIndex = computed(() => (mode.value === 'system' ? 0 : mode.value === 'light' ? 1 : 2));
 
 // Scroll Logic
-const showBackToTop = ref(false)
+const showBackToTop = ref(false);
 const onScroll = () => {
-  showBackToTop.value = (window.scrollY || document.documentElement.scrollTop) > 240
-}
+  showBackToTop.value = (window.scrollY || document.documentElement.scrollTop) > 240;
+};
 
 // Menu State
-const isOpen = ref(false)
+const isOpen = ref(false);
 const toggleMenu = (event: MouseEvent) => {
-  event.stopPropagation()
-  isOpen.value = !isOpen.value
-}
+  event.stopPropagation();
+  isOpen.value = !isOpen.value;
+};
 
 // Close menu when clicking outside
-const menuRef = ref<HTMLElement | null>(null)
+const menuRef = ref<HTMLElement | null>(null);
 
 // Basic click outside logic
 onMounted(() => {
-  window.addEventListener('scroll', onScroll, { passive: true })
-  window.addEventListener('click', handleClickOutside)
-  onScroll()
-})
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('click', handleClickOutside);
+  onScroll();
+});
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
-  window.removeEventListener('click', handleClickOutside)
-})
+  window.removeEventListener('scroll', onScroll);
+  window.removeEventListener('click', handleClickOutside);
+});
 
 const handleClickOutside = (event: MouseEvent) => {
   if (isOpen.value && menuRef.value && !menuRef.value.contains(event.target as Node)) {
-    isOpen.value = false
+    isOpen.value = false;
   }
-}
+};
 
 const backToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 const getIcon = (m: string) => {
   switch (m) {
     case 'system':
-      return 'i-carbon-screen'
+      return 'i-carbon-screen';
     case 'light':
-      return 'i-carbon-sun'
+      return 'i-carbon-sun';
     case 'dark':
-      return 'i-carbon-moon'
+      return 'i-carbon-moon';
     default:
-      return ''
+      return '';
   }
-}
+};
 
 const buttonClass = (value: ThemeMode) =>
   [
@@ -63,7 +66,7 @@ const buttonClass = (value: ThemeMode) =>
     mode.value === value
       ? 'text-gray-900 dark:text-white'
       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
-  ].join(' ')
+  ].join(' ');
 </script>
 
 <template>

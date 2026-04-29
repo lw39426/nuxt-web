@@ -1,4 +1,4 @@
-export type ThemeMode = 'system' | 'light' | 'dark'
+import type { ThemeMode } from '~/stores/theme'
 
 export function useThemeMode() {
   const mode = useState<ThemeMode>('themeMode', () => 'system')

@@ -1,4 +1,5 @@
-import type { ThemeMode } from '~/composables/useThemeMode'
+import type { ThemeMode } from '~/stores/theme'
+import { useThemeStore } from '~/stores/theme'
 
 const STORAGE_KEY = 'theme-mode'
 
@@ -8,7 +9,7 @@ function parseMode(value: string | null): ThemeMode | null {
 }
 
 export default defineNuxtPlugin(() => {
-  const mode = useState<ThemeMode>('themeMode', () => 'system')
+  const themeStore = useThemeStore()
 
   const setDarkClass = (isDark: boolean) => {
     document.documentElement.classList.toggle('dark', isDark)
@@ -18,11 +19,11 @@ export default defineNuxtPlugin(() => {
   let listening = false
 
   const onMediaChange = (e: MediaQueryListEvent) => {
-    if (mode.value === 'system') setDarkClass(e.matches)
+    if (themeStore.mode === 'system') setDarkClass(e.matches)
   }
 
   const syncMediaListener = () => {
-    if (mode.value === 'system') {
+    if (themeStore.mode === 'system') {
       if (listening) return
       media.addEventListener?.('change', onMediaChange)
       media.addListener?.(onMediaChange)
@@ -37,20 +38,20 @@ export default defineNuxtPlugin(() => {
   }
 
   const apply = () => {
-    if (mode.value === 'dark') return setDarkClass(true)
-    if (mode.value === 'light') return setDarkClass(false)
+    if (themeStore.mode === 'dark') return setDarkClass(true)
+    if (themeStore.mode === 'light') return setDarkClass(false)
     return setDarkClass(media.matches)
   }
 
   try {
     const stored = parseMode(localStorage.getItem(STORAGE_KEY))
-    if (stored) mode.value = stored
+    if (stored) themeStore.setMode(stored)
   } catch {
     // ignore storage failures (e.g. privacy mode)
   }
 
   watch(
-    mode,
+    () => themeStore.mode,
     (value) => {
       try {
         localStorage.setItem(STORAGE_KEY, value)
