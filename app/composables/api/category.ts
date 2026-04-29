@@ -11,18 +11,18 @@ export function useCategoryApi() {
   const { get } = useApi()
 
   /**
-   * 获取分类列表（GET /miniapp/api/category/list）
+   * 获取分类列表（GET /api/v1/product/category/list）
    */
   async function list() {
-    return await get<CategoryNode[]>('/miniapp/api/category/list')
+    return await get<CategoryNode[]>('/v1/product/category/list')
   }
 
   /**
-   * 获取分类下的商品（GET /miniapp/api/category/<id>/products）
+   * 获取分类下的商品（GET /api/v1/product/category/<id>/products）
    */
   async function products(categoryId: number, page?: number, pageSize?: number) {
-    return await get<{ items: any[]; page: number; pageSize: number; total: number }>(
-      `/miniapp/api/category/${categoryId}/products`,
+    return await get<{ data: any[]; page: number; pageSize: number; total: number }>(
+      `/v1/product/category/${categoryId}/products`,
       { page, pageSize }
     )
   }

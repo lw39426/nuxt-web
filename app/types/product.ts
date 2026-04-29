@@ -1,13 +1,18 @@
 // 商品类型定义
 export interface Product {
   id: number
-  title: string
+  title?: string
+  code?: string
+  name?: string
+  main_image?: string
+  sales?: number
+  stock?: number
   price: number
   originalPrice?: number
-  description: string
-  rating: number
-  reviewCount: number
-  images: string[]
+  description?: string
+  rating?: number
+  reviewCount?: number
+  images?: string[]
   sizes?: string[]
   colors?: { name: string; hex: string }[]
   brand: string
@@ -18,6 +23,26 @@ export interface Product {
   protectionClass?: string
   isNew?: boolean
   isSale?: boolean
+  // 优惠信息
+  promotions?: string[]
+  highlights?: { icon?: string; text: string }[]
+  // 规格选择
+  memoryOptions?: string[]
+  versionOptions?: string[]
+  colorOptions?: { name: string; hex: string }[]
+  // 保障类型
+  guarantees?: {
+    name: string
+    description: string
+  }[]
+  // 购买选项
+  services?: {
+    id: string
+    name: string
+    price: number
+    originalPrice?: number
+    discount?: string
+  }[]
 }
 
 export interface FilterOption {

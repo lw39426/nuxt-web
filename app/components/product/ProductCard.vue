@@ -6,8 +6,8 @@
     >
       <NuxtLink :to="`/products/${product.id}`" class="block w-full h-full mx-auto">
         <img
-          :src="product.images[0]"
-          :alt="product?.title"
+          :src="product?.main_image || ''"
+          :alt="product?.name || ''"
           class="w-full h-full object-contain p-4 sm:p-8"
         />
       </NuxtLink>
@@ -42,7 +42,7 @@
         <h3
           class="text-sm sm:text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-black/70 dark:group-hover:text-white/70 transition-colors"
         >
-          {{ product?.title }}
+          {{ product?.name }}
         </h3>
       </NuxtLink>
 
@@ -50,19 +50,15 @@
         <div class="flex items-end justify-between mb-3">
           <div class="flex flex-col">
             <span class="text-base sm:text-lg font-bold text-gray-900 dark:text-white"
-              >${{ product.price }}</span
+              >¥{{ product?.price }}</span
             >
-            <div class="flex items-center gap-1 mt-0.5 sm:mt-1">
-              <div class="flex text-yellow-400 text-[10px] sm:text-xs">
-                <div
-                  v-for="i in 5"
-                  :key="i"
-                  :class="
-                    i <= Math.round(product.rating) ? 'i-carbon:star-filled' : 'i-carbon:star'
-                  "
-                />
-              </div>
-              <span class="text-[10px] sm:text-xs text-gray-400">({{ product.reviewCount }})</span>
+            <div class="flex items-center gap-2 mt-0.5 sm:mt-1">
+              <span class="text-[10px] sm:text-xs text-gray-400"
+                >销量: {{ product.sales || 0 }}</span
+              >
+              <span class="text-[10px] sm:text-xs text-gray-400"
+                >库存: {{ product.stock || 0 }}</span
+              >
             </div>
           </div>
         </div>
@@ -80,20 +76,20 @@
 </template>
 
 <script setup lang="ts">
-import type { Product } from '~/types/product'
+import type { Product } from '~/types/product';
 
 const props = defineProps<{
-  product: Product
-}>()
+  product: Product;
+}>();
 
-const isFavorite = ref(false)
+const isFavorite = ref(false);
 
 const toggleFavorite = () => {
-  isFavorite.value = !isFavorite.value
-}
+  isFavorite.value = !isFavorite.value;
+};
 
 const addToCart = () => {
   // Implement add to cart logic
-  console.log('Added to cart:', props.product?.title)
-}
+  console.log('Added to cart:', props.product?.name);
+};
 </script>
