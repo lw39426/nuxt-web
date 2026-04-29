@@ -16,7 +16,7 @@ export function useHomeApi() {
    * 获取首页配置
    */
   async function getHomeConfig() {
-    return await get<HomeConfig>('/miniapp/home/config')
+    return await get<HomeConfig>('/home/config')
   }
 
   return { getHomeConfig }

@@ -1,11 +1,4 @@
-/**
- * GET /api/miniapp/character/all
- *
- * 单接口返回全量角色数据（地区 + 角色），结构干净，前端一次请求搞定一切。
- * 生产环境将此处的静态数据替换为数据库查询或第三方 API 聚合即可。
- */
-
-interface Character {
+export interface MockCharacter {
   id: number
   name: string
   element: string
@@ -18,15 +11,15 @@ interface Character {
   audio_enter?: string
 }
 
-interface Region {
+export interface MockRegion {
   id: string
   name: string
   bgDay: string
   bgNight?: string
-  characters: Character[]
+  characters: MockCharacter[]
 }
 
-const regions: Region[] = [
+export const MOCK_CHARACTER_REGIONS: MockRegion[] = [
   {
     id: 'mondstadt',
     name: '蒙德城',
@@ -59,34 +52,6 @@ const regions: Region[] = [
         avatar: 'https://uploadstatic.mihoyo.com/contentweb/20220127/2022012718350213870.png',
         coverImg:
           'https://webstatic.mihoyo.com/upload/contentweb/2022/07/04/6f0ef40157e95b0d59455c12f4d3f270_3262958961633311108.png',
-        audio_enter: ''
-      },
-      {
-        id: 118856,
-        name: '温迪',
-        element: 'Anemo',
-        cv_cn: '边江',
-        cv_jp: '村瀬歩',
-        quote: '好酒，好诗，好风——人生三乐。',
-        description:
-          '总是流浪四方的行吟诗人，看起来轻浮得一点都不像蒙德人，然而他吟唱的歌谣，总能使人感受到来自远古的风之气息。',
-        avatar: 'https://uploadstatic.mihoyo.com/contentweb/20200306/2020030617010584165.png',
-        coverImg:
-          'https://webstatic.mihoyo.com/upload/contentweb/2022/07/04/c6e3a40e28b1f01a3bf50ae2a21e7d78_7467413399895563437.png',
-        audio_enter: ''
-      },
-      {
-        id: 118857,
-        name: '可莉',
-        element: 'Pyro',
-        cv_cn: '汪可盈',
-        cv_jp: '洲崎綾',
-        quote: '可莉的爸爸妈妈都说可莉是小太阳！',
-        description:
-          '魔法学者爱丽丝之女，红色系魔女。性格活泼可爱，但对火焰和炸弹有着常人难以理解的执着，经常因为在蒙德城附近炸鱼而被关禁闭。',
-        avatar: 'https://uploadstatic.mihoyo.com/contentweb/20200306/2020030617024063283.png',
-        coverImg:
-          'https://webstatic.mihoyo.com/upload/contentweb/2022/07/04/5f5e1c7bd03b3a00eedacce8e7f59a51_3540867780637143076.png',
         audio_enter: ''
       }
     ]
@@ -168,13 +133,72 @@ const regions: Region[] = [
         audio_enter: ''
       }
     ]
+  },
+  {
+    id: 'inazuma',
+    name: '稻妻城',
+    bgDay: 'https://uploadstatic.mihoyo.com/contentweb/20210719/2021071917030766463.jpg',
+    bgNight: 'https://uploadstatic.mihoyo.com/contentweb/20210719/2021071917033032133.jpg',
+    characters: [
+      {
+        id: 118893,
+        name: '神里绫华',
+        element: 'Anemo',
+        cv_cn: '林簌',
+        cv_jp: '斎藤千和',
+        quote: '对于您会面一事，我期待很久！',
+        description:
+          '稻妻「社奉行」神里家的大小姐。端庄文雅，聪慧坚韧。待人接物真诚又得体，深受稻妻民众爱戴，贵有「白鹭公主」之名。',
+        avatar: 'https://uploadstatic.mihoyo.com/contentweb/20210720/2021072011085576262.png',
+        coverImg: 'https://uploadstatic.mihoyo.com/contentweb/20210720/2021072011090118454.png',
+        audio_enter: ''
+      },
+      {
+        id: 118894,
+        name: '雷电将军',
+        element: 'Electro',
+        cv_cn: '菊花花',
+        cv_jp: '泽城美雪',
+        quote: '唯有永恒，才最接近真理！',
+        description: '雷电将军，此世最殊胜威怖的雷霆化身，稻妻幕府的最高主宰。',
+        avatar: 'https://uploadstatic.mihoyo.com/contentweb/20210817/2021081714114216212.png',
+        coverImg: 'https://uploadstatic.mihoyo.com/contentweb/20210817/2021081714114216212.png',
+        audio_enter: ''
+      }
+    ]
   }
 ]
 
-export default defineEventHandler(() => {
+export const buildRegionListPayload = () => {
+  return MOCK_CHARACTER_REGIONS.map((region) => ({
+    code: region.id,
+    name: region.name,
+    bg_day_url: region.bgDay,
+    bg_night_url: region.bgNight || '',
+    characters: []
+  }))
+}
+
+export const buildRegionDetailPayload = (code: string) => {
+  const region = MOCK_CHARACTER_REGIONS.find((item) => item.id === code)
+  if (!region) return null
+
   return {
-    code: 200,
-    message: 'OK',
-    data: regions
+    code: region.id,
+    name: region.name,
+    bg_day_url: region.bgDay,
+    bg_night_url: region.bgNight || '',
+    characters: region.characters.map((char) => ({
+      id: char.id,
+      name: char.name,
+      element: char.element,
+      cv_cn: char.cv_cn,
+      cv_jp: char.cv_jp,
+      quote: char.quote,
+      description: char.description,
+      avatar_url: char.avatar,
+      cover_img_url: char.coverImg,
+      audio_enter_url: char.audio_enter || ''
+    }))
   }
-})
+}

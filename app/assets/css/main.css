@@ -2,6 +2,53 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* html {
+  scroll-behavior: smooth;
+  让 GSAP ScrollTrigger 获得更顺滑的滚动体验
+  overflow-x: hidden;
+} */
+
+body {
+  background: #08070f;
+  color: #e8e0ff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #08070f;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.4);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.7);
+}
+
+/* GSAP ScrollTrigger 推荐：避免 iOS 惯性滚动导致的位置计算偏差 */
+html,
+body {
+  height: 100%;
+}
+
+/* 防止 GSAP 动画时出现水平滚动条 */
+/* body {
+  overflow-x: hidden;
+} */
+
 /* Custom utilities */
 .content-visibility-auto {
   content-visibility: auto;
@@ -9,54 +56,6 @@
 }
 
 /* theme colors */
-
-/* Hero background image */
-.bg-image-hero {
-  background-image: url('/futuristic-moon-background.jpg');
-  background-position: 50%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  width: 100%;
-  height: 90%;
-  position: absolute;
-  top: -10rem;
-  -webkit-mask-image: linear-gradient(
-    #000 0%,
-    rgba(0, 0, 0, 0.99) 18.5%,
-    rgba(0, 0, 0, 0.953) 34.3%,
-    rgba(0, 0, 0, 0.894) 47.6%,
-    rgba(0, 0, 0, 0.824) 58.5%,
-    rgba(0, 0, 0, 0.74) 67.5%,
-    rgba(0, 0, 0, 0.647) 74.7%,
-    rgba(0, 0, 0, 0.55) 80.3%,
-    rgba(0, 0, 0, 0.45) 84.7%,
-    rgba(0, 0, 0, 0.353) 88%,
-    rgba(0, 0, 0, 0.26) 90.5%,
-    rgba(0, 0, 0, 0.176) 92.5%,
-    rgba(0, 0, 0, 0.106) 94.2%,
-    rgba(0, 0, 0, 0.047) 95.9%,
-    rgba(0, 0, 0, 0.01) 97.7%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    #000 0%,
-    rgba(0, 0, 0, 0.99) 18.5%,
-    rgba(0, 0, 0, 0.953) 34.3%,
-    rgba(0, 0, 0, 0.894) 47.6%,
-    rgba(0, 0, 0, 0.824) 58.5%,
-    rgba(0, 0, 0, 0.74) 67.5%,
-    rgba(0, 0, 0, 0.647) 74.7%,
-    rgba(0, 0, 0, 0.55) 80.3%,
-    rgba(0, 0, 0, 0.45) 84.7%,
-    rgba(0, 0, 0, 0.353) 88%,
-    rgba(0, 0, 0, 0.26) 90.5%,
-    rgba(0, 0, 0, 0.176) 92.5%,
-    rgba(0, 0, 0, 0.106) 94.2%,
-    rgba(0, 0, 0, 0.047) 95.9%,
-    rgba(0, 0, 0, 0.01) 97.7%,
-    transparent 100%
-  );
-}
 
 /* Animations */
 .animate-fade-in-up {
