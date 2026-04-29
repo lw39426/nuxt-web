@@ -18,11 +18,13 @@
     "@ai-sdk/openai": "^3.0.48",
     "@ai-sdk/vue": "^3.0.137",
     "@nuxt/ui": "^4.2.1",
+    "@pinia/nuxt": "^0.11.3",
     "@popperjs/core": "^2.11.8",
     "@vueuse/core": "^14.2.0",
     "ai": "^6.0.137",
     "gsap": "^3.13.0",
     "nuxt": "^4.2.1",
+    "pinia": "^3.0.4",
     "vue": "^3.5.24",
     "vue-router": "^4.6.3"
   },

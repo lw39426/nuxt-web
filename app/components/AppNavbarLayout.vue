@@ -1,8 +1,11 @@
-<script setup>
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
-import { useRoute } from 'vue-router'
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useUiStore } from '~/stores/ui';
 
-const route = useRoute()
+const route = useRoute();
+const uiStore = useUiStore();
+const { openAuthModal } = uiStore;
 
 // 菜单配置
 const menuItems = [
@@ -10,81 +13,81 @@ const menuItems = [
   { name: 'Blog', href: '/blog', icon: 'i-carbon-blog' },
   { name: '元神', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
   { name: 'About Us', href: '/about', icon: 'i-carbon-group' }
-]
+];
 
 // 组件变量状态管理
-const isScrolled = ref(false)
-const isMobileMenuOpen = ref(false)
-const sentinelRef = ref(null)
-const navShellRef = ref(null)
-const navContentRef = ref(null)
+const isScrolled = ref(false);
+const isMobileMenuOpen = ref(false);
+const sentinelRef = ref<HTMLElement | null>(null);
+const navShellRef = ref<HTMLElement | null>(null);
+const navContentRef = ref<HTMLElement | null>(null);
 
 // IntersectionObserver 实例
-let observer = null
-let flipAnimation = null
-let isAnimating = false
-let pendingScrolled = null
+let observer: IntersectionObserver | null = null;
+let flipAnimation: { cancel: any } | null = null;
+let isAnimating = false;
+let pendingScrolled: boolean | null = null;
 
 // 导航栏滚动动画
-const runFlip = async (nextScrolled) => {
-  const shell = navShellRef.value
-  const content = navContentRef.value
+const runFlip = async (nextScrolled: boolean) => {
+  const shell = navShellRef.value;
+  const content = navContentRef.value;
   if (!shell || !content) {
-    isScrolled.value = nextScrolled
-    return
+    isScrolled.value = nextScrolled;
+    return;
   }
 
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
-    isScrolled.value = nextScrolled
-    return
+    isScrolled.value = nextScrolled;
+    return;
   }
 
   // 动画进行中时不打断，排队最后一次状态，避免“突然跳终态”
   if (isAnimating) {
-    pendingScrolled = nextScrolled
-    return
+    pendingScrolled = nextScrolled;
+    return;
   }
 
-  isAnimating = true
-  pendingScrolled = null
+  isAnimating = true;
+  pendingScrolled = null;
 
   if (flipAnimation) {
-    flipAnimation.cancel()
-    flipAnimation = null
+    flipAnimation.cancel();
+    flipAnimation = null;
   }
 
   // First
-  const first = shell.getBoundingClientRect()
+  const first = shell.getBoundingClientRect();
 
   // Apply final layout
-  isScrolled.value = nextScrolled
-  await nextTick()
+  isScrolled.value = nextScrolled;
+  await nextTick();
 
   // Last
-  const last = shell.getBoundingClientRect()
+  const last = shell.getBoundingClientRect();
 
-  const dx = first.left - last.left
-  const dy = first.top - last.top
-  const sx = first.width / last.width
-  const sy = first.height / last.height
+  const dx = first.left - last.left;
+  const dy = first.top - last.top;
+  const sx = first.width / last.width;
+  const sy = first.height / last.height;
 
-  const duration = 280
-  const easing = 'cubic-bezier(0.2, 0, 0, 1)'
+  const duration = 280;
+  const easing = 'cubic-bezier(0.2, 0, 0, 1)';
 
-  const fromTransform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`
+  const fromTransform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
 
   // 先同步设置初始 transform，避免部分设备上一帧闪到终态
-  shell.style.transformOrigin = 'top left'
-  shell.style.transform = fromTransform
+  shell.style.transformOrigin = 'top left';
+  shell.style.transform = fromTransform;
 
-  const invX = sx ? 1 / sx : 1
-  const invY = sy ? 1 / sy : 1
-  const fromContentTransform = `scale(${invX}, ${invY})`
-  content.style.transformOrigin = 'top left'
-  content.style.transform = fromContentTransform
+  const invX = sx ? 1 / sx : 1;
+  const invY = sy ? 1 / sy : 1;
+  const fromContentTransform = `scale(${invX}, ${invY})`;
+  content.style.transformOrigin = 'top left';
+  content.style.transform = fromContentTransform;
 
   // 强制一次 reflow，确保上面的 transform 生效后再开启动画
-  void shell.getBoundingClientRect()
+  void shell.getBoundingClientRect();
 
   // Shell: FLIP transform
   const shellAnim = shell.animate(
@@ -99,7 +102,7 @@ const runFlip = async (nextScrolled) => {
       }
     ],
     { duration, easing, fill: 'forwards' }
-  )
+  );
 
   // Content: inverse scale to avoid visual deformation during FLIP
   const contentAnim = content.animate(
@@ -108,65 +111,69 @@ const runFlip = async (nextScrolled) => {
       { transformOrigin: 'top left', transform: 'scale(1, 1)' }
     ],
     { duration, easing, fill: 'forwards' }
-  )
+  );
 
   // 用一个“门面”保存取消能力
   flipAnimation = {
     cancel() {
-      shellAnim.cancel()
-      contentAnim.cancel()
+      shellAnim.cancel();
+      contentAnim.cancel();
     }
-  }
+  };
 
   const finalize = () => {
-    flipAnimation = null
-    isAnimating = false
+    flipAnimation = null;
+    isAnimating = false;
     // 清理内联 transform，避免累计误差
-    shell.style.transform = ''
-    content.style.transform = ''
+    shell.style.transform = '';
+    content.style.transform = '';
 
     // 如果动画期间有新的目标状态，接着跑一次
     if (pendingScrolled !== null && pendingScrolled !== isScrolled.value) {
-      const next = pendingScrolled
-      pendingScrolled = null
-      void runFlip(next)
+      const next = pendingScrolled;
+      pendingScrolled = null;
+      void runFlip(next);
     } else {
-      pendingScrolled = null
+      pendingScrolled = null;
     }
-  }
+  };
 
-  shellAnim.onfinish = finalize
-  shellAnim.oncancel = finalize
-}
+  shellAnim.onfinish = finalize;
+  shellAnim.oncancel = finalize;
+};
 
 // 滚动状态切换 - 交给 FLIP 做 transform 动画
-const handleIntersection = (entries) => {
+const handleIntersection = (entries: IntersectionObserverEntry[]) => {
   if (route.meta.forceCapsule) {
-    if (!isScrolled.value) void runFlip(true)
-    return
+    if (!isScrolled.value) void runFlip(true);
+    return;
   }
-  const nextScrolled = !entries[0].isIntersecting
-  if (nextScrolled === isScrolled.value) return
-  void runFlip(nextScrolled)
-}
+  const entry = entries[0];
+
+  if (!entry) return;
+  // 检查元素是否进入视口
+  const nextScrolled = !entry.isIntersecting;
+  if (nextScrolled === isScrolled.value) return;
+  void runFlip(nextScrolled);
+};
 
 watch(
   () => route.meta.forceCapsule,
   (newVal) => {
     if (newVal) {
-      void runFlip(true)
+      void runFlip(true);
     } else {
       // 重新检查 observer 状态
-      isScrolled.value = false
+      isScrolled.value = false;
     }
   }
-)
+);
 
 onMounted(async () => {
-  await nextTick()
+  await nextTick();
 
   if (route.meta.forceCapsule) {
-    isScrolled.value = true
+    isScrolled.value = true;
   }
 
   // 创建 IntersectionObserver - 超性能优化
@@ -174,20 +181,20 @@ onMounted(async () => {
     root: null,
     threshold: 0,
     rootMargin: '5px 0px 0px 0px'
-  })
+  });
 
   if (sentinelRef.value) {
-    observer.observe(sentinelRef.value)
+    observer.observe(sentinelRef.value);
   }
-})
+});
 
 onUnmounted(() => {
-  if (observer) observer.disconnect()
+  if (observer) observer.disconnect();
   if (flipAnimation) {
-    flipAnimation.cancel()
-    flipAnimation = null
+    flipAnimation.cancel();
+    flipAnimation = null;
   }
-})
+});
 </script>
 
 <template>
@@ -247,9 +254,10 @@ onUnmounted(() => {
 
           <!-- 右侧 Sign In 按钮 -->
           <div class="flex items-center gap-2 shrink-0">
-            <a
-              href="/login"
+            <button
+              type="button"
               class="h-8 items-center justify-center relative mr-2 group hidden md:flex pl-4"
+              @click="openAuthModal('login')"
             >
               <div
                 class="flex gap-2 items-center relative z-20 text-sm font-medium text-black-900 dark:text-white"
@@ -275,13 +283,13 @@ onUnmounted(() => {
               <span
                 class="h-8 pointer-events-none z-10 w-8 group-hover:w-[120%] transition-all duration-300 absolute top-0 -right-2 bg-neutral-200 dark:bg-white/10 rounded-full flex items-center justify-center"
               ></span>
-            </a>
+            </button>
 
             <!-- 移动端菜单按钮 -->
             <UButton
               class="md:hidden rounded-full"
               variant="ghost"
-              color="gray"
+              color="neutral"
               :icon="isMobileMenuOpen ? 'i-carbon-close' : 'i-carbon-menu'"
               @click="isMobileMenuOpen = !isMobileMenuOpen"
             />
@@ -317,26 +325,32 @@ onUnmounted(() => {
 
         <div class="h-px bg-gray-100 dark:bg-white/5 my-1"></div>
 
-        <a
-          href="/login"
-          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
-          @click="isMobileMenuOpen = false"
+        <button
+          type="button"
+          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          @click="
+            isMobileMenuOpen = false;
+            openAuthModal('login');
+          "
         >
           <div
             class="i-carbon-login w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300"
           ></div>
           Sign In
-        </a>
-        <a
-          href="/register"
-          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
-          @click="isMobileMenuOpen = false"
+        </button>
+        <button
+          type="button"
+          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          @click="
+            isMobileMenuOpen = false;
+            openAuthModal('register');
+          "
         >
           <div
             class="i-carbon-user-follow w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300"
           ></div>
           Create Account
-        </a>
+        </button>
       </div>
     </nav>
   </div>

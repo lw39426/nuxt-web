@@ -1,8 +1,8 @@
-import { useAuthState } from '~/composables/useAuthState'
+import { useAuthStore } from '~/stores/auth'
 
 export default defineNuxtRouteMiddleware(() => {
-  const { isAuthenticated } = useAuthState()
-  if (isAuthenticated()) {
+  const authStore = useAuthStore()
+  if (authStore.isAuthenticated) {
     return navigateTo('/')
   }
 })

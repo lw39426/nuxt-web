@@ -1,12 +1,18 @@
 export interface LoginPayload {
-  username: string
-  password: string
+  username?: string
+  phone?: string
+  password?: string
+  captcha?: string
+  captcha_key?: string
 }
 
 export interface RegisterPayload {
-  username: string
-  password: string
-  confirmPassword?: string
+  username?: string
+  phone?: string
+  password?: string
+  nickname?: string
+  captcha?: string
+  captcha_key?: string
 }
 
 export interface AuthData {
@@ -24,40 +30,52 @@ export function useAuth() {
   const { get, post } = useApi()
 
   /**
-   * 用户名密码登录（POST /loginByUsername）
+   * 用户名密码登录（POST /auth/loginByUsername）
    */
-  async function loginByUsername(payload: LoginPayload): Promise<AuthData> {
-    return await post<AuthData>('/loginByUsername', payload)
+  async function loginByUsername(
+    payload: LoginPayload
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    return await post<{ access_token: string; refresh_token: string }>(
+      '/auth/loginByUsername',
+      payload,
+      { suppressErrorToast: true }
+    )
   }
 
   /**
-   * 刷新 Token（POST /miniapp/user/auth/refreshToken）
+   * 获取验证码（GET /auth/getCode）
    */
-  async function refreshToken(): Promise<{ token: string }> {
-    return await post<{ token: string }>('/miniapp/user/auth/refreshToken')
+  async function getCode(): Promise<{ captcha_key: string; image: string }> {
+    return await get<{ captcha_key: string; image: string }>('/auth/getCode')
   }
 
   /**
-   * 退出登录（GET /miniapp/user/auth/logout）
+   * 刷新 Token（POST /auth/refreshToken）
+   */
+  async function refreshToken(): Promise<{ access_token: string }> {
+    return await post<{ access_token: string }>('/auth/refreshToken')
+  }
+
+  /**
+   * 退出登录（GET /auth/logout）
    */
   async function logout(): Promise<null> {
-    return await get<null>('/miniapp/user/auth/logout')
+    return await get<null>('/auth/logout')
   }
 
   /**
-   * 获取用户信息（GET /miniapp/user/info）
+   * 获取用户信息（GET /user/info）
    */
   async function getUserInfo(): Promise<{ id: number; username: string }> {
-    return await get<{ id: number; username: string }>('/miniapp/user/info')
+    return await get<{ id: number; username: string }>('/user/info')
   }
 
   /**
-   * 用户注册（POST /miniapp/user/register）
-   * 说明：后端未给出注册接口细节，此处先约定。
+   * 用户注册（POST /auth/register）
    */
-  async function register(payload: RegisterPayload): Promise<AuthData> {
-    return await post<AuthData>('/miniapp/user/register', payload)
+  async function register(payload: RegisterPayload): Promise<any> {
+    return await post<any>('/auth/register', payload, { suppressErrorToast: true })
   }
 
-  return { loginByUsername, refreshToken, logout, getUserInfo, register }
+  return { loginByUsername, getCode, refreshToken, logout, getUserInfo, register }
 }
