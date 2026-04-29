@@ -274,102 +274,103 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
-import { Chat } from '@ai-sdk/vue'
-import type { UIMessage } from 'ai'
-import { DefaultChatTransport } from 'ai'
-import AiSidebar from './AiSidebar.client.vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { Chat } from '@ai-sdk/vue';
+import type { UIMessage } from 'ai';
+import { DefaultChatTransport } from 'ai';
+import AiSidebar from './AiSidebar.client.vue';
 
 definePageMeta({
   hideFooter: true
-})
+});
 
 interface PersistedMessage {
-  id: string
-  role: 'user' | 'assistant' | 'system'
-  text: string
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  text: string;
 }
 
 interface PersistedSession {
-  id: string
-  title: string
-  updatedAt: number
-  messages: PersistedMessage[]
+  id: string;
+  title: string;
+  updatedAt: number;
+  messages: PersistedMessage[];
 }
 
-const STORAGE_KEY = 'ai-companion-sessions-v1'
-const MAX_SESSIONS = 3
+const STORAGE_KEY = 'ai-companion-sessions-v1';
+const MAX_SESSIONS = 3;
 
-const messagesContainer = ref<HTMLElement | null>(null)
-const textareaRef = ref<HTMLTextAreaElement | null>(null)
-const isSidebarOpen = ref(false)
-const isSearchOpen = ref(false)
-const searchQuery = ref('')
-const input = ref('')
-const toastMessage = ref('')
-const showScrollButton = ref(false)
-const isNearBottom = ref(true)
-const isMultiline = ref(false)
-const sessions = ref<PersistedSession[]>([])
-const activeSessionId = ref('')
-const isHydrating = ref(true)
+const messagesContainer = ref<HTMLElement | null>(null);
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const isSidebarOpen = ref(false);
+const isSearchOpen = ref(false);
+const searchQuery = ref('');
+const input = ref('');
+const toastMessage = ref('');
+const showScrollButton = ref(false);
+const isNearBottom = ref(true);
+const isMultiline = ref(false);
+const sessions = ref<PersistedSession[]>([]);
+const activeSessionId = ref('');
+const isHydrating = ref(true);
+const route = useRoute();
 
-let scrollTimeout: ReturnType<typeof setTimeout> | null = null
-let toastTimer: ReturnType<typeof setTimeout> | null = null
+let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
 const getMessageText = (m: UIMessage | any) => {
-  if ('content' in m && m.content) return m.content
+  if ('content' in m && m.content) return m.content;
   if ('parts' in m && Array.isArray(m.parts)) {
-    return m.parts.map((part: any) => (part.type === 'text' ? part.text : '')).join('')
+    return m.parts.map((part: any) => (part.type === 'text' ? part.text : '')).join('');
   }
-  return ''
-}
+  return '';
+};
 
 const createSession = (): PersistedSession => ({
   id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   title: '新聊天',
   updatedAt: Date.now(),
   messages: []
-})
+});
 
 const showToast = (message: string) => {
-  toastMessage.value = message
+  toastMessage.value = message;
   if (toastTimer) {
-    clearTimeout(toastTimer)
+    clearTimeout(toastTimer);
   }
   toastTimer = setTimeout(() => {
-    toastMessage.value = ''
-  }, 1400)
-}
+    toastMessage.value = '';
+  }, 1400);
+};
 
 const saveSessionsToStorage = () => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.value))
-}
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.value));
+};
 
 const toPersistedMessages = (source: UIMessage[]): PersistedMessage[] =>
   source
     .map((m) => {
-      const text = getMessageText(m).trim()
+      const text = getMessageText(m).trim();
       return {
         id: m.id,
         role: m.role as PersistedMessage['role'],
         text
-      }
+      };
     })
-    .filter((m) => m.text)
+    .filter((m) => m.text);
 
 const toUiMessages = (source: PersistedMessage[]): UIMessage[] =>
   source.map((m) => ({
     id: m.id,
     role: m.role,
     parts: [{ type: 'text', text: m.text }]
-  })) as UIMessage[]
+  })) as UIMessage[];
 
 const buildSessionTitle = (source: PersistedMessage[]) => {
-  const firstUser = source.find((m) => m.role === 'user')
-  if (!firstUser) return '新聊天'
-  return firstUser.text.slice(0, 16)
-}
+  const firstUser = source.find((m) => m.role === 'user');
+  if (!firstUser) return '新聊天';
+  return firstUser.text.slice(0, 16);
+};
 
 const chat = new Chat<UIMessage>({
   id: 'chat',
@@ -377,17 +378,17 @@ const chat = new Chat<UIMessage>({
     api: '/api/chat'
   }),
   onError: (error: Error) => {
-    console.error('Chat error:', error)
+    console.error('Chat error:', error);
     let errorMsg =
-      '抱歉，系统开小差了，暂时无法处理您的请求 🌧️。您可以尝试重新发送消息，或者稍后再试~'
+      '抱歉，系统开小差了，暂时无法处理您的请求 🌧️。您可以尝试重新发送消息，或者稍后再试~';
     if (error.name === 'AbortError') {
-      errorMsg = '抱歉，当前和我聊天的人太多啦，导致响应超时 🥺。您可以稍后重新发送试试~'
+      errorMsg = '抱歉，当前和我聊天的人太多啦，导致响应超时 🥺。您可以稍后重新发送试试~';
     } else if (error.message === 'AI_CONNECTION_FAILED' || error.message.includes('fetch')) {
       errorMsg =
-        '抱歉，我的大脑（AI 服务）暂时无法连接或正在维护中 🔧。您可以稍后重新发送，或者联系客服反馈问题~'
+        '抱歉，我的大脑（AI 服务）暂时无法连接或正在维护中 🔧。您可以稍后重新发送，或者联系客服反馈问题~';
     }
 
-    const errorId = `error-msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const errorId = `error-msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     chat.messages = [
       ...chat.messages,
       {
@@ -395,174 +396,195 @@ const chat = new Chat<UIMessage>({
         role: 'assistant',
         parts: [{ type: 'text', text: errorMsg }]
       }
-    ]
+    ];
   }
-})
+});
 
-const messages = computed(() => chat.messages)
-const isLoading = computed(() => chat.status === 'submitted' || chat.status === 'streaming')
+const messages = computed(() => chat.messages);
+const isLoading = computed(() => chat.status === 'submitted' || chat.status === 'streaming');
 
 const filteredSidebarSessions = computed(() => {
-  const keyword = searchQuery.value.trim().toLowerCase()
+  const keyword = searchQuery.value.trim().toLowerCase();
   if (!keyword) {
-    return sessions.value.map((s) => ({ id: s.id, title: s.title }))
+    return sessions.value.map((s) => ({ id: s.id, title: s.title }));
   }
   return sessions.value
     .filter((s) => s.title.toLowerCase().includes(keyword))
-    .map((s) => ({ id: s.id, title: s.title }))
-})
+    .map((s) => ({ id: s.id, title: s.title }));
+});
 
 const upsertActiveSession = () => {
-  const id = activeSessionId.value
-  if (!id) return
+  const id = activeSessionId.value;
+  if (!id) return;
 
-  const normalizedMessages = toPersistedMessages(chat.messages)
-  const targetIndex = sessions.value.findIndex((s) => s.id === id)
-  if (targetIndex === -1) return
-  const currentSession = sessions.value[targetIndex]
-  if (!currentSession) return
+  const normalizedMessages = toPersistedMessages(chat.messages);
+  const targetIndex = sessions.value.findIndex((s) => s.id === id);
+  if (targetIndex === -1) return;
+  const currentSession = sessions.value[targetIndex];
+  if (!currentSession) return;
 
   sessions.value[targetIndex] = {
     id: currentSession.id,
     updatedAt: Date.now(),
     messages: normalizedMessages,
     title: buildSessionTitle(normalizedMessages)
-  }
+  };
 
   sessions.value = [...sessions.value]
     .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, MAX_SESSIONS)
+    .slice(0, MAX_SESSIONS);
 
-  saveSessionsToStorage()
-}
+  saveSessionsToStorage();
+};
 
 const startNewChat = () => {
   if (!isHydrating.value) {
-    upsertActiveSession()
+    upsertActiveSession();
   }
 
-  const newSession = createSession()
-  sessions.value = [newSession, ...sessions.value].slice(0, MAX_SESSIONS)
-  activeSessionId.value = newSession.id
-  chat.messages = []
-  input.value = ''
-  saveSessionsToStorage()
-  showToast('已开启新聊天')
-}
+  const newSession = createSession();
+  sessions.value = [newSession, ...sessions.value].slice(0, MAX_SESSIONS);
+  activeSessionId.value = newSession.id;
+  chat.messages = [];
+  input.value = '';
+  saveSessionsToStorage();
+  showToast('已开启新聊天');
+};
 
 const selectSession = (sessionId: string) => {
-  if (sessionId === activeSessionId.value) return
-  upsertActiveSession()
+  if (sessionId === activeSessionId.value) return;
+  upsertActiveSession();
 
-  const target = sessions.value.find((s) => s.id === sessionId)
-  if (!target) return
+  const target = sessions.value.find((s) => s.id === sessionId);
+  if (!target) return;
 
-  activeSessionId.value = target.id
-  chat.messages = toUiMessages(target.messages)
-  input.value = ''
-  nextTick(scrollToBottom)
-}
+  activeSessionId.value = target.id;
+  chat.messages = toUiMessages(target.messages);
+  input.value = '';
+  nextTick(scrollToBottom);
+};
 
 const handleScroll = () => {
   if (scrollTimeout) {
-    clearTimeout(scrollTimeout)
+    clearTimeout(scrollTimeout);
   }
   scrollTimeout = setTimeout(() => {
-    if (!messagesContainer.value) return
-    const container = messagesContainer.value
-    const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight
-    isNearBottom.value = distanceToBottom <= 80
-    showScrollButton.value = distanceToBottom > 50
-  }, 100)
-}
+    if (!messagesContainer.value) return;
+    const container = messagesContainer.value;
+    const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isNearBottom.value = distanceToBottom <= 80;
+    showScrollButton.value = distanceToBottom > 50;
+  }, 100);
+};
 
 const scrollToBottom = () => {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTo({
       top: messagesContainer.value.scrollHeight,
       behavior: 'smooth'
-    })
-    isNearBottom.value = true
-    showScrollButton.value = false
+    });
+    isNearBottom.value = true;
+    showScrollButton.value = false;
   }
-}
+};
 
 const copyText = async (text: string) => {
-  if (!text) return
+  if (!text) return;
   try {
-    await navigator.clipboard.writeText(text)
-    showToast('复制成功')
+    await navigator.clipboard.writeText(text);
+    showToast('复制成功');
   } catch (err) {
-    console.error('复制失败:', err)
-    showToast('复制失败，请重试')
+    console.error('复制失败:', err);
+    showToast('复制失败，请重试');
   }
-}
+};
 
-const isErrorMessage = (id: string) => id.startsWith('error-msg-')
+const isErrorMessage = (id: string) => id.startsWith('error-msg-');
 
 const retryLastMessage = async () => {
-  if (isLoading.value) return
+  if (isLoading.value) return;
 
-  const regenerate = (chat as any).regenerate
+  const regenerate = (chat as any).regenerate;
   if (typeof regenerate === 'function') {
-    await regenerate.call(chat)
-    showToast('正在重新生成回复')
-    return
+    await regenerate.call(chat);
+    showToast('正在重新生成回复');
+    return;
   }
 
-  const userMessages = chat.messages.filter((m) => m.role === 'user')
-  if (userMessages.length === 0) return
+  const userMessages = chat.messages.filter((m) => m.role === 'user');
+  if (userMessages.length === 0) return;
 
-  const lastUserMessage = userMessages[userMessages.length - 1]
-  const text = getMessageText(lastUserMessage)
+  const lastUserMessage = userMessages[userMessages.length - 1];
+  const text = getMessageText(lastUserMessage);
 
   if (text) {
-    const lastMsg = chat.messages[chat.messages.length - 1]
+    const lastMsg = chat.messages[chat.messages.length - 1];
     if (lastMsg && lastMsg.role === 'assistant' && getMessageText(lastMsg).includes('抱歉')) {
-      chat.messages = chat.messages.slice(0, -1)
+      chat.messages = chat.messages.slice(0, -1);
     }
-    chat.sendMessage({ text })
-    showToast('已重新发送上一条问题')
+    chat.sendMessage({ text });
+    showToast('已重新发送上一条问题');
   }
-}
+};
 
 const handleSubmit = (e?: Event) => {
-  e?.preventDefault()
-  if (!input.value.trim() || isLoading.value) return
+  e?.preventDefault();
+  if (!input.value.trim() || isLoading.value) return;
 
-  chat.sendMessage({ text: input.value.trim() })
-  input.value = ''
-  nextTick(() => adjustTextareaHeight())
-}
+  chat.sendMessage({ text: input.value.trim() });
+  input.value = '';
+  nextTick(() => adjustTextareaHeight());
+};
 
 const quickAsk = (text: string) => {
-  input.value = text
-  handleSubmit()
-}
+  input.value = text;
+  handleSubmit();
+};
+
+const consumeInitialQuestion = async () => {
+  const rawQuestion = route.query.question;
+  const candidateQuestion = Array.isArray(rawQuestion) ? rawQuestion[0] : rawQuestion;
+  const question = typeof candidateQuestion === 'string' ? candidateQuestion.trim() : '';
+  if (!question) return;
+
+  startNewChat();
+  input.value = question;
+  handleSubmit();
+
+  const restQuery = { ...route.query };
+  delete restQuery.question;
+  await navigateTo(
+    {
+      path: route.path,
+      query: restQuery
+    },
+    { replace: true }
+  );
+};
 
 const adjustTextareaHeight = () => {
-  const textarea = textareaRef.value
-  if (!textarea) return
+  const textarea = textareaRef.value;
+  if (!textarea) return;
 
-  textarea.style.height = 'auto'
-  const scrollHeight = textarea.scrollHeight
-  const minHeight = 32 // single line height (2rem = 32px)
-  const maxHeight = 196 // 7 lines * 24px + padding = ~196px
-  const newHeight = Math.min(scrollHeight, maxHeight)
-  textarea.style.height = `${newHeight}px`
-  textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden'
-  isMultiline.value = newHeight > minHeight
-}
+  textarea.style.height = 'auto';
+  const scrollHeight = textarea.scrollHeight;
+  const minHeight = 32; // single line height (2rem = 32px)
+  const maxHeight = 196; // 7 lines * 24px + padding = ~196px
+  const newHeight = Math.min(scrollHeight, maxHeight);
+  textarea.style.height = `${newHeight}px`;
+  textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+  isMultiline.value = newHeight > minHeight;
+};
 
 onMounted(() => {
   if (window.innerWidth >= 768) {
-    isSidebarOpen.value = true
+    isSidebarOpen.value = true;
   }
 
-  const cached = localStorage.getItem(STORAGE_KEY)
+  const cached = localStorage.getItem(STORAGE_KEY);
   if (cached) {
     try {
-      const parsed = JSON.parse(cached) as PersistedSession[]
+      const parsed = JSON.parse(cached) as PersistedSession[];
       if (Array.isArray(parsed) && parsed.length > 0) {
         sessions.value = parsed
           .map((session) => ({
@@ -570,68 +592,70 @@ onMounted(() => {
             messages: Array.isArray(session.messages) ? session.messages : []
           }))
           .sort((a, b) => b.updatedAt - a.updatedAt)
-          .slice(0, MAX_SESSIONS)
+          .slice(0, MAX_SESSIONS);
       }
     } catch {
-      sessions.value = []
+      sessions.value = [];
     }
   }
 
   if (sessions.value.length === 0) {
-    sessions.value = [createSession()]
+    sessions.value = [createSession()];
   }
 
-  const firstSession = sessions.value[0]
+  const firstSession = sessions.value[0];
   if (firstSession) {
-    activeSessionId.value = firstSession.id
-    chat.messages = toUiMessages(firstSession.messages)
+    activeSessionId.value = firstSession.id;
+    chat.messages = toUiMessages(firstSession.messages);
   }
-  saveSessionsToStorage()
+  saveSessionsToStorage();
 
   if (messagesContainer.value) {
-    messagesContainer.value.addEventListener('scroll', handleScroll)
+    messagesContainer.value.addEventListener('scroll', handleScroll);
   }
 
   if (textareaRef.value) {
-    textareaRef.value.addEventListener('input', adjustTextareaHeight)
-    adjustTextareaHeight()
+    textareaRef.value.addEventListener('input', adjustTextareaHeight);
+    adjustTextareaHeight();
   }
 
-  isHydrating.value = false
-})
+  void consumeInitialQuestion();
+
+  isHydrating.value = false;
+});
 
 onUnmounted(() => {
   if (messagesContainer.value) {
-    messagesContainer.value.removeEventListener('scroll', handleScroll)
+    messagesContainer.value.removeEventListener('scroll', handleScroll);
   }
   if (textareaRef.value) {
-    textareaRef.value.removeEventListener('input', adjustTextareaHeight)
+    textareaRef.value.removeEventListener('input', adjustTextareaHeight);
   }
   if (scrollTimeout) {
-    clearTimeout(scrollTimeout)
+    clearTimeout(scrollTimeout);
   }
   if (toastTimer) {
-    clearTimeout(toastTimer)
+    clearTimeout(toastTimer);
   }
   if (!isHydrating.value) {
-    upsertActiveSession()
+    upsertActiveSession();
   }
-})
+});
 
 watch(
   () => messages.value,
   () => {
     if (!isHydrating.value) {
-      upsertActiveSession()
+      upsertActiveSession();
     }
     nextTick(() => {
       if (messagesContainer.value && isNearBottom.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
       }
-    })
+    });
   },
   { deep: true }
-)
+);
 </script>
 
 <style scoped>

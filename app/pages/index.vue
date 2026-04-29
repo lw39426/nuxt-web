@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import GsapHome from '~/components/home/GsapHome.vue'
-import { useHomeApi } from '~/composables/api/home'
+import GsapHome from '~/components/home/GsapHome.vue';
+import { useThemeStore } from '~/stores/theme';
+import { useHomeApi } from '~/composables/api/home';
 // 模拟Logo墙数据
 const _brands = [
   'Anthropic',
@@ -11,7 +12,7 @@ const _brands = [
   'X',
   'Cursor',
   'PayPal'
-]
+];
 
 const _routeLink = [
   {
@@ -26,102 +27,126 @@ const _routeLink = [
     name: 'performance-test',
     link: '/performance-test'
   }
-]
+];
+
+const themeStore = useThemeStore();
+const themeMode = computed(() => themeStore.mode);
+const prefersDark = ref(false);
+
+if (import.meta.client) {
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const updatePreferredTheme = () => {
+    prefersDark.value = media.matches;
+  };
+
+  updatePreferredTheme();
+
+  onMounted(() => {
+    media.addEventListener?.('change', updatePreferredTheme);
+    media.addListener?.(updatePreferredTheme);
+  });
+
+  onBeforeUnmount(() => {
+    media.removeEventListener?.('change', updatePreferredTheme);
+    media.removeListener?.(updatePreferredTheme);
+  });
+}
+
+// 到时候根据第二板块背景设计，暂时先不使用
+const _heroPreviewImage = computed(() => {
+  const isDarkTheme =
+    themeMode.value === 'dark' || (themeMode.value === 'system' && prefersDark.value);
+
+  return isDarkTheme
+    ? 'https://www.mintlify.com/hero/hero-image-dark.svg'
+    : 'https://www.mintlify.com/hero/hero-image-light.svg';
+});
 
 useHead({
   link: [
-    { rel: 'preload', as: 'image', href: '/bg-light.png' },
     { rel: 'preconnect', href: 'https://images.unsplash.com' },
     { rel: 'dns-prefetch', href: 'https://images.unsplash.com' }
   ]
-})
+});
 
-const { getHomeConfig } = useHomeApi()
+const { getHomeConfig } = useHomeApi();
 // 获取首页配置数据
-const { data: homeConfig } = await useAsyncData('home-config', () => getHomeConfig())
-
+const { data: homeConfig } = await useAsyncData('home-config', () => getHomeConfig());
 // 设置动态背景图样式
-const heroStyle = computed(() => {
+const _heroStyle = computed(() => {
   if (homeConfig.value?.hero?.backgroundImage) {
     return {
       backgroundImage: `url('${homeConfig.value.hero.backgroundImage}')`
-    }
+    };
   }
-  return {}
-})
+  return {};
+});
+const bgImage = computed(
+  () => homeConfig.value?.hero?.backgroundImage || '/futuristic-moon-background.jpg'
+);
+
+const aiQuestion = ref('');
+const canAskAI = computed(() => aiQuestion.value.trim().length > 0);
+
+const askAI = (question?: string) => {
+  const normalizedQuestion = (question ?? aiQuestion.value).trim();
+  if (!normalizedQuestion) return;
+
+  // 这里我们直接跳转到 AI 体验页，并把问题作为查询参数传递过去，实际开发中你可以选择更合适的方式来传递这个问题
+  navigateTo({
+    path: '/ai-page',
+    query: { question: normalizedQuestion }
+  });
+};
 </script>
 
 <template>
   <main>
     <!-- 1. Hero Section -->
-    <section class="relative">
+    <section class="relative h-screen !h-svh">
       <!-- 背景-->
-      <div
+      <!-- <div
         class="bg-image-hero h-[80%] w-full absolute top-[-10rem] bg-cover lg:bg-contain bg-no-repeat z-9 select-none pointer-events-none"
         :style="heroStyle"
-      />
+      /> -->
+      <picture class="bg-image-hero top-[-5rem] absolute w-full h-full">
+        <img class="w-full h-full object-cover" loading="eager" :src="bgImage" alt="新一代SU7" />
+      </picture>
       <!-- 英雄标题板块 -->
-      <div class="relative z-10 section-container text-center">
+      <div class="z-10 section-container text-center">
         <h1
           class="text-5xl pt-[3rem] md:pt-24 md:text-7xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
-          v-html="homeConfig?.hero?.title || 'AI 原生的 <br /> 智能知识平台'"
+          v-html="homeConfig?.hero?.title || 'Just Build It! <br /> Whatever You Want It To Be.'"
         ></h1>
         <p
-          class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-2 md:mb-10 font-medium drop-shadow-sm"
+          class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-6 md:mb-12 font-medium drop-shadow-sm"
         >
           {{
             homeConfig?.hero?.subtitle ||
-            '为团队打造下一代文档体验：从创建、协作到检索，全链路 AI 加速。'
+            'It is wonderful, and at the same time it is also terrible. Please be more tolerant, thank you very much.'
           }}
         </p>
 
-        <!-- 毛玻璃搜索 Email Input Form -->
+        <!-- 毛玻璃搜索  Input Form -->
         <div
           class="max-w-md mx-auto bg-white/20 backdrop-blur-md p-1.5 rounded-full border border-white/30 flex mb-20 shadow-lg"
         >
           <!-- 使用自定义文本颜色 -->
           <input
-            type="email"
-            placeholder="请输入邮箱地址"
+            v-model="aiQuestion"
+            type="text"
+            placeholder="你想了解什么？"
             class="flex-1 bg-transparent border-none outline-none text-mingtext-dark/70 dark:text-mingtext-gray placeholder-mingtext-dark/70 dark:placeholder-mingtext-gray px-4 text-sm"
+            @keydown.enter.prevent="askAI()"
           />
           <button
-            class="bg-white text-mingtext-dark/70 px-6 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition"
+            class="bg-white text-mingtext-dark/70 px-6 py-2 rounded-full text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:bg-gray-100"
+            :disabled="!canAskAI"
+            @click="askAI()"
           >
             立即体验
           </button>
-        </div>
-
-        <!-- 苹果浏览器窗口板块 -->
-        <div
-          class="relative max-w-5xl mx-auto rounded-xl bg-white dark:bg-[#08090a] shadow-hero border border-gray-200 dark:border-gray-800 overflow-hidden animate-fade-in-up"
-        >
-          <!-- 苹果窗口样式 -->
-          <div class="bg-white dark:bg-[#08090a] p-0 aspect-[16/9] relative">
-            <!-- 实际开发中这里可以使用 img 标签引用你的截图，或者用 HTML 写出那个界面 -->
-            <div class="absolute inset-0 flex">
-              <img
-                alt="首页主视觉示意图"
-                width="1080"
-                height="656"
-                decoding="async"
-                data-nimg="1"
-                class="w-full h-auto block dark:hidden select-none bg-background-main"
-                style="color: transparent"
-                src="https://www.mintlify.com/hero/hero-image-light.svg"
-              />
-              <img
-                alt="首页主视觉示意图"
-                width="1080"
-                height="656"
-                decoding="async"
-                data-nimg="1"
-                class="w-full h-auto hidden dark:block select-none bg-background-main"
-                style="color: transparent"
-                src="https://www.mintlify.com/hero/hero-image-dark.svg"
-              />
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -172,6 +197,7 @@ const heroStyle = computed(() => {
             <img
               alt="企业客户案例背景"
               loading="lazy"
+              fetchpriority="low"
               decoding="async"
               data-nimg="fill"
               class="object-cover object-center scale-[1.15] select-none bg-background-invert/20"
@@ -251,8 +277,8 @@ const heroStyle = computed(() => {
             </p>
             <span class="text-xs font-medium flex items-center gap-1"
               >阅读案例
-              <div class="i-carbon-chevron-right"
-            /></span>
+              <div class="i-carbon-chevron-right" />
+            </span>
           </div>
           <!-- Card 2 -->
           <div class="group cursor-pointer">
@@ -273,8 +299,8 @@ const heroStyle = computed(() => {
             </p>
             <span class="text-xs font-medium flex items-center gap-1"
               >阅读案例
-              <div class="i-carbon-chevron-right"
-            /></span>
+              <div class="i-carbon-chevron-right" />
+            </span>
           </div>
           <!-- Card 3 -->
           <div class="group cursor-pointer">
@@ -295,8 +321,8 @@ const heroStyle = computed(() => {
             </p>
             <span class="text-xs font-medium flex items-center gap-1"
               >阅读案例
-              <div class="i-carbon-chevron-right"
-            /></span>
+              <div class="i-carbon-chevron-right" />
+            </span>
           </div>
         </div>
       </div>
@@ -342,8 +368,10 @@ const heroStyle = computed(() => {
   content-visibility: auto;
   contain-intrinsic-size: 1px 800px;
 }
+
+/* Hero background image */
+
 .bg-image-hero {
-  background-position: 50%;
   -webkit-mask-image: linear-gradient(
     #000 0%,
     rgba(0, 0, 0, 0.99) 18.5%,
@@ -381,6 +409,7 @@ const heroStyle = computed(() => {
     transparent 100%
   );
 }
+
 /* 简单的淡入上浮动画 */
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out forwards;
@@ -391,6 +420,7 @@ const heroStyle = computed(() => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

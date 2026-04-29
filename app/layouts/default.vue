@@ -17,6 +17,7 @@
 
     <!-- 小星AI入口 -->
     <NuxtLink
+      v-if="!$route.path.includes('/ai-page')"
       to="/ai-page"
       target="_blank"
       class="fixed right-6 bottom-42 z-50 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center group"
@@ -36,6 +37,7 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
