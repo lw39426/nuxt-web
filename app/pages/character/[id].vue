@@ -1,60 +1,60 @@
 <script setup lang="ts">
-import { useCharacterData, type Region } from '~/composables/useCharacterData'
-import gsap from 'gsap'
+import { useCharacterData, type Region } from '~/composables/useCharacterData';
+import gsap from 'gsap';
 
 definePageMeta({
   hideNavbar: false,
   forceCapsule: true,
   hideFooter: true,
   hideFloatingMenu: false
-})
+});
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 const { fetchRegionsList, fetchRegionDetails, preloadAllRegionsIdle, idlePreloadNextRegion } =
-  useCharacterData()
+  useCharacterData();
 
 const DEFAULT_BACKGROUND =
-  'https://uploadstatic.mihoyo.com/contentweb/20200211/2020021114220951905.jpg'
+  'https://uploadstatic.mihoyo.com/contentweb/20200211/2020021114220951905.jpg';
 
 type CharacterImageCacheGlobal = {
-  imageCache: Map<string, HTMLImageElement>
-}
+  imageCache: Map<string, HTMLImageElement>;
+};
 
 const characterImageDebugGlobal = (() => {
-  const key = '__CHARACTER_IMAGE_CACHE_GLOBAL__'
+  const key = '__CHARACTER_IMAGE_CACHE_GLOBAL__';
   const target = globalThis as typeof globalThis & {
-    __CHARACTER_IMAGE_CACHE_GLOBAL__?: CharacterImageCacheGlobal
-  }
+    __CHARACTER_IMAGE_CACHE_GLOBAL__?: CharacterImageCacheGlobal;
+  };
 
   if (!target[key]) {
     target[key] = {
       imageCache: new Map<string, HTMLImageElement>()
-    }
+    };
   }
 
-  return target[key]
-})()
+  return target[key];
+})();
 
 // State
-const regions = ref<Record<string, Region>>({})
-const displayBackground = ref(DEFAULT_BACKGROUND)
-const backgroundSwitchToken = ref(0)
-const carouselContainer = ref<HTMLElement | null>(null)
+const regions = ref<Record<string, Region>>({});
+const displayBackground = ref(DEFAULT_BACKGROUND);
+const backgroundSwitchToken = ref(0);
+const carouselContainer = ref<HTMLElement | null>(null);
 
 const scheduleIdleTask = (task: () => void) => {
   if (typeof requestIdleCallback !== 'undefined') {
-    requestIdleCallback(task, { timeout: 2500 })
-    return
+    requestIdleCallback(task, { timeout: 2500 });
+    return;
   }
 
-  setTimeout(task, 1200)
-}
+  setTimeout(task, 1200);
+};
 
 // currentRegionSlug 就是路由参数，即新数据模型中 Region.id、mondstadt、liyue 等等
 const currentRegionSlug = computed(() => {
-  return ((route.params.id as string) || 'mondstadt').toLowerCase()
-})
+  return ((route.params.id as string) || 'mondstadt').toLowerCase();
+});
 
 const loadRegionCharacters = async (slug: string) => {
   // 如果已经有角色数据，就不再请求
@@ -63,83 +63,83 @@ const loadRegionCharacters = async (slug: string) => {
     regions.value[slug].characters &&
     regions.value[slug].characters.length > 0
   ) {
-    return
+    return;
   }
-  const detail = await fetchRegionDetails(slug)
+  const detail = await fetchRegionDetails(slug);
   if (detail) {
     // 合并原有基础数据和详细数据
     regions.value[slug] = {
       ...regions.value[slug],
       ...detail
-    }
+    };
   }
-}
+};
 
 // 当 mondstadt、liyue地区 变化时，切换背景图、预加载图片，并停止当前音频
 watch(currentRegionSlug, async (newSlug) => {
   // 背景图基础数据已存在，可直接更新背景图
-  void updateBackgroundImage(regions.value[newSlug]?.bgDay)
+  void updateBackgroundImage(regions.value[newSlug]?.bgDay);
 
   // 切换地区时停止当前音频
   if (currentAudio.value) {
-    currentAudio.value.pause()
-    currentAudio.value = null
+    currentAudio.value.pause();
+    currentAudio.value = null;
   }
 
   // 获取当前新地区的角色数据
-  await loadRegionCharacters(newSlug)
+  await loadRegionCharacters(newSlug);
 
   // 切换地区时预加载该地区所有角色的立绘和头像
-  preloadImages(regions.value[newSlug])
+  preloadImages(regions.value[newSlug]);
 
   // 切换地区时对下一个地区进行 idle 预加载
-  idlePreloadNextRegion(Object.values(regions.value), newSlug)
-})
+  idlePreloadNextRegion(Object.values(regions.value), newSlug);
+});
 
-const charIndex = computed(() => parseInt((route.query.char as string) || '0'))
+const charIndex = computed(() => parseInt((route.query.char as string) || '0'));
 
 // --- 轮播图逻辑 ---
-const carouselOffset = ref(0)
-const CAROUSEL_VISIBLE_COUNT = 6
-const CAROUSEL_ITEM_WIDTH = 110
-const CAROUSEL_GAP = 32 // gap-8 = 32px
-const _CAROUSEL_STEP = CAROUSEL_ITEM_WIDTH + CAROUSEL_GAP
+const carouselOffset = ref(0);
+const CAROUSEL_VISIBLE_COUNT = 6;
+const CAROUSEL_ITEM_WIDTH = 110;
+const CAROUSEL_GAP = 32; // gap-8 = 32px
+const _CAROUSEL_STEP = CAROUSEL_ITEM_WIDTH + CAROUSEL_GAP;
 
 // 移动端轮播设置
-const isMobile = ref(false)
-const MOBILE_CAROUSEL_ITEM_WIDTH = 96 // w-24 = 96px
-const MOBILE_CAROUSEL_GAP = 16 // gap-4 = 16px
-const MOBILE_CAROUSEL_STEP = MOBILE_CAROUSEL_ITEM_WIDTH + MOBILE_CAROUSEL_GAP
-const MOBILE_PRELOAD_LOOKAHEAD = 2
+const isMobile = ref(false);
+const MOBILE_CAROUSEL_ITEM_WIDTH = 96; // w-24 = 96px
+const MOBILE_CAROUSEL_GAP = 16; // gap-4 = 16px
+const MOBILE_CAROUSEL_STEP = MOBILE_CAROUSEL_ITEM_WIDTH + MOBILE_CAROUSEL_GAP;
+const MOBILE_PRELOAD_LOOKAHEAD = 2;
 
 // 处理窗口大小改变
 const handleResize = () => {
-  isMobile.value = window.innerWidth < 640
-}
+  isMobile.value = window.innerWidth < 640;
+};
 
 // 获取当前轮播步长
 const carouselStep = computed(() => {
-  return isMobile.value ? MOBILE_CAROUSEL_STEP : _CAROUSEL_STEP
-})
+  return isMobile.value ? MOBILE_CAROUSEL_STEP : _CAROUSEL_STEP;
+});
 
 const maxCarouselOffset = computed(() => {
-  const charCount = currentRegion.value.characters.length
-  if (charCount <= CAROUSEL_VISIBLE_COUNT) return 0
-  return charCount - CAROUSEL_VISIBLE_COUNT
-})
+  const charCount = currentRegion.value.characters.length;
+  if (charCount <= CAROUSEL_VISIBLE_COUNT) return 0;
+  return charCount - CAROUSEL_VISIBLE_COUNT;
+});
 
 const slideCarousel = (direction: 'left' | 'right') => {
   if (direction === 'left' && carouselOffset.value > 0) {
-    carouselOffset.value--
+    carouselOffset.value--;
   } else if (direction === 'right' && carouselOffset.value < maxCarouselOffset.value) {
-    carouselOffset.value++
+    carouselOffset.value++;
   }
-}
+};
 
 // 监听地区切换，重置轮播图位置
 watch(currentRegionSlug, () => {
-  carouselOffset.value = 0
-})
+  carouselOffset.value = 0;
+});
 
 const currentRegion = computed(
   () =>
@@ -149,60 +149,60 @@ const currentRegion = computed(
       bgDay: '',
       characters: []
     }
-)
+);
 
 // Optimization: Display character for animation control
-const displayCharacter = ref(currentRegion.value.characters[charIndex.value] || null)
+const displayCharacter = ref(currentRegion.value.characters[charIndex.value] || null);
 // The target character we want to switch to
-const targetCharacter = computed(() => currentRegion.value?.characters[charIndex.value] || null)
+const targetCharacter = computed(() => currentRegion.value?.characters[charIndex.value] || null);
 // Use displayCharacter in template
-const currentCharacter = computed(() => displayCharacter.value)
+const currentCharacter = computed(() => displayCharacter.value);
 
 const updateBackgroundImage = async (bgUrl?: string) => {
-  const nextBg = bgUrl || DEFAULT_BACKGROUND
-  const token = ++backgroundSwitchToken.value
+  const nextBg = bgUrl || DEFAULT_BACKGROUND;
+  const token = ++backgroundSwitchToken.value;
 
-  const ok = await cacheImage(nextBg)
+  const ok = await cacheImage(nextBg);
 
-  if (token !== backgroundSwitchToken.value) return
+  if (token !== backgroundSwitchToken.value) return;
 
   if (ok) {
-    displayBackground.value = nextBg
-    return
+    displayBackground.value = nextBg;
+    return;
   }
 
   if (nextBg !== DEFAULT_BACKGROUND) {
-    const fallbackOk = await cacheImage(DEFAULT_BACKGROUND)
+    const fallbackOk = await cacheImage(DEFAULT_BACKGROUND);
 
-    if (token !== backgroundSwitchToken.value) return
+    if (token !== backgroundSwitchToken.value) return;
 
     if (fallbackOk) {
-      displayBackground.value = DEFAULT_BACKGROUND
+      displayBackground.value = DEFAULT_BACKGROUND;
     }
   }
-}
+};
 
 // 音频实例缓存，切换角色时自动停止上一个音频
-const currentAudio = ref<HTMLAudioElement | null>(null)
+const currentAudio = ref<HTMLAudioElement | null>(null);
 
 const playEntryVoice = () => {
-  const url = currentCharacter.value?.audio_enter
-  if (!url) return
+  const url = currentCharacter.value?.audio_enter;
+  if (!url) return;
   if (currentAudio.value) {
-    currentAudio.value.pause()
-    currentAudio.value = null
+    currentAudio.value.pause();
+    currentAudio.value = null;
   }
-  const audio = new Audio(url)
-  currentAudio.value = audio
-  audio.play().catch(() => {})
-}
+  const audio = new Audio(url);
+  currentAudio.value = audio;
+  audio.play().catch(() => {});
+};
 
 // Navigation
 type SidebarCity = {
-  slug: string
-  name: string
-  disabled?: boolean
-}
+  slug: string;
+  name: string;
+  disabled?: boolean;
+};
 
 // Sidebar 城市列表，包含所有可能的地区，并根据实际数据动态禁用不可用的选项
 const sidebarCities = computed<SidebarCity[]>(() => {
@@ -215,30 +215,30 @@ const sidebarCities = computed<SidebarCity[]>(() => {
     { slug: 'natlan', name: '纳塔' },
     { slug: 'nodkrai', name: '挪德卡莱' },
     { slug: 'coming-soon', name: '敬请期待', disabled: true }
-  ]
+  ];
 
-  const available = new Set(Object.keys(regions.value))
+  const available = new Set(Object.keys(regions.value));
 
   return base.map((item) => {
-    if (item.disabled) return item
+    if (item.disabled) return item;
     return {
       ...item,
       disabled: !available.has(item.slug)
-    }
-  })
-})
+    };
+  });
+});
 
 const switchCharacter = (index: number) => {
   // Prevent animation if clicking the same character
-  if (index === charIndex.value) return
-  router.push({ query: { ...route.query, char: index } })
-}
+  if (index === charIndex.value) return;
+  router.push({ query: { ...route.query, char: index } });
+};
 
 // --- GSAP Transition Hooks ---
 const onBgBeforeEnter = (el: Element) => {
-  gsap.killTweensOf(el)
-  gsap.set(el, { opacity: 0 })
-}
+  gsap.killTweensOf(el);
+  gsap.set(el, { opacity: 0 });
+};
 
 const onBgEnter = (el: Element, done: () => void) => {
   gsap.to(el, {
@@ -247,8 +247,8 @@ const onBgEnter = (el: Element, done: () => void) => {
     ease: 'power3.out',
     overwrite: 'auto',
     onComplete: done
-  })
-}
+  });
+};
 
 const onBgLeave = (el: Element, done: () => void) => {
   gsap.to(el, {
@@ -257,13 +257,13 @@ const onBgLeave = (el: Element, done: () => void) => {
     ease: 'power2.inOut',
     overwrite: 'auto',
     onComplete: done
-  })
-}
+  });
+};
 
 const onMarkBeforeEnter = (el: Element) => {
-  gsap.killTweensOf(el)
-  gsap.set(el, { opacity: 0, x: 16, force3D: true })
-}
+  gsap.killTweensOf(el);
+  gsap.set(el, { opacity: 0, x: 16, force3D: true });
+};
 
 const onMarkEnter = (el: Element, done: () => void) => {
   gsap.to(el, {
@@ -274,8 +274,8 @@ const onMarkEnter = (el: Element, done: () => void) => {
     overwrite: 'auto',
     force3D: true,
     onComplete: done
-  })
-}
+  });
+};
 
 const onMarkLeave = (el: Element, done: () => void) => {
   gsap.to(el, {
@@ -286,23 +286,23 @@ const onMarkLeave = (el: Element, done: () => void) => {
     overwrite: 'auto',
     force3D: true,
     onComplete: done
-  })
-}
+  });
+};
 
 const onArtBeforeEnter = (el: Element) => {
-  gsap.killTweensOf(el)
+  gsap.killTweensOf(el);
   if (isMobile.value) {
-    ;(el as HTMLElement).style.opacity = '0'
-    return
+    (el as HTMLElement).style.opacity = '0';
+    return;
   }
-  gsap.set(el, { opacity: 0, x: 56, force3D: true })
-}
+  gsap.set(el, { opacity: 0, x: 56, force3D: true });
+};
 
 const onArtEnter = (el: Element, done: () => void) => {
   if (isMobile.value) {
-    ;(el as HTMLElement).style.opacity = '1'
-    done()
-    return
+    (el as HTMLElement).style.opacity = '1';
+    done();
+    return;
   }
 
   gsap.to(el, {
@@ -313,14 +313,14 @@ const onArtEnter = (el: Element, done: () => void) => {
     overwrite: 'auto',
     force3D: true,
     onComplete: done
-  })
-}
+  });
+};
 
 const onArtLeave = (el: Element, done: () => void) => {
   if (isMobile.value) {
-    ;(el as HTMLElement).style.opacity = '0'
-    done()
-    return
+    (el as HTMLElement).style.opacity = '0';
+    done();
+    return;
   }
 
   gsap.to(el, {
@@ -331,42 +331,42 @@ const onArtLeave = (el: Element, done: () => void) => {
     overwrite: 'auto',
     force3D: true,
     onComplete: done
-  })
-}
+  });
+};
 
 const onInfoBeforeEnter = (el: Element) => {
   if (isMobile.value) {
     // Keep mobile info visible even if enter hook gets interrupted.
-    const root = el as HTMLElement
-    root.style.opacity = '1'
-    const items = root.querySelectorAll<HTMLElement>('.info-item')
+    const root = el as HTMLElement;
+    root.style.opacity = '1';
+    const items = root.querySelectorAll<HTMLElement>('.info-item');
     items.forEach((item) => {
-      item.style.opacity = '1'
-      item.style.transform = 'none'
-    })
-    return
+      item.style.opacity = '1';
+      item.style.transform = 'none';
+    });
+    return;
   }
 
-  gsap.killTweensOf(el)
+  gsap.killTweensOf(el);
 
-  gsap.killTweensOf((el as HTMLElement).querySelectorAll('.info-item'))
-  gsap.set(el, { opacity: 0, x: -24, force3D: true })
+  gsap.killTweensOf((el as HTMLElement).querySelectorAll('.info-item'));
+  gsap.set(el, { opacity: 0, x: -24, force3D: true });
   gsap.set((el as HTMLElement).querySelectorAll('.info-item'), {
     opacity: 0,
     y: 10,
     force3D: true
-  })
-}
+  });
+};
 
 const onInfoEnter = (el: Element, done: () => void) => {
   if (isMobile.value) {
-    ;(el as HTMLElement).style.opacity = '1'
-    done()
-    return
+    (el as HTMLElement).style.opacity = '1';
+    done();
+    return;
   }
 
-  const infoItems = (el as HTMLElement).querySelectorAll('.info-item')
-  const tl = gsap.timeline({ onComplete: done })
+  const infoItems = (el as HTMLElement).querySelectorAll('.info-item');
+  const tl = gsap.timeline({ onComplete: done });
 
   tl.to(el, {
     opacity: 1,
@@ -387,17 +387,17 @@ const onInfoEnter = (el: Element, done: () => void) => {
       force3D: true
     },
     '-=0.34'
-  )
-}
+  );
+};
 
 const onInfoLeave = (el: Element, done: () => void) => {
   if (isMobile.value) {
-    ;(el as HTMLElement).style.opacity = '0'
-    done()
-    return
+    (el as HTMLElement).style.opacity = '0';
+    done();
+    return;
   }
 
-  gsap.killTweensOf((el as HTMLElement).querySelectorAll('.info-item'))
+  gsap.killTweensOf((el as HTMLElement).querySelectorAll('.info-item'));
   gsap.to(el, {
     opacity: 0,
     x: -18,
@@ -406,13 +406,13 @@ const onInfoLeave = (el: Element, done: () => void) => {
     overwrite: 'auto',
     force3D: true,
     onComplete: done
-  })
-}
+  });
+};
 
 // --- GSAP Micro-interactions ---
 const onAvatarEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement | null
-  if (!target) return
+  const target = event.currentTarget as HTMLElement | null;
+  if (!target) return;
   gsap.to(target, {
     y: -6,
     scale: 1.01,
@@ -420,12 +420,12 @@ const onAvatarEnter = (event: MouseEvent) => {
     ease: 'power3.out',
     overwrite: 'auto',
     force3D: true
-  })
-}
+  });
+};
 
 const onAvatarLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement | null
-  if (!target) return
+  const target = event.currentTarget as HTMLElement | null;
+  if (!target) return;
   gsap.to(target, {
     y: 0,
     scale: 1,
@@ -433,11 +433,11 @@ const onAvatarLeave = (event: MouseEvent) => {
     ease: 'power3.out',
     overwrite: 'auto',
     force3D: true
-  })
-}
+  });
+};
 
 // Image Cache to prevent GC and unnecessary network requests
-const imageCache = characterImageDebugGlobal.imageCache
+const imageCache = characterImageDebugGlobal.imageCache;
 
 /**
  * @param url 预加载缓存的图片URL
@@ -445,148 +445,148 @@ const imageCache = characterImageDebugGlobal.imageCache
 const cacheImage = (url?: string, options: { decode?: boolean } = {}): Promise<boolean> => {
   return new Promise((resolve) => {
     if (!url) {
-      resolve(false)
-      return
+      resolve(false);
+      return;
     }
 
-    const cached = imageCache.get(url)
+    const cached = imageCache.get(url);
     if (cached?.complete) {
-      resolve(true)
-      return
+      resolve(true);
+      return;
     }
 
-    const img = cached || new Image()
+    const img = cached || new Image();
     if (!cached) {
-      imageCache.set(url, img)
-      img.src = url
+      imageCache.set(url, img);
+      img.src = url;
     }
 
     if (img.complete) {
-      resolve(true)
-      return
+      resolve(true);
+      return;
     }
 
     const done = (ok: boolean) => {
-      img.onload = null
-      img.onerror = null
-      resolve(ok)
-    }
+      img.onload = null;
+      img.onerror = null;
+      resolve(ok);
+    };
 
     img.onload = async () => {
       try {
         if (options.decode !== false && 'decode' in img) {
-          await img.decode()
+          await img.decode();
         }
       } catch {
         // ignore decode error, image is still usable
       }
-      done(true)
-    }
-    img.onerror = () => done(false)
-  })
-}
+      done(true);
+    };
+    img.onerror = () => done(false);
+  });
+};
 
-let switchToken = 0
+let switchToken = 0;
 watch(
   targetCharacter,
   async (newChar, oldChar) => {
     if (!newChar) {
-      displayCharacter.value = null
-      return
+      displayCharacter.value = null;
+      return;
     }
 
-    if (newChar.id === oldChar?.id) return
+    if (newChar.id === oldChar?.id) return;
 
-    const token = ++switchToken
-    await cacheImage(newChar.coverImg, { decode: !isMobile.value })
-    void cacheImage(newChar.avatar, { decode: false })
+    const token = ++switchToken;
+    await cacheImage(newChar.coverImg, { decode: !isMobile.value });
+    void cacheImage(newChar.avatar, { decode: false });
 
-    if (token !== switchToken) return
-    displayCharacter.value = newChar
+    if (token !== switchToken) return;
+    displayCharacter.value = newChar;
   },
   { immediate: true }
-)
+);
 // Optimization: 预加载当前地区所有角色的立绘和头像，最小化等待时间
 const preloadImages = (region: Region | undefined) => {
-  if (!region?.characters) return
-  const chars = region.characters
-  const active = Number.isNaN(charIndex.value) ? 0 : Math.max(0, charIndex.value)
+  if (!region?.characters) return;
+  const chars = region.characters;
+  const active = Number.isNaN(charIndex.value) ? 0 : Math.max(0, charIndex.value);
 
-  void cacheImage(region.bgDay, { decode: !isMobile.value })
+  void cacheImage(region.bgDay, { decode: !isMobile.value });
 
   if (!isMobile.value) {
     chars.forEach((char) => {
-      void cacheImage(char.coverImg, { decode: false })
-      void cacheImage(char.avatar, { decode: false })
-    })
-    return
+      void cacheImage(char.coverImg, { decode: false });
+      void cacheImage(char.avatar, { decode: false });
+    });
+    return;
   }
 
-  const highPriority = new Set<number>([active])
+  const highPriority = new Set<number>([active]);
   for (let i = 1; i <= MOBILE_PRELOAD_LOOKAHEAD; i++) {
-    if (active + i < chars.length) highPriority.add(active + i)
-    if (active - i >= 0) highPriority.add(active - i)
+    if (active + i < chars.length) highPriority.add(active + i);
+    if (active - i >= 0) highPriority.add(active - i);
   }
 
   highPriority.forEach((index) => {
-    const char = chars[index]
-    if (!char) return
-    void cacheImage(char.coverImg, { decode: false })
-    void cacheImage(char.avatar, { decode: false })
-  })
+    const char = chars[index];
+    if (!char) return;
+    void cacheImage(char.coverImg, { decode: false });
+    void cacheImage(char.avatar, { decode: false });
+  });
 
   // 其余资源放到空闲时段，避免移动端切换时触发主线程抢占
   scheduleIdleTask(() => {
     chars.forEach((char, index) => {
-      if (highPriority.has(index)) return
-      void cacheImage(char.coverImg, { decode: false })
-      void cacheImage(char.avatar, { decode: false })
-    })
-  })
-}
+      if (highPriority.has(index)) return;
+      void cacheImage(char.coverImg, { decode: false });
+      void cacheImage(char.avatar, { decode: false });
+    });
+  });
+};
 
 onMounted(async () => {
   // 检查是否为移动设备
-  handleResize()
-  window.addEventListener('resize', handleResize)
+  handleResize();
+  window.addEventListener('resize', handleResize);
 
   // 1. 获取所有地区列表（基础信息，无角色数据）
-  const regionsList = await fetchRegionsList()
+  const regionsList = await fetchRegionsList();
   regions.value = regionsList.reduce(
     (acc, region) => {
-      acc[region.id] = region
-      return acc
+      acc[region.id] = region;
+      return acc;
     },
     {} as Record<string, Region>
-  )
+  );
 
   // 2. 获取当前 URL 对应地区的详细数据（包含角色）
-  await loadRegionCharacters(currentRegionSlug.value)
+  await loadRegionCharacters(currentRegionSlug.value);
 
-  await updateBackgroundImage(currentRegion.value.bgDay)
+  await updateBackgroundImage(currentRegion.value.bgDay);
 
   // 3. 预加载当前地区所有图片
-  preloadImages(currentRegion.value)
+  preloadImages(currentRegion.value);
 
   // 4. 立绘加载保护、等待首位角色立绘解码完成再展示，确保 GSAP 出场时已就绪
   const initialChar =
-    currentRegion.value.characters[charIndex.value] || currentRegion.value.characters[0]
+    currentRegion.value.characters[charIndex.value] || currentRegion.value.characters[0];
   if (initialChar) {
-    await Promise.all([cacheImage(initialChar.coverImg), cacheImage(initialChar.avatar)])
-    displayCharacter.value = initialChar
+    await Promise.all([cacheImage(initialChar.coverImg), cacheImage(initialChar.avatar)]);
+    displayCharacter.value = initialChar;
   }
 
   // 5. 利用浏览器空闲时间，全量预加载所有地区的基础背景图，并预加载下一个地区的角色
   scheduleIdleTask(() => {
-    preloadAllRegionsIdle(Object.values(regions.value))
-    idlePreloadNextRegion(Object.values(regions.value), currentRegionSlug.value)
-  })
-})
+    preloadAllRegionsIdle(Object.values(regions.value));
+    idlePreloadNextRegion(Object.values(regions.value), currentRegionSlug.value);
+  });
+});
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
-  gsap.globalTimeline.clear()
-})
+  window.removeEventListener('resize', handleResize);
+  gsap.globalTimeline.clear();
+});
 </script>
 
 <template>
@@ -668,7 +668,7 @@ onBeforeUnmount(() => {
     >
       <!-- Left: 文字信息 Text Info (Absolute Positioning) -->
       <div
-        class="sm:absolute sm:left-[15%] sm:top-[18vh] sm:w-[35%] sm:pointer-events-auto absolute left-4 top-[35vh] w-[50vw] sm:w-auto pt-0 sm:pt-0 px-0 sm:px-0 sm:z-20 z-30 pointer-events-auto"
+        class="sm:absolute sm:left-[18%] sm:top-[18vh] sm:w-[35%] sm:min-w-[460px] sm:max-w-[640px] sm:pointer-events-auto absolute left-4 top-[35vh] w-[52vw] pt-0 px-0 sm:z-20 z-30 pointer-events-auto"
       >
         <Transition
           appear
@@ -786,7 +786,7 @@ onBeforeUnmount(() => {
 
     <!-- 4. 角色选择器 Bottom Carousel (Character Selector) -->
     <div
-      class="absolute bottom-0 sm:bottom-4 left-0 w-full h-auto sm:h-[190px] z-30 flex justify-center items-end pointer-events-auto pb-6 sm:pb-4 px-2 sm:px-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent"
+      class="absolute bottom-0 left-0 w-full h-auto sm:h-[190px] z-30 flex justify-center items-end pointer-events-auto pb-6 sm:pb-4 px-2 sm:px-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent"
     >
       <div class="relative flex items-center w-full sm:w-auto">
         <!-- Left Arrow -->
@@ -926,6 +926,7 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
   padding-left: 56px;
   background: 18px center no-repeat;
+  /* background-image: url(''); */
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQyIDc5LjE2MDkyNCwgMjAxNy8wNy8xMy0wMTowNjozOSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpERTgyOUEzQkFBMDQxMUU5QjQ2REMwOUFGODE3Qzc5MiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpERTgyOUEzQ0FBMDQxMUU5QjQ2REMwOUFGODE3Qzc5MiI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkRFODI5QTM5QUEwNDExRTlCNDZEQzA5QUY4MTdDNzkyIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkRFODI5QTNBQUEwNDExRTlCNDZEQzA5QUY4MTdDNzkyIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+8pIp1gAAAHhJREFUeNrs18EKgCAQRVGNftsJ6sNHW0QuXNUzBroPZiUMB0ZFs7unyFlS8AAECBAgQIAAAQLsY62KtOP5YBXV5neKqu8MnBQ5C3fF3vZX7EF/uPbpHrTIIx4hZYdkFV4IezfWQ9U08y8GCBAgQIAAAQL8NbAKMAD/HXfdYwQY6gAAAABJRU5ErkJggg==);
   background-size: 40px;
   user-select: none;
@@ -955,6 +956,11 @@ onBeforeUnmount(() => {
 
 .character__city--disable {
   opacity: 0.7;
+}
+
+.character__city--disable,
+.character__city--disable span {
+  cursor: not-allowed;
 }
 
 /* 移动端响应式调整 */

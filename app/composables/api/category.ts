@@ -14,7 +14,7 @@ export function useCategoryApi() {
    * 获取分类列表（GET /api/v1/product/category/list）
    */
   async function list() {
-    return await get<CategoryNode[]>('/v1/product/category/list')
+    return await get<CategoryNode[]>('/product/category/list')
   }
 
   /**
@@ -22,7 +22,7 @@ export function useCategoryApi() {
    */
   async function products(categoryId: number, page?: number, pageSize?: number) {
     return await get<{ data: any[]; page: number; pageSize: number; total: number }>(
-      `/v1/product/category/${categoryId}/products`,
+      `/product/category/${categoryId}/products`,
       { page, pageSize }
     )
   }

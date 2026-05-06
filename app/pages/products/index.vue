@@ -162,8 +162,8 @@
           class="flex flex-col items-center justify-center py-20 text-gray-500 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800"
         >
           <div class="i-carbon-package text-6xl mb-4 text-gray-300 dark:text-gray-600"></div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">暂无商品</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">敬请期待更多产品上线</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">暂无数据</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">敬请期待···</p>
         </div>
       </div>
     </div>
@@ -190,9 +190,9 @@ const selectedCategory = ref<string | null>(null);
 const groupedProducts = ref<SeriesGroup[]>([]);
 
 /**
- * 初始化加载数据
+ * 初始化分类列表
  */
-onMounted(async () => {
+const initializeCategories = async () => {
   try {
     const res = await fetchCategoryList();
     console.log('456:', res);
@@ -203,21 +203,6 @@ onMounted(async () => {
         id: item.id
       }));
 
-      const seriesList = await Promise.all(
-        categories.value.map(async (item) => {
-          const productsRes = await fetchCategoryProducts(item.id, 1, 10);
-          const products = productsRes.data || [];
-          return {
-            categoryId: item.id,
-            category: item.name,
-            featured: products[0],
-            otherProducts: products.slice(1) as Product[]
-          } as SeriesGroup;
-        })
-      );
-
-      groupedProducts.value = seriesList.filter((item) => item.featured);
-
       if (categories.value.length > 0 && categories.value[0]) {
         selectedCategory.value = categories.value[0]!.name;
       }
@@ -225,8 +210,44 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to fetch categories:', error);
     categories.value = [];
+  }
+};
+
+/**
+ * 初始化产品列表
+ */
+const initializeProducts = async () => {
+  try {
+    if (categories.value.length === 0) {
+      return;
+    }
+
+    const seriesList = await Promise.all(
+      categories.value.map(async (item) => {
+        const productsRes = await fetchCategoryProducts(item.id, 1, 10);
+        const products = productsRes.data || [];
+        return {
+          categoryId: item.id,
+          category: item.name,
+          featured: products[0],
+          otherProducts: products.slice(1) as Product[]
+        } as SeriesGroup;
+      })
+    );
+
+    groupedProducts.value = seriesList.filter((item) => item.featured);
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
     groupedProducts.value = [];
   }
+};
+
+/**
+ * 初始化加载数据
+ */
+onMounted(async () => {
+  await initializeCategories();
+  await initializeProducts();
 });
 </script>
 
