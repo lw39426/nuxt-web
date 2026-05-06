@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import type { NuxtError } from '#app'
+import type { NuxtError } from '#app';
 
 const props = defineProps({
   error: {
     type: Object as () => NuxtError,
     default: () => ({ statusCode: 500, message: 'An error occurred' })
   }
-})
+});
 
-const handleError = () => clearError({ redirect: '/' })
-const goBack = () => useRouter().back()
+const handleError = () => clearError({ redirect: '/' });
+const goBack = () => useRouter().back();
 
 const errorInfo = computed(() => {
-  const code = props.error?.statusCode || 500
+  const code = props.error?.statusCode || 500;
   switch (code) {
     case 404:
       return {
@@ -20,14 +20,14 @@ const errorInfo = computed(() => {
         message:
           "Sorry, we couldn't find the page you're looking for. It might have been moved or deleted.",
         icon: 'i-carbon-location-heart-filled'
-      }
+      };
     case 403:
       return {
         title: 'Access Forbidden',
         message:
           "You don't have permission to access this page. Please contact support if you believe this is an error.",
         icon: 'i-carbon-security'
-      }
+      };
     case 500:
     case 502:
     case 503:
@@ -38,19 +38,19 @@ const errorInfo = computed(() => {
         message:
           "Something went wrong on our end. We're working to fix it. Please try again later.",
         icon: 'i-carbon-data-error'
-      }
+      };
     default:
       return {
         title: 'An Error Occurred',
         message: props.error?.message || 'An unexpected error occurred.',
         icon: 'i-carbon-warning-alt'
-      }
+      };
   }
-})
+});
 
 useHead({
   title: `${props.error?.statusCode} - ${errorInfo.value.title}`
-})
+});
 </script>
 
 <template>

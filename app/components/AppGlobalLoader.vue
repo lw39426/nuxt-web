@@ -19,5 +19,5 @@
 </template>
 
 <script setup lang="ts">
-const globalPageLoading = useState<boolean>('globalPageLoading', () => true)
+const globalPageLoading = useState<boolean>('globalPageLoading', () => true);
 </script>

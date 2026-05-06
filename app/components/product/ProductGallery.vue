@@ -1,6 +1,6 @@
 <script setup lang="ts">
-defineProps<{ images: string[] }>()
-const activeImageIndex = ref(0)
+defineProps<{ images: string[] }>();
+const activeImageIndex = ref(0);
 </script>
 
 <template>

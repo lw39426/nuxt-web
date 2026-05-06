@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const route = useRoute()
-const id = route.params.id
+const route = useRoute();
+const id = route.params.id;
 
 // Mock Data for Detail Page
 const post = {
@@ -34,7 +34,7 @@ const post = {
     <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900 dark:text-white">Getting Started</h2>
     <p class="mb-6">The Mintlify Agent is available today for all Enterprise customers. To get started, simply enable the integration in your dashboard.</p>
   `
-}
+};
 
 // Related Posts Mock
 const relatedPosts = [
@@ -66,7 +66,7 @@ const relatedPosts = [
         'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
     }
   }
-]
+];
 </script>
 
 <template>

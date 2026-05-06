@@ -13,7 +13,7 @@ const features = [
     desc: '借助上下文感知智能体完成起草、编辑与维护，持续提速并减少文档债务。',
     visualType: 'icons'
   }
-]
+];
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { BlogPost } from '~/types/blog'
-import { useIntersectionObserver } from '@vueuse/core'
+import type { BlogPost } from '~/types/blog';
+import { useIntersectionObserver } from '@vueuse/core';
 
 // Mock Data
 const heroPost: BlogPost = {
@@ -18,7 +18,7 @@ const heroPost: BlogPost = {
       'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
   },
   isHero: true
-}
+};
 
 const MOCK_POSTS: BlogPost[] = [
   {
@@ -82,7 +82,7 @@ const MOCK_POSTS: BlogPost[] = [
         'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&auto=format&fit=crop&q=60'
     }
   }
-]
+];
 
 const categories = [
   'All articles',
@@ -92,55 +92,55 @@ const categories = [
   'Engineering',
   'Design',
   'Best practices'
-]
-const activeCategory = ref('All articles')
+];
+const activeCategory = ref('All articles');
 
 // 无限滚动逻辑Infinite Scroll Logic
-const displayedPosts = ref<BlogPost[]>([...MOCK_POSTS]) // 已加载的文章列表
-const isLoading = ref(false)
-const hasMore = ref(true) // 是否还有更多数据可加载
-const loadMoreTrigger = ref<HTMLElement | null>(null) // 加载更多触发元素
+const displayedPosts = ref<BlogPost[]>([...MOCK_POSTS]); // 已加载的文章列表
+const isLoading = ref(false);
+const hasMore = ref(true); // 是否还有更多数据可加载
+const loadMoreTrigger = ref<HTMLElement | null>(null); // 加载更多触发元素
 
 /**
  * 加载更多数据
  * 模拟异步请求和分页逻辑
  */
 const loadMore = async () => {
-  if (isLoading.value || !hasMore.value) return
-  isLoading.value = true
+  if (isLoading.value || !hasMore.value) return;
+  isLoading.value = true;
 
   // 模拟网络请求延迟
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // 模拟加载更多数据 (复制 MOCK_POSTS 并生成新 ID)
   const newPosts = MOCK_POSTS.map((post, index) => ({
     ...post,
     id: Date.now() + index + Math.random()
-  }))
+  }));
 
-  displayedPosts.value.push(...newPosts)
+  displayedPosts.value.push(...newPosts);
 
   // 模拟数据上限 (例如超过 40 条就不再加载)
   if (displayedPosts.value.length > 40) {
-    hasMore.value = false
+    hasMore.value = false;
   }
 
-  isLoading.value = false
-}
+  isLoading.value = false;
+};
 
 // 监听滚动触底
 useIntersectionObserver(
   loadMoreTrigger,
   (entries) => {
-    const entry = entries[0]
+    const entry = entries[0];
     if (entry && entry.isIntersecting) {
-      loadMore()
+      loadMore();
     }
   },
   {
     rootMargin: '0px 0px 300px 0px' // 提前 300px 触发加载，提升流畅度
   }
-)
+);
 </script>
 
 <template>
@@ -192,7 +192,9 @@ useIntersectionObserver(
       </NuxtLink>
 
       <!-- 筛选器: 分类标签Filter Tabs -->
-      <div class="flex flex-wrap items-center gap-2 mb-12 overflow-x-auto pb-2 scrollbar-hide">
+      <div
+        class="flex flex-wrap items-center justify-center gap-2 mb-12 overflow-x-auto pb-2 scrollbar-hide"
+      >
         <button
           v-for="cat in categories"
           :key="cat"
@@ -206,7 +208,7 @@ useIntersectionObserver(
         >
           {{ cat }}
         </button>
-        <div class="flex-1"></div>
+        <!-- <div class="flex-1"></div> -->
         <!-- RSS 订阅按钮，未来可设置为用户订阅、加载更多 -->
         <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
           <div class="i-carbon-rss w-5 h-5"></div>

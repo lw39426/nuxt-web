@@ -1,24 +1,24 @@
 <script setup lang="ts">
 const props = defineProps<{
-  brands: { name: string; count: number }[]
-  memoryOptions: { name: string; count: number }[]
-}>()
+  brands: { name: string; count: number }[];
+  memoryOptions: { name: string; count: number }[];
+}>();
 
-const priceRange = defineModel<number[]>('priceRange', { required: true })
-const selectedBrands = defineModel<string[]>('selectedBrands', { required: true })
-const selectedMemory = defineModel<string[]>('selectedMemory', { required: true })
-const brandSearch = defineModel<string>('brandSearch', { default: '' })
-const memorySearch = defineModel<string>('memorySearch', { default: '' })
+const priceRange = defineModel<number[]>('priceRange', { required: true });
+const selectedBrands = defineModel<string[]>('selectedBrands', { required: true });
+const selectedMemory = defineModel<string[]>('selectedMemory', { required: true });
+const brandSearch = defineModel<string>('brandSearch', { default: '' });
+const memorySearch = defineModel<string>('memorySearch', { default: '' });
 
 const filteredBrands = computed(() => {
-  return props.brands.filter((b) => b.name.toLowerCase().includes(brandSearch.value.toLowerCase()))
-})
+  return props.brands.filter((b) => b.name.toLowerCase().includes(brandSearch.value.toLowerCase()));
+});
 
 const filteredMemory = computed(() => {
   return props.memoryOptions.filter((m) =>
     m.name.toLowerCase().includes(memorySearch.value.toLowerCase())
-  )
-})
+  );
+});
 </script>
 
 <template>

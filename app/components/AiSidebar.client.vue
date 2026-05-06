@@ -140,21 +140,21 @@
 
 <script setup lang="ts">
 interface SidebarSession {
-  id: string
-  title: string
+  id: string;
+  title: string;
 }
 
 defineProps<{
-  isOpen: boolean
-  sessions: SidebarSession[]
-  activeSessionId: string
-  searchQuery: string
-  isSearchOpen: boolean
-}>()
+  isOpen: boolean;
+  sessions: SidebarSession[];
+  activeSessionId: string;
+  searchQuery: string;
+  isSearchOpen: boolean;
+}>();
 
 defineEmits<{
-  (e: 'update:isOpen', value: boolean): void
-  (e: 'new-chat'): void
-  (e: 'select-session', sessionId: string): void
-}>()
+  (e: 'update:isOpen', value: boolean): void;
+  (e: 'new-chat'): void;
+  (e: 'select-session', sessionId: string): void;
+}>();
 </script>

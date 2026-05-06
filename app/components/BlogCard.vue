@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { BlogPost } from '~/types/blog'
+import type { BlogPost } from '~/types/blog';
 
 defineProps<{
-  post: BlogPost
-}>()
+  post: BlogPost;
+}>();
 </script>
 
 <template>

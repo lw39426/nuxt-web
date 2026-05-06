@@ -142,73 +142,73 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue';
 defineOptions({
   name: 'Navbar60fpsTest'
-})
+});
 
 // 当前版本选择
-const currentVersion = ref('optimized')
-const isScrolled = ref(false)
+const currentVersion = ref('optimized');
+const isScrolled = ref(false);
 
 // 性能监控
-const currentFPS = ref(60)
-let frameCount = 0
-let lastTime = performance.now()
+const currentFPS = ref(60);
+let frameCount = 0;
+let lastTime = performance.now();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-let rafId = null // 未使用
+let rafId = null; // 未使用
 
 // 组件映射
 const navbarComponents = {
   original: 'AppNavbar',
   optimized: 'AppNavbarOptimized60fps'
-}
+};
 
 const currentNavbarComponent = computed(() => {
-  return navbarComponents[currentVersion.value] || 'AppNavbar'
-})
+  return navbarComponents[currentVersion.value] || 'AppNavbar';
+});
 
 // FPS 颜色
 const fpsColor = computed(() => {
-  if (currentFPS.value >= 55) return 'text-green-500'
-  if (currentFPS.value >= 30) return 'text-yellow-500'
-  return 'text-red-500'
-})
+  if (currentFPS.value >= 55) return 'text-green-500';
+  if (currentFPS.value >= 30) return 'text-yellow-500';
+  return 'text-red-500';
+});
 
 // 滚动状态变化处理
 const handleScrollStateChange = (scrolled) => {
-  isScrolled.value = scrolled
-}
+  isScrolled.value = scrolled;
+};
 
 // 版本切换
 const switchVersion = (version) => {
-  currentVersion.value = version
+  currentVersion.value = version;
   // 重置滚动状态
-  isScrolled.value = false
+  isScrolled.value = false;
   // 滚动到顶部重新开始测试
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 // 滚动到顶部
 const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 // FPS 计算
 const updateFPS = () => {
-  const currentTime = performance.now()
-  frameCount++
+  const currentTime = performance.now();
+  frameCount++;
 
   if (currentTime >= lastTime + 1000) {
-    currentFPS.value = Math.round((frameCount * 1000) / (currentTime - lastTime))
-    frameCount = 0
-    lastTime = currentTime
+    currentFPS.value = Math.round((frameCount * 1000) / (currentTime - lastTime));
+    frameCount = 0;
+    lastTime = currentTime;
   }
 
-  rafId = requestAnimationFrame(updateFPS)
-}
+  rafId = requestAnimationFrame(updateFPS);
+};
 
 onMounted(() => {
-  updateFPS()
-})
+  updateFPS();
+});
 </script>
