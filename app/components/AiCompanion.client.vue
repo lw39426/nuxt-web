@@ -128,7 +128,7 @@
                   </div>
                 </template>
               </div>
-
+              <!-- 操作按钮 -->
               <div class="flex gap-2 opacity-90 transition-opacity px-1 mt-1">
                 <button
                   v-if="getMessageText(m)"
@@ -195,7 +195,7 @@
             </div>
           </div>
         </main>
-
+        <!-- AI输入框 -->
         <footer class="py-2 pb-4 md:py-4 bg-white dark:bg-gray-900">
           <form
             :class="[
@@ -224,7 +224,7 @@
                 -moz-appearance: none;
                 appearance: none;
               "
-              placeholder="可以说点什么吗？（Enter 发送，Shift+Enter 换行）"
+              placeholder="今天想聊点什么吗？（Enter 发送，Shift+Enter 换行）"
               @keydown.enter.exact.prevent="handleSubmit"
               @input="adjustTextareaHeight"
             />
