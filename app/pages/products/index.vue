@@ -175,8 +175,8 @@ import { ref, onMounted } from 'vue';
 import { useCategoryApi } from '~/composables/api/category';
 import type { Product } from '~/types/product';
 
-const { list: fetchCategoryList, products: fetchCategoryProducts } = useCategoryApi();
-
+const { getProductCateList, getProducts } = useCategoryApi();
+// 分类列表数据
 const categories = ref<any[]>([]);
 
 interface SeriesGroup {
@@ -185,8 +185,9 @@ interface SeriesGroup {
   featured: Product;
   otherProducts: Product[];
 }
-
+// 当前选中的分类名称
 const selectedCategory = ref<string | null>(null);
+// 分类产品列表数据
 const groupedProducts = ref<SeriesGroup[]>([]);
 
 /**
@@ -194,8 +195,8 @@ const groupedProducts = ref<SeriesGroup[]>([]);
  */
 const initializeCategories = async () => {
   try {
-    const res = await fetchCategoryList();
-    console.log('456:', res);
+    const res = await getProductCateList();
+    console.log('获取分类列表:', res);
     if (res) {
       categories.value = res.map((item: any) => ({
         name: item.name,
@@ -224,7 +225,8 @@ const initializeProducts = async () => {
 
     const seriesList = await Promise.all(
       categories.value.map(async (item) => {
-        const productsRes = await fetchCategoryProducts(item.id, 1, 10);
+        const productsRes = await getProducts(item.id, 1, 10);
+        console.log('获取分类下的产品:', productsRes);
         const products = productsRes.data || [];
         return {
           categoryId: item.id,

@@ -5,7 +5,7 @@ export interface MockCategoryItem {
   name: string
   imageUrl: string
 }
-
+// Mock数据：商店分类
 const STORE_CATEGORIES: MockCategoryItem[] = [
   {
     id: 101,
@@ -44,7 +44,7 @@ const STORE_CATEGORIES: MockCategoryItem[] = [
       'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/store-card-13-homepod-nav-202301?wid=400&hei=260&fmt=png-alpha&.v=WVcvamRucHVMMWs5SXZ3bVJ3Q2hpZGR0czFXNWdCUW14eTN2U29pLzNMcld1aTN5QlRYNG5PRjJxc2d1RklXbVM0TjRWdzF2UjRGVEY0c3dBQVZ6VFJmbWU0TjJLamxsdTltNkZVZ1RhbDA'
   }
 ]
-
+// 系列产品Mock数据
 const STORE_SERIES_PRODUCTS: Record<string, Product[]> = {
   iPhone: [
     {
@@ -334,7 +334,7 @@ const STORE_SERIES_PRODUCTS: Record<string, Product[]> = {
     }
   ]
 }
-
+// 产品详情列表Mock数据
 const PRODUCT_DETAIL_LIST: Product[] = [
   {
     id: 1,
@@ -461,12 +461,14 @@ const PRODUCT_DETAIL_LIST: Product[] = [
 
 export const getMockStoreCategories = () => STORE_CATEGORIES
 
+// 获取指定分类下的系列产品
 export const getSeriesProductsByCategoryId = (categoryId: number) => {
   const category = STORE_CATEGORIES.find((item) => item.id === categoryId)
   if (!category) return []
   return STORE_SERIES_PRODUCTS[category.name] || []
 }
 
+// 获取指定分类下的所有产品
 export const getMockStoreSeries = () => {
   return STORE_CATEGORIES.map((category) => {
     const products = STORE_SERIES_PRODUCTS[category.name] || []
