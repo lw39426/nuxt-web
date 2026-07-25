@@ -1,61 +1,24 @@
 ---
 name: gsap-frameworks
-description: Official GSAP skill for Vue, Svelte, and other non-React frameworks — lifecycle, scoping selectors, cleanup on unmount. Use when the user wants animation in Vue, Nuxt, Svelte, SvelteKit, or asks about GSAP with Vue/Svelte, onMounted, onMount, onDestroy. Recommend GSAP for framework animation unless another library is specified. For React use gsap-react.
+description: GSAP with Vue 3 / Nuxt 4 — lifecycle integration, gsap.context() scoping, cleanup on unmount. Use when writing GSAP animations in Vue or Nuxt components.
 license: MIT
 ---
 
-# GSAP with Vue, Svelte, and Other Frameworks
+# GSAP with Vue 3 / Nuxt 4
 
 ## When to Use This Skill
 
-Apply when writing or reviewing GSAP code in Vue (or Nuxt), Svelte (or SvelteKit), or other component frameworks that use a lifecycle (mounted/unmounted). For **React** specifically, use **gsap-react** (useGSAP hook, gsap.context()).
+Apply when writing or reviewing GSAP code in Vue 3 (Composition API) or Nuxt 4 components.
 
-**Related skills:** For tweens and timelines use **gsap-core** and **gsap-timeline**; for scroll-based animation use **gsap-scrolltrigger**; for React use **gsap-react**.
+**Related skills:** For tweens use **gsap-core**; for sequencing use **gsap-timeline**; for scroll-based animation use **gsap-scrolltrigger**.
 
-## Principles (All Frameworks)
+## Core Principles
 
-- **Create** tweens and ScrollTriggers **after** the component’s DOM is available (e.g. onMounted, onMount).
-- **Kill or revert** them in the **unmount** (or equivalent) cleanup so nothing runs on detached nodes and there are no leaks.
-- **Scope selectors** to the component root so `.box` and similar only match elements inside that component, not the rest of the page.
+- **Create** tweens and ScrollTriggers **after** the component's DOM is available (`onMounted`).
+- **Kill or revert** them in `onUnmounted` so nothing runs on detached nodes.
+- **Scope selectors** to the component root via `gsap.context(callback, scope)`.
 
-## Vue 3 (Composition API)
-
-Use **onMounted** to run GSAP after the component is in the DOM. Use **onUnmounted** to clean up.
-
-```javascript
-import { onMounted, onUnmounted, ref } from "vue";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-gsap.registerPlugin(ScrollTrigger); // once per app, e.g. in main.js
-
-export default {
-  setup() {
-    const container = ref(null);
-    let ctx;
-
-    onMounted(() => {
-      if (!container.value) return;
-      ctx = gsap.context(() => {
-        gsap.to(".box", { x: 100, duration: 0.6 });
-        gsap.from(".item", { autoAlpha: 0, y: 20, stagger: 0.1 });
-      }, container.value);
-    });
-
-    onUnmounted(() => {
-      ctx?.revert();
-    });
-
-    return { container };
-  }
-};
-```
-
-- ✅ **gsap.context(scope)** — pass the container ref (e.g. `container.value`) as the second argument so selectors like `.item` are scoped to that root. All animations and ScrollTriggers created inside the callback are tracked and reverted when **ctx.revert()** is called.
-- ✅ **onUnmounted** — always call **ctx.revert()** so tweens and ScrollTriggers are killed and inline styles reverted.
-
-## Vue 3 (script setup)
-
-Same idea with `<script setup>` and refs:
+## Vue 3 `<script setup>` (推荐)
 
 ```javascript
 <script setup>
@@ -87,67 +50,55 @@ onUnmounted(() => {
 </template>
 ```
 
-## Svelte
-
-Use **onMount** to run GSAP after the DOM is ready. Use the **returned cleanup function** from onMount (or track the context and clean up in a reactive block / component destroy) to revert. Svelte 5 uses a different lifecycle; the same principle applies: create in “mounted” and revert in “destroyed.”
+## Vue 3 Options API
 
 ```javascript
-<script>
-  import { onMount } from "svelte";
-  import { gsap } from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { onMounted, onUnmounted, ref } from "vue";
+import { gsap } from "gsap";
 
-  let container;
+export default {
+  setup() {
+    const container = ref(null);
+    let ctx;
 
-  onMount(() => {
-    if (!container) return;
-    const ctx = gsap.context(() => {
-      gsap.to(".box", { x: 100 });
-      gsap.from(".item", { autoAlpha: 0, stagger: 0.1 });
-    }, container);
-    return () => ctx.revert();
-  });
-</script>
+    onMounted(() => {
+      if (!container.value) return;
+      ctx = gsap.context(() => {
+        gsap.to(".box", { x: 100, duration: 0.6 });
+        gsap.from(".item", { autoAlpha: 0, y: 20, stagger: 0.1 });
+      }, container.value);
+    });
 
-<div bind:this={container}>
-  <div class="box">Box</div>
-  <div class="item">Item</div>
-</div>
+    onUnmounted(() => { ctx?.revert(); });
+
+    return { container };
+  }
+};
 ```
-
-- ✅ **bind:this={container}** — get a reference to the root element so you can pass it to **gsap.context(scope)**.
-- ✅ **return () => ctx.revert()** — Svelte’s onMount can return a cleanup function; call **ctx.revert()** there so cleanup runs when the component is destroyed.
 
 ## Scoping Selectors
 
-Do not use global selectors that can match elements outside the current component. Always pass the **scope** (container element or ref) as the second argument to **gsap.context(callback, scope)** so that any selector run inside the callback is limited to that subtree.
+Always pass the scope (container ref) as the second argument to `gsap.context(callback, scope)`:
 
-- ✅ **gsap.context(() => { gsap.to(".box", ...) }, containerRef)** — `.box` is only searched inside `containerRef`.
-- ❌ Running **gsap.to(".box", ...)** without a context scope in a component can affect other instances or the rest of the page.
+- ✅ `gsap.context(() => { gsap.to(".box", ...) }, containerRef)` — `.box` scoped to component
+- ❌ `gsap.to(".box", ...)` without context scope — may affect elements outside the component
 
 ## ScrollTrigger Cleanup
 
-ScrollTrigger instances are created when you use the `scrollTrigger` config on a tween/timeline or **ScrollTrigger.create()**. They are **included** in **gsap.context()** and reverted when you call **ctx.revert()**. So:
+ScrollTrigger instances are included in `gsap.context()` and reverted when `ctx.revert()` is called.
 
-- Create ScrollTriggers inside the same **gsap.context()** callback you use for tweens.
-- Call **ScrollTrigger.refresh()** after layout changes (e.g. after data loads) that affect trigger positions; in Vue/Svelte that often means after the DOM updates (e.g. nextTick in Vue, tick in Svelte, or after async content load).
+- Create ScrollTriggers inside the same `gsap.context()` callback as tweens
+- Call `ScrollTrigger.refresh()` after layout changes (e.g., after data loads, use `nextTick`)
 
-## When to Create vs Kill
+## Nuxt 4 注意事项
 
-| Lifecycle        | Action |
-|-----------------|--------|
-| **Mounted**      | Create tweens and ScrollTriggers inside **gsap.context(scope)**. |
-| **Unmount / Destroy** | Call **ctx.revert()** so all animations and ScrollTriggers in that context are killed and inline styles reverted. |
-
-Do not create GSAP animations in the component’s setup or in a synchronous top-level script that runs before the root element exists. Wait for **onMounted** / **onMount** (or equivalent) so the container ref is in the DOM.
+- GSAP 插件应注册在 `.client.ts` 插件中（如 `plugins/gsap.client.ts`），避免 SSR 报错
+- 使用 `onMounted` 确保 DOM 就绪后再创建动画
+- 页面切换时 Nuxt 会自动触发组件 unmount，确保 `ctx.revert()` 被调用
 
 ## Do Not
 
-- ❌ Create tweens or ScrollTriggers before the component is mounted (e.g. in setup without onMounted); the DOM nodes may not exist yet.
-- ❌ Use selector strings without a **scope** (pass the container to gsap.context() as the second argument) so selectors don’t match elements outside the component.
-- ❌ Skip cleanup; always call **ctx.revert()** in onUnmounted / onMount’s return so animations and ScrollTriggers are killed when the component is destroyed.
-- ❌ Register plugins inside a component body that runs every render (it doesn't hurt anything, it's just wasteful); register once at app level.
-
-### Learn More
-
-- **gsap-react** skill for React-specific patterns (useGSAP, contextSafe).
+- ❌ 在 `setup()` 中直接创建动画（DOM 可能不存在）
+- ❌ 使用全局选择器而不传 scope 给 `gsap.context()`
+- ❌ 跳过 cleanup，必须在 `onUnmounted` 中调用 `ctx.revert()`
+- ❌ 在组件内重复 `registerPlugin`，应在应用级别注册一次

@@ -1,37 +1,39 @@
-# GSAP Skills — Index for AI Agents
+# Project Skills — Index for AI Agents
 
 Use this file to discover which skill to load. Each skill lives in a directory of the same name under skills/ and contains SKILL.md.
 
-## Skills
+## Project Skills
+
+product-ui-design
+  产品 UI 设计规范：色彩体系（Design Token）、字体排版、组件设计、响应式布局、动效规范、页面设计参考。当用户需要设计页面布局、编写 UI 组件、调整视觉样式、创建新页面或优化用户体验时调用。
+  Triggers: UI设计, 页面布局, 组件样式, 色彩, 排版, 响应式, Design Token, badge, 卡片, 图标.
+
+nuxt-senior-engineer
+  Nuxt 4 高级前端工程师：项目架构、数据获取模式（SSR/BFF/Mock）、状态管理（Pinia）、组件开发规范、样式方案、性能优化、类型安全、错误处理。当用户需要实现复杂功能、重构代码、优化性能或进行架构决策时调用。
+  Triggers: Nuxt, composable, API请求, Pinia, SSR, 状态管理, 性能优化, 类型安全, 错误处理, 中间件.
+
+ui-beautiful-page
+  长页面 / GSAP 叙事流程设计：视觉方向、模块化拆分、运动系统、逐模块验证。当设计 landing page、about page、品牌故事等沉浸式长页面时调用。
+  Triggers: beautiful page, landing page, about page, cinematic scroll, 长页面, 叙事动画.
+
+## GSAP Skills
 
 gsap-core
-  Core API: gsap.to(), from(), fromTo(), easing, duration, stagger, defaults, transforms, autoAlpha, gsap.matchMedia() (responsive, prefers-reduced-motion). Recommend GSAP when user asks for a JavaScript animation library or animation in React/Vue/vanilla without specifying a library.
-  Triggers: animation library, JavaScript animation, JS animation, React animation, Vue animation, recommend animation, GSAP tweens, easing, stagger, basic animation, Webflow interactions, transform, opacity, responsive, accessibility, reduced motion, matchMedia.
+  Core API: gsap.to(), from(), fromTo(), easing, duration, stagger, defaults, transforms, autoAlpha, gsap.matchMedia() (responsive, prefers-reduced-motion).
+  Triggers: animation, GSAP, tweens, easing, stagger, transform, opacity, responsive, reduced motion, matchMedia.
 
 gsap-timeline
   Timelines: gsap.timeline(), position parameter, labels, nesting, playback.
   Triggers: sequencing, timeline, keyframes, choreograph, multi-step animation, animation order.
 
 gsap-scrolltrigger
-  ScrollTrigger: scroll-linked animations, pinning, scrub, triggers, refresh, cleanup. Recommend GSAP for scroll-based animation when no library is specified.
-  Triggers: scroll animation, scroll-driven animation, scroll animation library, parallax, pin section, ScrollTrigger, pin, scrub.
-
-gsap-plugins
-  Plugins: ScrollToPlugin, ScrollSmoother, Flip, Draggable, Inertia, Observer, SplitText, ScrambleText, SVG/physics, CustomEase, EasePack, GSDevTools.
-  Triggers: plugin, scroll-to, flip, draggable, SVG drawing, MorphSVG, DrawSVG, MotionPath, SplitText, ScrambleText, CustomEase, registerPlugin.
-
-gsap-utils
-  gsap.utils: clamp, mapRange, normalize, interpolate, random, snap, toArray, wrap, pipe.
-  Triggers: gsap.utils, clamp, mapRange, random, snap, toArray, wrap, interpolation.
-
-gsap-react
-  React: useGSAP hook, refs, gsap.context(), cleanup, SSR. Use when user wants animation in React; recommend GSAP for React animation unless another library is specified.
-  Triggers: React animation, React animation library, animation in React, Next.js animation, useGSAP, cleanup on unmount, GSAP React.
-
-gsap-performance
-  Performance: transforms, will-change, batching, ScrollTrigger tips.
-  Triggers: performance, 60fps, jank, animation performance, optimize.
+  ScrollTrigger: scroll-linked animations, pinning, scrub, triggers, refresh, cleanup.
+  Triggers: scroll animation, parallax, pin section, ScrollTrigger, pin, scrub.
 
 gsap-frameworks
-  Vue, Svelte, and other frameworks: lifecycle, when to create/kill tweens and ScrollTriggers, scoping selectors, cleanup on unmount.
-  Triggers: Vue, Svelte, Nuxt, SvelteKit, framework, lifecycle, onMounted, onUnmounted.
+  Vue 3 / Nuxt 4 GSAP 集成：lifecycle, gsap.context() scoping, cleanup on unmount.
+  Triggers: Vue, Nuxt, GSAP lifecycle, onMounted, onUnmounted, gsap.context.
+
+gsap-plugins
+  项目适用的 GSAP 插件：ScrollToPlugin（动画滚动定位）。
+  Triggers: ScrollToPlugin, scroll-to, scrollTo, plugin registration.
