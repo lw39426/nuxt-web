@@ -20,6 +20,7 @@
     "@nuxt/ui": "^4.2.1",
     "@pinia/nuxt": "^0.11.3",
     "@popperjs/core": "^2.11.8",
+    "@sentry/vue": "^10.53.1",
     "@vueuse/core": "^14.2.0",
     "ai": "^6.0.137",
     "gsap": "^3.13.0",
