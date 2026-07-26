@@ -70,21 +70,14 @@ useHead({
   ]
 });
 
-const { getHomeConfig } = useHomeApi();
+const { getHomeData } = useHomeApi();
 // 获取首页配置数据
-const { data: homeConfig } = await useAsyncData('home-config', () => getHomeConfig());
+const { data: _homeConfig } = await useAsyncData('home-config', () => getHomeData());
 // 设置动态背景图样式
 const _heroStyle = computed(() => {
-  if (homeConfig.value?.hero?.backgroundImage) {
-    return {
-      backgroundImage: `url('${homeConfig.value.hero.backgroundImage}')`
-    };
-  }
   return {};
 });
-const bgImage = computed(
-  () => homeConfig.value?.hero?.backgroundImage || '/futuristic-moon-background.jpg'
-);
+const bgImage = computed(() => '/futuristic-moon-background.jpg');
 
 const aiQuestion = ref('');
 const canAskAI = computed(() => aiQuestion.value.trim().length > 0);
@@ -117,13 +110,12 @@ const askAI = (question?: string) => {
       <div class="z-10 section-container text-center">
         <h1
           class="text-5xl pt-[3rem] md:pt-24 md:text-7xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
-          v-html="homeConfig?.hero?.title || 'Just Build It! <br /> Whatever You Want It To Be.'"
+          v-html="'Just Build It! <br /> Whatever You Want It To Be.'"
         ></h1>
         <p
           class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-6 md:mb-12 font-medium drop-shadow-sm"
         >
           {{
-            homeConfig?.hero?.subtitle ||
             'It is wonderful, and at the same time it is also terrible. Please be more tolerant, thank you very much.'
           }}
         </p>

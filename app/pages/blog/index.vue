@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import type { BlogPost } from '~/types/blog';
+import type { BlogPost, Article, ArticleCategory } from '~/types/blog';
+import { useArticleApi } from '~/composables/api/article';
 import { useIntersectionObserver } from '@vueuse/core';
 
-// Mock Data
+const { list, categories: fetchCategories } = useArticleApi();
+
+// Hero Post 暂时使用 Mock 数据
 const heroPost: BlogPost = {
   id: 1,
+  code: '1',
   title: 'Introducing the Mintlify Agent to write documentation with AI',
   excerpt: 'Automatically update documentation with context from PRs, Slack threads, or links.',
   category: 'Announcements',
@@ -20,127 +24,126 @@ const heroPost: BlogPost = {
   isHero: true
 };
 
-const MOCK_POSTS: BlogPost[] = [
-  {
-    id: 2,
-    title: 'Impact of SHA1-Hulud: The Second Coming on the Mintlify CLI',
-    excerpt:
-      'The Mintlify CLI was briefly exposed to a supply chain attack. Learn what happened, who was affected, and what actions to take.',
-    category: 'ANNOUNCEMENTS',
-    image:
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
-    date: 'Sep 28, 2025',
+/** 安全格式化日期（无效/缺失时返回空串） */
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+/** 将 Article 转为 BlogPost 供 BlogCard 使用（带字段判空保护） */
+function articleToBlogPost(article: Article): BlogPost {
+  return {
+    id: article.id,
+    code: article.code || String(article.id),
+    title: article.title || '无标题',
+    excerpt: article.description || '',
+    category: article.category_name || '',
+    image: article.image || '/images/placeholder.svg',
+    date: formatDate(article.published_date),
     author: {
-      name: 'Han Wang',
-      role: 'Co-Founder',
-      avatar:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
+      // 优先取作者名字符串，其次取发布者昵称，最后佚名
+      name: article.author || article.user?.nickname || '佚名',
+      role: '',
+      avatar: article.user?.avatar || ''
     }
-  },
-  {
-    id: 3,
-    title: 'Documentation is dead. Long live documentation.',
-    excerpt: 'How documentation is changing in the age of AI.',
-    category: 'AI TRENDS',
-    image:
-      'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop',
-    date: 'Sep 25, 2025',
-    author: {
-      name: 'Han Wang',
-      role: 'Co-Founder',
-      avatar:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
-    }
-  },
-  {
-    id: 4,
-    title: 'Why we are moving away from Next.js to Nuxt',
-    excerpt: 'A deep dive into our technical decision making process and performance benchmarks.',
-    category: 'ENGINEERING',
-    image:
-      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop',
-    date: 'Sep 20, 2025',
-    author: {
-      name: 'Sarah Chen',
-      role: 'Lead Engineer',
-      avatar:
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=60'
-    }
-  },
-  {
-    id: 5,
-    title: 'Designing for the future of developer tools',
-    excerpt: 'How we approach design systems and user experience in technical products.',
-    category: 'DESIGN',
-    image:
-      'https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=2000&auto=format&fit=crop',
-    date: 'Sep 15, 2025',
-    author: {
-      name: 'Alex Morgan',
-      role: 'Product Designer',
-      avatar:
-        'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&auto=format&fit=crop&q=60'
-    }
+  };
+}
+
+// --- 分类 ---
+const categoryList = ref<ArticleCategory[]>([]);
+const activeCategory = ref<number | null>(null); // null = 全部
+
+// 加载分类
+const loadCategories = async () => {
+  try {
+    const data = await fetchCategories();
+    // 接口异常返回非数组时保持空列表
+    categoryList.value = Array.isArray(data) ? data : [];
+  } catch (err) {
+    // 分类加载失败时保持默认
+    console.error('Failed to load categories:', err);
   }
-];
-
-const categories = [
-  'All articles',
-  'AI trends',
-  'Announcements',
-  'For founders',
-  'Engineering',
-  'Design',
-  'Best practices'
-];
-const activeCategory = ref('All articles');
-
-// 无限滚动逻辑Infinite Scroll Logic
-const displayedPosts = ref<BlogPost[]>([...MOCK_POSTS]); // 已加载的文章列表
-const isLoading = ref(false);
-const hasMore = ref(true); // 是否还有更多数据可加载
-const loadMoreTrigger = ref<HTMLElement | null>(null); // 加载更多触发元素
-
-/**
- * 加载更多数据
- * 模拟异步请求和分页逻辑
- */
-const loadMore = async () => {
-  if (isLoading.value || !hasMore.value) return;
-  isLoading.value = true;
-
-  // 模拟网络请求延迟
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // 模拟加载更多数据 (复制 MOCK_POSTS 并生成新 ID)
-  const newPosts = MOCK_POSTS.map((post, index) => ({
-    ...post,
-    id: Date.now() + index + Math.random()
-  }));
-
-  displayedPosts.value.push(...newPosts);
-
-  // 模拟数据上限 (例如超过 40 条就不再加载)
-  if (displayedPosts.value.length > 40) {
-    hasMore.value = false;
-  }
-
-  isLoading.value = false;
 };
 
-// 监听滚动触底
+// --- 文章列表 & 分页 ---
+const displayedPosts = ref<BlogPost[]>([]);
+const isLoading = ref(false);
+const hasMore = ref(true);
+const currentPage = ref(1);
+const pageSize = 10;
+const loadMoreTrigger = ref<HTMLElement | null>(null);
+
+/** 加载文章列表 */
+const loadArticles = async (reset = false) => {
+  if (isLoading.value || (!hasMore.value && !reset)) return;
+  isLoading.value = true;
+
+  if (reset) {
+    currentPage.value = 1;
+    displayedPosts.value = [];
+    hasMore.value = true;
+  }
+
+  try {
+    const data = await list({
+      page: currentPage.value,
+      pageSize,
+      category_id: activeCategory.value ?? undefined
+    });
+
+    // 接口异常返回缺失字段时做降级处理
+    const articles = Array.isArray(data?.articles) ? data.articles : [];
+    const newPosts = articles.map(articleToBlogPost);
+    displayedPosts.value.push(...newPosts);
+
+    if (data?.pagination) {
+      const { page, pages } = data.pagination;
+      hasMore.value = page < pages;
+      currentPage.value++;
+    } else {
+      // 无分页信息时停止加载，避免死循环请求
+      hasMore.value = false;
+    }
+  } catch (err) {
+    console.error('Failed to load articles:', err);
+    // 网络错误时停止加载
+    hasMore.value = false;
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// 切换分类
+const selectCategory = (categoryId: number | null) => {
+  activeCategory.value = categoryId;
+  loadArticles(true);
+};
+
+// 监听滚动触底 - 无限加载
 useIntersectionObserver(
   loadMoreTrigger,
   (entries) => {
     const entry = entries[0];
     if (entry && entry.isIntersecting) {
-      loadMore();
+      loadArticles();
     }
   },
   {
-    rootMargin: '0px 0px 300px 0px' // 提前 300px 触发加载，提升流畅度
+    rootMargin: '0px 0px 300px 0px'
   }
 );
+
+// 初始加载
+onMounted(() => {
+  loadCategories();
+  loadArticles();
+});
 </script>
 
 <template>
@@ -196,28 +199,44 @@ useIntersectionObserver(
         class="flex flex-wrap items-center justify-center gap-2 mb-12 overflow-x-auto pb-2 scrollbar-hide"
       >
         <button
-          v-for="cat in categories"
-          :key="cat"
           class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
           :class="[
-            activeCategory === cat
+            activeCategory === null
               ? 'bg-black text-white dark:bg-white dark:text-black'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20'
           ]"
-          @click="activeCategory = cat"
+          @click="selectCategory(null)"
         >
-          {{ cat }}
+          全部文章
         </button>
-        <!-- <div class="flex-1"></div> -->
+        <button
+          v-for="cat in categoryList"
+          :key="cat.id"
+          class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+          :class="[
+            activeCategory === cat.id
+              ? 'bg-black text-white dark:bg-white dark:text-black'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20'
+          ]"
+          @click="selectCategory(cat.id)"
+        >
+          {{ cat.name }}
+        </button>
         <!-- RSS 订阅按钮，未来可设置为用户订阅、加载更多 -->
         <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
           <div class="i-carbon-rss w-5 h-5"></div>
         </button>
       </div>
 
+      <!-- 空数据状态 -->
+      <div v-if="!isLoading && displayedPosts.length === 0" class="text-center py-20 text-gray-400">
+        <div class="text-5xl mb-4">📭</div>
+        <p class="text-sm">暂无文章，换个分类试试吧</p>
+      </div>
+
       <!-- 文章内容布局Blog Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20">
-        <BlogCard v-for="post in displayedPosts" :key="post.id" :post="post" />
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20">
+        <BlogCard v-for="blogPost in displayedPosts" :key="blogPost.id" :blog-post="blogPost" />
       </div>
 
       <!-- 加载更多触发器 / 底部状态 -->

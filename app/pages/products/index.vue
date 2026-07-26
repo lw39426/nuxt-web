@@ -100,7 +100,7 @@
                   <!-- 新品标签 & 系列标题 -->
                   <div>
                     <div
-                      v-if="series.featured?.isNew"
+                      v-if="series.featured?.is_new"
                       class="inline-block mb-4 px-3 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-full"
                     >
                       新品
@@ -225,7 +225,7 @@ const initializeProducts = async () => {
 
     const seriesList = await Promise.all(
       categories.value.map(async (item) => {
-        const productsRes = await getProducts(item.id, 1, 10);
+        const productsRes = await getProducts(item.id, { page: 1, pageSize: 10 });
         console.log('获取分类下的产品:', productsRes);
         const products = productsRes.data || [];
         return {

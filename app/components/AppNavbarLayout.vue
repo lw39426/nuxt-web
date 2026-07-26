@@ -236,7 +236,7 @@ onUnmounted(() => {
                   />
                 </svg>
               </div>
-              <p class="font-bold font-display text-xl text-gray-900 dark:text-white">CoreDB</p>
+              <p class="font-bold font-display text-xl text-gray-900 dark:text-white">Lyoo</p>
             </a>
           </div>
 

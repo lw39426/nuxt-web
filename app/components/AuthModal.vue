@@ -86,9 +86,7 @@ const handleLogin = async () => {
   try {
     const res = await loginByUsername({
       username: loginForm.value.email,
-      password: loginForm.value.password,
-      captcha: loginForm.value.captcha,
-      captcha_key: captchaKey.value
+      password: loginForm.value.password
     });
 
     if (res && res.access_token) {
@@ -129,12 +127,10 @@ const handleRegister = async () => {
   isLoading.value = true;
   try {
     await register({
-      nickname: registerForm.value.nickname,
       username: registerForm.value.username,
-      phone: registerForm.value.phone,
       password: registerForm.value.password,
-      captcha: registerForm.value.captcha,
-      captcha_key: captchaKey.value
+      phone: registerForm.value.phone || undefined,
+      code: registerForm.value.captcha || undefined
     });
 
     toast.add({

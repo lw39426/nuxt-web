@@ -1,78 +1,124 @@
 <script setup lang="ts">
+import type { Article, BlogPost } from '~/types/blog';
+import { useArticleApi } from '~/composables/api/article';
+
 const route = useRoute();
-const id = route.params.id;
+const articleCode = route.params.id as string;
+console.log('Article code from route:', articleCode);
 
-// Mock Data for Detail Page
-const post = {
-  id: Number(id),
-  title: 'Introducing the Mintlify Agent to write documentation with AI',
-  category: 'Announcements',
-  date: 'September 29, 2025',
-  readTime: '2 min read',
-  image:
-    'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop',
-  author: {
-    name: 'Han Wang',
-    role: 'Co-Founder',
-    avatar:
-      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
-  },
-  content: `
-    <p class="mb-6">Documentation is the bridge between your code and your users. But keeping it up to date is a constant struggle. As codebases evolve, documentation often lags behind, leading to confusion and frustration.</p>
-    
-    <p class="mb-6">Today, we're excited to introduce the <strong>Mintlify Agent</strong>, a new way to maintain your documentation using AI. The Agent automatically monitors your pull requests, Slack threads, and other sources to suggest updates to your documentation.</p>
+const { detail, related } = useArticleApi();
 
-    <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900 dark:text-white">How it works</h2>
-    <p class="mb-6">The Mintlify Agent integrates directly into your workflow. When you merge a PR that changes an API endpoint, the Agent detects the change and drafts a pull request to update your documentation.</p>
-    
-    <ul class="list-disc pl-6 mb-6 space-y-2">
-      <li><strong>Automatic Detection:</strong> Monitors your codebase for changes.</li>
-      <li><strong>Context Aware:</strong> Understands the context of your changes from PR descriptions and comments.</li>
-      <li><strong>Human in the Loop:</strong> You always have the final say. Review and approve changes before they go live.</li>
-    </ul>
+// --- 文章详情 ---
+const post = ref<Article | null>(null);
+const isLoading = ref(true);
+const error = ref(false);
 
-    <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900 dark:text-white">Getting Started</h2>
-    <p class="mb-6">The Mintlify Agent is available today for all Enterprise customers. To get started, simply enable the integration in your dashboard.</p>
-  `
+// --- 相关文章 ---
+const relatedPosts = ref<BlogPost[]>([]);
+
+/** 安全格式化日期（无效/缺失时返回空串） */
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+/** 将 Article 转为 BlogPost 供 BlogCard 使用（带字段判空保护） */
+function articleToBlogPost(article: Article): BlogPost {
+  return {
+    id: article.id,
+    code: article.code || String(article.id),
+    title: article.title || '无标题',
+    excerpt: article.description || '',
+    category: article.category_name || '',
+    image: article.image || '/images/placeholder.svg',
+    date: formatDate(article.published_date),
+    author: {
+      // 优先取作者名字符串，其次取发布者昵称，最后佚名
+      name: article.author || article.user?.nickname || '佚名',
+      role: '',
+      avatar: article.user?.avatar || ''
+    }
+  };
+}
+
+/** 加载文章详情 */
+const loadArticle = async () => {
+  isLoading.value = true;
+  error.value = false;
+  try {
+    const data = await detail(articleCode);
+    console.log('Loaded article data:', data);
+    post.value = data;
+  } catch (err) {
+    console.error('Failed to load article:', err);
+    error.value = true;
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-// Related Posts Mock
-const relatedPosts = [
-  {
-    id: 2,
-    title: 'Impact of SHA1-Hulud: The Second Coming on the Mintlify CLI',
-    excerpt: 'The Mintlify CLI was briefly exposed to a supply chain attack.',
-    category: 'ANNOUNCEMENTS',
-    image:
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
-    author: {
-      name: 'Han Wang',
-      role: 'Co-Founder',
-      avatar:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
-    }
-  },
-  {
-    id: 3,
-    title: 'Documentation is dead. Long live documentation.',
-    excerpt: 'How documentation is changing in the age of AI.',
-    category: 'AI TRENDS',
-    image:
-      'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop',
-    author: {
-      name: 'Han Wang',
-      role: 'Co-Founder',
-      avatar:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
-    }
+/** 加载相关文章 */
+const loadRelated = async () => {
+  try {
+    const data = await related(articleCode, 4);
+    // 接口异常返回非数组时保持空列表
+    relatedPosts.value = Array.isArray(data) ? data.map(articleToBlogPost) : [];
+  } catch (err) {
+    console.error('Failed to load related articles:', err);
+    // 相关文章加载失败不影响主内容
   }
-];
+};
+
+// 初始加载
+onMounted(async () => {
+  await loadArticle();
+  if (post.value) {
+    loadRelated();
+  }
+});
+
+// 计算属性: 发布日期格式化（日期无效时返回空串）
+const formattedDate = computed(() => {
+  if (!post.value?.published_date) return '';
+  const d = new Date(post.value.published_date);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+});
+
+// 计算属性: 作者名（优先作者名字符串，其次发布者昵称，最后佚名）
+const authorName = computed(() => post.value?.author || post.value?.user?.nickname || '佚名');
+
+// 计算属性: 作者头像（可能为空，为空时模板降级显示首字母）
+const authorAvatar = computed(() => post.value?.user?.avatar || '');
+
+// 计算属性: 评论总数（详情接口的 comment_statistics 优先，其次 comment_count）
+const totalComments = computed(
+  () => post.value?.comment_statistics?.total_comments ?? post.value?.comment_count ?? 0
+);
+
+// 计算属性: 阅读时长估算
+const readTime = computed(() => {
+  if (!post.value?.content) return '';
+  const text = post.value.content.replace(/<[^>]*>/g, '');
+  const minutes = Math.max(1, Math.ceil(text.length / 500));
+  return `${minutes} min read`;
+});
 </script>
 
 <template>
   <div class="min-h-screen bg-white dark:bg-black pb-20">
     <!-- Back Button -->
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       <NuxtLink to="/blog" class="inline-flex items-center gap-2 group">
         <div
           class="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center transition-transform group-hover:-translate-x-1"
@@ -83,79 +129,112 @@ const relatedPosts = [
       </NuxtLink>
     </div>
 
-    <!-- Article Header -->
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-12 text-center">
-      <div
-        class="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 mb-6"
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex justify-center items-center py-32">
+      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400"></div>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error || !post" class="text-center py-32">
+      <div class="text-6xl mb-4">📝</div>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">文章不存在</h2>
+      <p class="text-gray-500 dark:text-gray-400 mb-6">该文章可能已被删除或链接无效</p>
+      <NuxtLink
+        to="/blog"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium"
       >
-        <span class="uppercase tracking-wider">{{ post.category }}</span>
-        <span class="text-gray-300 dark:text-gray-700">•</span>
-        <span class="text-gray-500 dark:text-gray-400">{{ post.date }}</span>
-        <span class="text-gray-300 dark:text-gray-700">•</span>
-        <span class="text-gray-500 dark:text-gray-400">{{ post.readTime }}</span>
-      </div>
+        返回博客列表
+      </NuxtLink>
+    </div>
 
-      <h1 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight">
-        {{ post.title }}
-      </h1>
-
-      <div class="flex items-center justify-center gap-3 mb-12">
-        <img
-          :src="post.author.avatar"
-          :alt="post.author.name"
-          class="h-12 w-12 rounded-full object-cover"
-        />
-        <div class="text-left">
-          <div class="font-bold text-gray-900 dark:text-white">{{ post.author.name }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">{{ post.author.role }}</div>
+    <!-- Article Content -->
+    <template v-else>
+      <!-- Article Header -->
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-12 text-center">
+        <h1 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight">
+          {{ post.title }}
+        </h1>
+        <div
+          class="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 mb-6"
+        >
+          <span class="uppercase tracking-wider">{{ post.category_name }}</span>
+          <span class="text-gray-300 dark:text-gray-700">•</span>
+          <span class="text-gray-500 dark:text-gray-400">{{ formattedDate }}</span>
+          <span class="text-gray-300 dark:text-gray-700">•</span>
+          <span class="text-gray-500 dark:text-gray-400">{{ readTime }}</span>
+        </div>
+        <div class="flex items-center justify-center gap-3 mb-12">
+          <!-- 有头像时显示头像，否则降级显示姓名首字母 -->
+          <img
+            v-if="authorAvatar"
+            :src="authorAvatar"
+            :alt="authorName"
+            class="h-12 w-12 rounded-full object-cover"
+          />
+          <div
+            v-else
+            class="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+          >
+            <span class="text-lg font-bold text-gray-600 dark:text-gray-300">
+              {{ authorName.charAt(0) }}
+            </span>
+          </div>
+          <div class="text-left">
+            <div class="font-bold text-gray-900 dark:text-white">{{ authorName }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              浏览 {{ post.views ?? 0 }} · 赞 {{ post.likes ?? 0 }} · 评论 {{ totalComments }}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Featured Image -->
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-      <div class="aspect-[2/1] rounded-3xl overflow-hidden shadow-2xl">
-        <img :src="post.image" :alt="post.title" class="w-full h-full object-cover" />
-      </div>
-    </div>
-
-    <!-- Content -->
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      <article class="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300">
-        <div v-html="post.content"></div>
-      </article>
-
-      <!-- Share / Tags (Optional) -->
-      <div
-        class="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center"
-      >
-        <div class="text-sm text-gray-500">Share this article</div>
-        <div class="flex gap-4">
-          <button
-            class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-          >
-            <div class="i-carbon-logo-twitter w-5 h-5"></div>
-          </button>
-          <button
-            class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-          >
-            <div class="i-carbon-logo-linkedin w-5 h-5"></div>
-          </button>
-          <button
-            class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-          >
-            <div class="i-carbon-link w-5 h-5"></div>
-          </button>
+      <!-- Featured Image -->
+      <div v-if="post.image" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div class="aspect-[2/1] rounded-3xl overflow-hidden shadow-2xl">
+          <img :src="post.image" :alt="post.title" class="w-full h-full object-cover" />
         </div>
       </div>
-    </div>
 
-    <!-- Related Posts -->
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Read next</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <BlogCard v-for="related in relatedPosts" :key="related.id" :post="related as any" />
+      <!-- Content -->
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <article
+          class="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300"
+        >
+          <div v-html="post.content"></div>
+        </article>
+
+        <!-- Share / Tags -->
+        <div
+          class="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center"
+        >
+          <div class="text-sm text-gray-500">分享这篇文章</div>
+          <div class="flex gap-4">
+            <button
+              class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+            >
+              <div class="i-carbon-logo-twitter w-5 h-5"></div>
+            </button>
+            <button
+              class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+            >
+              <div class="i-carbon-logo-linkedin w-5 h-5"></div>
+            </button>
+            <button
+              class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+            >
+              <div class="i-carbon-link w-5 h-5"></div>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <!-- Related Posts -->
+      <div v-if="relatedPosts.length" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">推荐阅读</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <BlogCard v-for="rp in relatedPosts" :key="rp.id" :blog-post="rp" />
+        </div>
+      </div>
+    </template>
   </div>
 </template>
