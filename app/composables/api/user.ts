@@ -1,44 +1,80 @@
+/** 用户信息 */
 export interface UserInfo {
   id: number
   username: string
-  avatar?: string
-  email?: string
-  phone?: string
+  nickname: string
+  phone: string
+  gender: number
+  avatar: string
+  description: string
+  enable: number
+  birthday: string
+  create_at: string
+}
+
+/** 更新用户信息请求体 */
+export interface UpdateUserInfoPayload {
+  nickname?: string
+  gender?: number
+  birthday?: string
+  description?: string
 }
 
 /**
- * 用户模块 API 封装
+ * 用户信息模块 API 封装
+ * 前缀: /user
+ * 需要鉴权
  */
 export function useUserApi() {
-  const { get, post } = useApi()
+  const { get, post, put } = useApi()
 
   /**
-   * 获取用户信息（GET /miniapp/user/info）
+   * 获取用户信息
+   * GET /user/info
    */
   async function getInfo() {
-    return await get<UserInfo>('/miniapp/user/info')
+    return await get<UserInfo>('/user/info')
   }
 
   /**
-   * 更新用户信息（POST /miniapp/user/updateInfo）
+   * 更新用户信息
+   * PUT /user/updateInfo
    */
-  async function updateInfo(payload: Partial<UserInfo>) {
-    return await post<UserInfo>('/miniapp/user/updateInfo', payload as any)
+  async function updateInfo(payload: UpdateUserInfoPayload) {
+    return await put<UserInfo>('/user/updateInfo', payload)
   }
 
   /**
-   * 修改密码（POST /miniapp/user/updatePassword）
+   * 修改密码
+   * POST /user/updatePassword
    */
-  async function updatePassword(payload: { oldPassword: string; newPassword: string }) {
-    return await post<null>('/miniapp/user/updatePassword', payload)
+  async function updatePassword(payload: { old_password: string; new_password: string }) {
+    return await post<null>('/user/updatePassword', payload)
   }
 
   /**
-   * 获取图形验证码（GET /miniapp/user/getCode）
+   * 获取个人资料
+   * GET /user/profile
    */
-  async function getCaptcha() {
-    return await get<{ imgBase64: string; uuid: string }>('/miniapp/user/getCode')
+  async function getProfile() {
+    return await get<UserInfo>('/user/profile')
   }
 
-  return { getInfo, updateInfo, updatePassword, getCaptcha }
+  /**
+   * 绑定手机号
+   * POST /user/bindPhone
+   */
+  async function bindPhone(payload: { phone: string; code: string }) {
+    return await post<null>('/user/bindPhone', payload)
+  }
+
+  /**
+   * 更新背景封面
+   * POST /user/bgCover
+   */
+  async function updateBgCover(payload: { bg_cover: string }) {
+    return await post<null>('/user/bgCover', payload)
+  }
+
+  return { getInfo, updateInfo, updatePassword, getProfile, bindPhone, updateBgCover }
 }

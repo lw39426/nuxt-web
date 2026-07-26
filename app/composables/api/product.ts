@@ -1,55 +1,46 @@
 import type { Product } from '~/types/product'
+import type { Pagination } from '~/types/api'
 
+/** 商品搜索请求参数 */
 export interface ProductSearchParams {
-  q?: string
-  categoryId?: number
-  minPrice?: number
-  maxPrice?: number
-  sort?: 'price_asc' | 'price_desc' | 'latest' | 'popular'
   page?: number
   pageSize?: number
-  brand?: string[]
-  memory?: string[]
+  keyword?: string
+  category_id?: number
+  min_price?: number
+  max_price?: number
+  sort_by?: 'create_time' | 'price' | 'sales'
+  sort_order?: 'asc' | 'desc'
 }
 
-export interface PageResult<T> {
-  items: T[]
-  page: number
-  pageSize: number
-  total: number
+/** 商品搜索响应 */
+export interface ProductSearchResult {
+  products: Product[]
+  pagination: Pagination
 }
 
 /**
  * 商品模块 API 封装
+ * 前缀: /product
+ * 无鉴权要求
  */
 export function useProductApi() {
   const { get } = useApi()
 
   /**
-   * 获取商品详情（GET /miniapp/api/product/<id>）
+   * 获取商品详情
+   * GET /product/<product_code>
    */
-  async function getDetail(productId: number) {
-    return await get<Product>(`/miniapp/api/product/${productId}`)
+  async function getDetail(productCode: string) {
+    return await get<Product>(`/product/${productCode}`)
   }
 
   /**
-   * 商品搜索（GET /miniapp/api/product/search）
+   * 商品搜索
+   * GET /product/search
    */
   async function search(params: ProductSearchParams) {
-    // Convert array params to comma-separated strings if needed, or let $fetch handle it
-    // nuxt $fetch/ofetch handles arrays as repeated params usually (e.g. brand=a&brand=b)
-    // But my server implementation expects comma separated strings (e.g. brand=a,b)
-    // So I should convert them here.
-
-    const apiParams: any = { ...params }
-    if (Array.isArray(params.brand)) {
-      apiParams.brand = params.brand.join(',')
-    }
-    if (Array.isArray(params.memory)) {
-      apiParams.memory = params.memory.join(',')
-    }
-
-    return await get<PageResult<Product>>('/miniapp/api/product/search', apiParams)
+    return await get<ProductSearchResult>('/product/search', params)
   }
 
   return { getDetail, search }

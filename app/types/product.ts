@@ -1,48 +1,41 @@
-// 商品类型定义
+/**
+ * 商品类型定义
+ * 对应接口文档中的 Product 数据模型
+ * 价格单位：分（整数），前端展示时 /100 转换为元
+ */
+
+/** 商品标签 */
+export interface ProductTag {
+  id: number
+  name: string
+  color: string
+  weight: number
+}
+
+/** 商品对象 */
 export interface Product {
   id: number
-  title?: string
-  code?: string
-  name?: string
-  main_image?: string
-  sales?: number
-  stock?: number
+  code: string
+  name: string
+  description: string
   price: number
-  originalPrice?: number
-  description?: string
-  rating?: number
-  reviewCount?: number
-  images?: string[]
-  sizes?: string[]
-  colors?: { name: string; hex: string }[]
+  sale_price: number
+  stock: number
+  category_id: number
+  status: number // 0-下架，1-上架
+  main_image: string
+  images: string[]
+  detail_html: string
+  sales: number
+  sort: number
   brand: string
-  memory?: string
-  screenSize?: string
-  screenType?: string
-  battery?: string
-  protectionClass?: string
-  isNew?: boolean
-  isSale?: boolean
-  // 优惠信息
-  promotions?: string[]
-  highlights?: { icon?: string; text: string }[]
-  // 规格选择
-  memoryOptions?: string[]
-  versionOptions?: string[]
-  colorOptions?: { name: string; hex: string }[]
-  // 保障类型
-  guarantees?: {
-    name: string
-    description: string
-  }[]
-  // 购买选项
-  services?: {
-    id: string
-    name: string
-    price: number
-    originalPrice?: number
-    discount?: string
-  }[]
+  favorite_count: number
+  category_name: string
+  tags: ProductTag[]
+  create_time: string // ISO8601 UTC
+  update_time: string // ISO8601 UTC
+  // 新品标记（首页新品推荐接口额外返回）
+  is_new?: boolean
 }
 
 export interface FilterOption {

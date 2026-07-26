@@ -1,4 +1,24 @@
-import type { Product } from '../../app/types/product'
+// Mock 商品类型（仅供服务端 Mock 使用，不依赖前端类型定义）
+interface MockProduct {
+  id: number
+  title?: string
+  code?: string
+  name?: string
+  main_image?: string
+  sales?: number
+  stock?: number
+  price: number
+  originalPrice?: number
+  description?: string
+  rating?: number
+  reviewCount?: number
+  images?: string[]
+  brand: string
+  memory?: string
+  isNew?: boolean
+  isSale?: boolean
+  [key: string]: any
+}
 
 export interface MockCategoryItem {
   id: number
@@ -45,7 +65,7 @@ const STORE_CATEGORIES: MockCategoryItem[] = [
   }
 ]
 // 系列产品Mock数据
-const STORE_SERIES_PRODUCTS: Record<string, Product[]> = {
+const STORE_SERIES_PRODUCTS: Record<string, MockProduct[]> = {
   iPhone: [
     {
       id: 1,
@@ -335,7 +355,7 @@ const STORE_SERIES_PRODUCTS: Record<string, Product[]> = {
   ]
 }
 // 产品详情列表Mock数据
-const PRODUCT_DETAIL_LIST: Product[] = [
+const PRODUCT_DETAIL_LIST: MockProduct[] = [
   {
     id: 1,
     title: 'OPPO Reno15 星光蝴蝶结 12GB+512GB 官方标配',
@@ -481,8 +501,8 @@ export const getMockStoreSeries = () => {
   }).filter((item) => item.featured)
 }
 
-export const getMockProductList = (): Product[] => PRODUCT_DETAIL_LIST
+export const getMockProductList = (): MockProduct[] => PRODUCT_DETAIL_LIST
 
-export const getMockProductById = (id: number): Product | null => {
+export const getMockProductById = (id: number): MockProduct | null => {
   return PRODUCT_DETAIL_LIST.find((item) => item.id === id) || null
 }

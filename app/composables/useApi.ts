@@ -30,7 +30,7 @@ const requestLocks = new Map<string, Promise<any>>()
 export function useApi() {
   const config = useRuntimeConfig()
   // 服务端走内网直连（BFF模式），客户端走 Nginx 代理地址
-  const apiBase = import.meta.server ? config.apiSecretBase : config.public.apiBase
+  const apiBase = (import.meta.server ? config.apiSecretBase : config.public.apiBase) as string
   const authStore = import.meta.client ? useAuthStore() : null
   const uiStore = import.meta.client ? useUiStore() : null
   const tokenCookie = useCookie<string | null>('auth_token')
@@ -142,11 +142,13 @@ export function useApi() {
                 // 注意：这里必须使用无拦截器的 fetch 或者特定逻辑，防止死循环
                 // 且不带 Bearer，因为我们要传 refresh_token
                 const refreshRes = await $fetch<ApiResponse<{ access_token: string }>>(
-                  '/v1/auth/refreshToken',
+                  '/api/v1/auth/refreshToken',
                   {
                     baseURL: apiBase,
                     method: 'POST',
-                    body: { refresh_token: rt }
+                    headers: {
+                      Authorization: `Bearer ${rt}`
+                    }
                   }
                 )
 

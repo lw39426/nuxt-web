@@ -1,15 +1,15 @@
-import type { Product } from '~/types/product'
-
+/**
+ * Mock 商品数据 composable
+ * 仅用于开发阶段的 mock 数据展示，实际对接时应使用 useProductApi
+ */
 export const useProducts = () => {
-  const products = ref<Product[]>([])
+  const products = ref<any[]>([])
 
   const loadProducts = async () => {
     if (products.value.length > 0) return
 
     try {
-      const res = await $fetch<{ code: number; message: string; data: Product[] }>(
-        '/api/mock/products'
-      )
+      const res = await $fetch<{ code: number; message: string; data: any[] }>('/api/mock/products')
       products.value = Array.isArray(res?.data) ? res.data : []
     } catch (error) {
       console.error('Failed to load mock products:', error)
