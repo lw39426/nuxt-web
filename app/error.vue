@@ -16,16 +16,14 @@ const errorInfo = computed(() => {
   switch (code) {
     case 404:
       return {
-        title: 'Page Not Found',
-        message:
-          "Sorry, we couldn't find the page you're looking for. It might have been moved or deleted.",
+        title: '页面未找到',
+        message: '抱歉，您访问的页面不存在或已被移除。',
         icon: 'i-carbon-location-heart-filled'
       };
     case 403:
       return {
-        title: 'Access Forbidden',
-        message:
-          "You don't have permission to access this page. Please contact support if you believe this is an error.",
+        title: '访问受限',
+        message: '您没有权限访问此页面。请确认账号权限或联系管理员。',
         icon: 'i-carbon-security'
       };
     case 500:
@@ -34,15 +32,14 @@ const errorInfo = computed(() => {
     case 504:
     case 505:
       return {
-        title: 'Server Error',
-        message:
-          "Something went wrong on our end. We're working to fix it. Please try again later.",
+        title: '服务器异常',
+        message: '服务器暂时不可用，我们正在紧急修复中。请稍后再试。',
         icon: 'i-carbon-data-error'
       };
     default:
       return {
-        title: 'An Error Occurred',
-        message: props.error?.message || 'An unexpected error occurred.',
+        title: '发生错误',
+        message: props.error?.message || '发生未知错误，请稍后再试。',
         icon: 'i-carbon-warning-alt'
       };
   }
@@ -92,21 +89,21 @@ useHead({
           @click="handleError"
         >
           <div class="i-carbon-home" />
-          Back to Home
+          返回首页
         </button>
         <button
           class="px-8 py-3 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white rounded-full font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
           @click="goBack"
         >
           <div class="i-carbon-arrow-left" />
-          Go Back
+          返回上页
         </button>
       </div>
     </div>
 
     <!-- Footer info -->
     <div class="absolute bottom-8 text-sm text-gray-400 dark:text-gray-600 font-mono">
-      Error Code: {{ error?.statusCode }}
+      错误代码: {{ error?.statusCode }}
     </div>
   </div>
 </template>
