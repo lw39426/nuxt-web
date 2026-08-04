@@ -2,23 +2,41 @@ import type { Pagination } from '~/types/api'
 
 /** 地区对象 */
 export interface Region {
-  id: number
+  bg_day_url: string
+  bg_night_url: string
+  characters: Character[]
   code: string
+  create_time: string
+  description: string
+  id: string
+  is_deleted: boolean
   name: string
-  description?: string
-  image?: string
-  parent_id?: number
-  children: Region[]
+  sort_order: number
+  status: number
+  update_time: string
 }
 
 /** 角色对象 */
 export interface Character {
-  id: number
+  audio_enter_url: any
+  avatar_url: string
   code: string
+  cover_img_url: string
+  create_time: string
+  cv_cn: any
+  cv_jp: any
+  description: string
+  element: string
+  id: string
+  is_deleted: boolean
   name: string
-  description?: string
-  image?: string
-  region_code?: string
+  quote: string
+  region_code: string
+  region_id: string
+  region_name: string
+  sort_order: number
+  status: number
+  update_time: string
 }
 
 /** 角色列表查询参数 */

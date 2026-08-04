@@ -22,3 +22,11 @@ export interface PaginationParams {
   page?: number
   pageSize?: number
 }
+
+/** 统一 API 响应 */
+export interface ApiResponse<T> {
+  code: number
+  message: string
+  data: T
+  timestamp?: string
+}
