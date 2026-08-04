@@ -19,6 +19,20 @@ export interface ProductSearchResult {
   pagination: Pagination
 }
 
+/** 商品相关推荐请求参数 */
+export interface ProductRelatedParams {
+  limit?: number
+}
+
+/** 商品相关推荐响应 */
+export interface ProductRelatedResult {
+  product_id: number
+  product_code: string
+  category_id: number
+  related: Product[]
+  total: number
+}
+
 /**
  * 商品模块 API 封装
  * 前缀: /product
@@ -32,7 +46,15 @@ export function useProductApi() {
    * GET /product/<product_code>
    */
   async function getDetail(productCode: string) {
-    return await get<Product>(`/product/${productCode}`)
+    return await get<Product>(`/product/${productCode.trim()}`)
+  }
+
+  /**
+   * 获取相关推荐商品
+   * GET /product/<product_code>/related
+   */
+  async function related(productCode: string, params?: ProductRelatedParams) {
+    return await get<ProductRelatedResult>(`/product/${productCode.trim()}/related`, params)
   }
 
   /**
@@ -43,5 +65,5 @@ export function useProductApi() {
     return await get<ProductSearchResult>('/product/search', params)
   }
 
-  return { getDetail, search }
+  return { getDetail, related, search }
 }

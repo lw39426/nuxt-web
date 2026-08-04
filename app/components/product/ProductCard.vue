@@ -1,10 +1,10 @@
 <template>
-  <div class="group relative flex flex-col">
+  <div class="group relative flex flex-col h-full">
     <!-- Image Container -->
     <div
       class="relative w-full h-[160px] sm:h-[256px] aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800/50 rounded-xl"
     >
-      <NuxtLink :to="`/products/${product.id}`" class="block w-full h-full mx-auto">
+      <NuxtLink :to="productDetailPath" class="block w-full h-full mx-auto">
         <img
           :src="product?.main_image || ''"
           :alt="product?.name || ''"
@@ -33,12 +33,20 @@
 
     <!-- Content -->
     <div class="pt-3 flex flex-col flex-1">
-      <div class="mb-1 sm:mb-2">
+      <div class="mb-1 sm:mb-2 flex items-center gap-2 flex-wrap">
         <span class="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">{{
           product.brand || 'Brand'
         }}</span>
+        <span
+          v-for="tag in product.tags"
+          :key="tag.id"
+          class="text-[10px] px-1.5 py-0.5 rounded text-white"
+          :style="{ backgroundColor: tag.color || '#3b82f6' }"
+        >
+          {{ tag.name }}
+        </span>
       </div>
-      <NuxtLink :to="`/products/${product.id}`" class="block mb-1 sm:mb-2">
+      <NuxtLink :to="productDetailPath" class="block mb-1 sm:mb-2">
         <h3
           class="text-sm sm:text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-black/70 dark:group-hover:text-white/70 transition-colors"
         >
@@ -49,9 +57,14 @@
       <div class="mt-auto">
         <div class="flex items-end justify-between mb-3">
           <div class="flex flex-col">
-            <span class="text-base sm:text-lg font-bold text-gray-900 dark:text-white"
-              >¥{{ product?.price }}</span
-            >
+            <div class="flex items-baseline gap-2">
+              <span class="text-base sm:text-lg font-bold text-gray-900 dark:text-white"
+                >¥{{ currentPrice }}</span
+              >
+              <span v-if="hasDiscount" class="text-xs text-gray-400 line-through"
+                >¥{{ originalPrice }}</span
+              >
+            </div>
             <div class="flex items-center gap-2 mt-0.5 sm:mt-1">
               <span class="text-[10px] sm:text-xs text-gray-400"
                 >销量: {{ product.sales || 0 }}</span
@@ -83,11 +96,33 @@ const props = defineProps<{
 }>();
 
 const isFavorite = ref(false);
+const productDetailPath = computed(() => `/products/${props.product.code || props.product.id}`);
 
+/** 价格格式化（假设接口返回单位为分） */
+const formatPrice = (price?: number) => {
+  if (!price) return '0.00';
+  return price.toFixed(2);
+};
+
+const hasDiscount = computed(() => {
+  return props.product.salePrice > 0 && props.product.salePrice < props.product.price;
+});
+
+const currentPrice = computed(() => {
+  const price = hasDiscount.value ? props.product.salePrice : props.product.price;
+  return formatPrice(price);
+});
+
+const originalPrice = computed(() => {
+  return formatPrice(props.product.price);
+});
+
+/** 切换当前商品的收藏状态 */
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value;
 };
 
+/** 将当前商品加入购物车 */
 const addToCart = () => {
   // Implement add to cart logic
   console.log('Added to cart:', props.product?.name);

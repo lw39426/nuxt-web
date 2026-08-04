@@ -91,57 +91,60 @@
                 {{ series.category }} 系列
               </h2>
 
-              <!-- 第一行：左侧大卡片 + 右侧产品卡片 -->
-              <div class="flex flex-col lg:flex-row gap-4 mb-8">
-                <!-- 左侧：特色产品大卡片（占3/5宽度） -->
+              <!-- 统一的网格布局：响应式适配所有端 -->
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <!-- 左侧/顶部：分类大卡片 (类似博客 Hero 风格) -->
                 <div
-                  class="relative bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800 rounded-2xl p-8 md:p-12 flex flex-col justify-between min-h-[400px] md:min-h-[420px] w-full lg:w-3/5 flex-shrink-0"
+                  class="col-span-2 md:col-span-3 lg:col-span-3 group relative rounded-2xl overflow-hidden cursor-pointer isolate transform-gpu min-h-[320px] md:min-h-[280px] lg:min-h-[420px]"
                 >
-                  <!-- 新品标签 & 系列标题 -->
-                  <div>
-                    <div
-                      v-if="series.featured?.is_new"
-                      class="inline-block mb-4 px-3 py-1 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-full"
-                    >
-                      新品
-                    </div>
-                    <h2 class="text-3xl md:text-4xl font-bold mb-2 text-gray-900 dark:text-white">
-                      {{ series.featured?.name || '未命名产品' }}
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-                      {{ series.featured?.description || '无描述' }}
-                    </p>
-                  </div>
-
-                  <!-- 产品图片 -->
-                  <div
-                    class="flex items-end justify-center w-full overflow-hidden md:h-56 -mr-4 -mb-4"
-                  >
-                    <img
-                      :src="series.featured?.main_image || ''"
-                      :alt="series.featured?.name || ''"
-                      class="h-auto w-full object-contain"
-                    />
-                  </div>
-                </div>
-
-                <!-- 右侧：第一行的2个小卡片（占2/5宽度） -->
-                <div class="w-full lg:w-2/5 grid grid-cols-2 gap-4">
-                  <ProductCard
-                    v-for="product in series.otherProducts.slice(0, 2)"
-                    :key="product.id"
-                    :product="product"
+                  <!-- 底层背景图 -->
+                  <img
+                    v-if="series.categoryImage"
+                    :src="series.categoryImage"
+                    :alt="series.category"
+                    class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                </div>
-              </div>
+                  <!-- 如果没有图片时的降级纯色背景 -->
+                  <div
+                    v-else
+                    class="absolute inset-0 bg-gradient-to-br from-gray-800 to-black transition-transform duration-700 group-hover:scale-105"
+                  >
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <div class="i-carbon-image text-8xl text-white/10"></div>
+                    </div>
+                  </div>
 
-              <!-- 第二行及以后：完整的产品卡片网格（5列） -->
-              <div
-                v-if="series.otherProducts.length > 2"
-                class="grid grid-cols-2 sm:grid-cols-5 gap-4"
-              >
+                  <!-- 叠加层: 渐变遮罩 (底部深色向上渐变透明) -->
+                  <div
+                    class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+                  ></div>
+
+                  <!-- 叠加层: 边框效果 (抗锯齿) -->
+                  <div
+                    class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-transparent dark:ring-[#686868] pointer-events-none z-10"
+                  ></div>
+
+                  <!-- 分类内容区 (置于最上层) -->
+                  <div class="absolute inset-0 p-8 md:p-10 flex flex-col justify-end z-20">
+                    <h2
+                      class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 leading-tight group-hover:text-blue-200 transition-colors"
+                    >
+                      {{ series.category }}
+                    </h2>
+                    <div
+                      class="mt-2 flex items-center text-blue-300 font-medium text-sm md:text-base opacity-90 group-hover:opacity-100 transition-opacity"
+                    >
+                      探索系列产品
+                      <div
+                        class="i-carbon-arrow-right ml-1 transition-transform group-hover:translate-x-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 产品卡片 -->
                 <ProductCard
-                  v-for="product in series.otherProducts.slice(2)"
+                  v-for="product in series.products"
                   :key="product.id"
                   :product="product"
                 />
@@ -176,14 +179,16 @@ import { useCategoryApi } from '~/composables/api/category';
 import type { Product } from '~/types/product';
 
 const { getProductCateList, getProducts } = useCategoryApi();
+// useToast 必须在 setup 同步阶段调用，不能在 await 之后的回调中使用
+const toast = useToast();
 // 分类列表数据
 const categories = ref<any[]>([]);
 
 interface SeriesGroup {
   categoryId?: number;
   category: string;
-  featured: Product;
-  otherProducts: Product[];
+  categoryImage: string;
+  products: Product[];
 }
 // 当前选中的分类名称
 const selectedCategory = ref<string | null>(null);
@@ -211,6 +216,12 @@ const initializeCategories = async () => {
   } catch (error) {
     console.error('Failed to fetch categories:', error);
     categories.value = [];
+    toast.add({
+      id: 'products-categories-error',
+      title: '加载失败',
+      description: '分类列表加载失败，请刷新页面重试',
+      color: 'error'
+    });
   }
 };
 
@@ -231,16 +242,22 @@ const initializeProducts = async () => {
         return {
           categoryId: item.id,
           category: item.name,
-          featured: products[0],
-          otherProducts: products.slice(1) as Product[]
+          categoryImage: item.image,
+          products: products as Product[]
         } as SeriesGroup;
       })
     );
 
-    groupedProducts.value = seriesList.filter((item) => item.featured);
+    groupedProducts.value = seriesList.filter((item) => item.products.length > 0);
   } catch (error) {
     console.error('Failed to fetch products:', error);
     groupedProducts.value = [];
+    toast.add({
+      id: 'products-list-error',
+      title: '加载失败',
+      description: '商品列表加载失败，请刷新页面重试',
+      color: 'error'
+    });
   }
 };
 

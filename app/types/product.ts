@@ -19,7 +19,7 @@ export interface Product {
   name: string
   description: string
   price: number
-  sale_price: number
+  salePrice: number
   stock: number
   category_id: number
   status: number // 0-下架，1-上架

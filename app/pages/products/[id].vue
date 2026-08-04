@@ -1,6 +1,12 @@
 <template>
   <div class="bg-white dark:bg-black min-h-screen">
-    <div v-if="product" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 sm:pb-8">
+    <div v-if="isLoading" class="flex items-center justify-center min-h-[50vh]">
+      <div class="i-carbon-circle-dash text-3xl animate-spin text-gray-400" />
+    </div>
+    <div
+      v-else-if="product"
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 sm:pb-8"
+    >
       <!-- Breadcrumbs 面包屑部分 -->
       <nav class="hidden sm:flex text-sm text-gray-500 mb-8">
         <ol class="flex items-center space-x-2">
@@ -51,6 +57,21 @@
               <img :src="img" class="w-full h-full object-contain p-2" />
             </button>
           </div>
+          <!-- 商品富文本展示 -->
+          <section
+            v-if="richTextContent"
+            class="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/60 p-6 sm:p-8"
+          >
+            <div class="flex items-center justify-between gap-3 mb-6">
+              <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">图文详情</h2>
+              <span class="text-xs text-gray-500 dark:text-gray-400">商品卖点与详细说明</span>
+            </div>
+            <article
+              class="prose prose-sm sm:prose-base dark:prose-invert max-w-none text-gray-700 dark:text-gray-300"
+            >
+              <div v-html="richTextContent"></div>
+            </article>
+          </section>
         </div>
 
         <!-- Info (Right, Sticky) 商品详细信息区域 -->
@@ -105,59 +126,11 @@
 
             <div class="h-px bg-gray-100 dark:bg-gray-800" />
 
-            <!-- Options -->
-            <div class="space-y-6">
-              <!-- Color -->
-              <div v-if="product?.colorOptions?.length">
-                <label class="text-sm font-bold text-gray-900 dark:text-white block mb-3"
-                  >颜色</label
-                >
-                <div class="flex flex-wrap gap-3">
-                  <button
-                    v-for="color in product.colorOptions"
-                    :key="color.name"
-                    class="px-4 py-2 rounded-full border-2 text-sm font-medium transition-all"
-                    :class="
-                      selectedColor === color.name
-                        ? 'border-black dark:border-white bg-black dark:bg-white text-white dark:text-black'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-400'
-                    "
-                    @click="selectedColor = color.name"
-                  >
-                    <span
-                      class="inline-block w-3 h-3 rounded-full mr-2"
-                      :style="{ backgroundColor: color.hex }"
-                    ></span>
-                    {{ color.name }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Memory/Version -->
-              <div v-if="product?.memoryOptions?.length">
-                <label class="text-sm font-bold text-gray-900 dark:text-white block mb-3"
-                  >版本</label
-                >
-                <div class="grid grid-cols-3 gap-2 sm:gap-3">
-                  <button
-                    v-for="mem in product.memoryOptions"
-                    :key="mem"
-                    class="py-2.5 sm:py-3 rounded-lg border-2 text-xs sm:text-sm font-medium transition-all"
-                    :class="
-                      selectedMemory === mem
-                        ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400'
-                    "
-                    @click="selectedMemory = mem"
-                  >
-                    {{ mem }}
-                  </button>
-                </div>
-              </div>
-
+            <!-- 颜色、版本、数量Options -->
+            <div class="space-y-3">
               <!-- Quantity -->
               <div>
-                <label class="text-sm font-bold text-gray-900 dark:text-white block mb-3"
+                <label class="text-sm font-bold text-gray-900 dark:text-white block mb-1"
                   >数量</label
                 >
                 <div
@@ -180,38 +153,26 @@
               </div>
             </div>
 
-            <!-- Services (保障服务) -->
-            <div
-              v-if="product?.services?.length"
-              class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg space-y-3"
-            >
-              <p class="text-xs font-bold text-gray-900 dark:text-white mb-3">保障服务(可选)</p>
-              <div v-for="service in product.services" :key="service.id" class="space-y-2">
-                <label class="flex items-start gap-3 cursor-pointer">
-                  <input
-                    v-model="selectedServices"
-                    type="checkbox"
-                    :value="service.id"
-                    class="mt-1"
-                  />
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white">
-                      {{ service.name }}
-                    </p>
-                    <p class="text-xs text-gray-600 dark:text-gray-400">
-                      <span v-if="service.discount" class="text-red-600 font-bold">{{
-                        service.discount
-                      }}</span>
-                      ¥{{ service.price }}
-                      <span v-if="service.originalPrice" class="line-through text-gray-500"
-                        >¥{{ service.originalPrice }}</span
-                      >
+            <!-- Specs and Description Section -->
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 space-y-6">
+              <!-- Two Column Grid -->
+              <div class="grid grid-cols-1 gap-6 sm:gap-8">
+                <!-- Description -->
+                <div class="space-y-4">
+                  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">商品描述</h3>
+                  <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed space-y-3">
+                    <p>{{ product?.description }}</p>
+                    <p
+                      v-if="product?.title?.includes('Reno')"
+                      class="text-gray-600 dark:text-gray-400"
+                    >
+                      OPPO Reno
+                      系列致力于为消费者提供最好的拍照体验和电池续航能力。该产品集合了最新的技术创新和精致的工业设计。
                     </p>
                   </div>
-                </label>
+                </div>
               </div>
             </div>
-
             <div class="hidden sm:flex gap-3 pt-4">
               <button
                 class="flex-1 bg-black dark:bg-white text-white dark:text-black h-12 rounded-lg font-bold text-base hover:opacity-90 transition-opacity shadow-md"
@@ -240,7 +201,6 @@
 
             <!-- Highlights Grid (Above Product Details) -->
             <div
-              v-if="product?.highlights?.length"
               class="grid grid-cols-2 gap-3 sm:gap-4 py-4 sm:py-6 border-t border-b border-gray-200 dark:border-gray-800"
             >
               <div v-for="(highlight, idx) in product.highlights" :key="idx" class="text-center">
@@ -248,69 +208,6 @@
                 <p class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                   {{ highlight.text }}
                 </p>
-              </div>
-            </div>
-
-            <!-- Specs and Description Section -->
-            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 space-y-6">
-              <!-- Section Title -->
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white">商品详情</h2>
-
-              <!-- Two Column Grid -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                <!-- Specifications -->
-                <div class="space-y-4">
-                  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">规格参数</h3>
-                  <dl class="space-y-3">
-                    <div
-                      class="flex justify-between items-start py-2 border-b border-gray-100 dark:border-gray-800"
-                    >
-                      <dt class="text-sm text-gray-600 dark:text-gray-400 font-medium">屏幕尺寸</dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ product?.screenSize || '6.7英寸' }}
-                      </dd>
-                    </div>
-                    <div
-                      class="flex justify-between items-start py-2 border-b border-gray-100 dark:border-gray-800"
-                    >
-                      <dt class="text-sm text-gray-600 dark:text-gray-400 font-medium">屏幕类型</dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ product?.screenType || 'AMOLED' }}
-                      </dd>
-                    </div>
-                    <div
-                      class="flex justify-between items-start py-2 border-b border-gray-100 dark:border-gray-800"
-                    >
-                      <dt class="text-sm text-gray-600 dark:text-gray-400 font-medium">电池容量</dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ product?.battery || '4300mAh' }}
-                      </dd>
-                    </div>
-                    <div
-                      class="flex justify-between items-start py-2 border-b border-gray-100 dark:border-gray-800"
-                    >
-                      <dt class="text-sm text-gray-600 dark:text-gray-400 font-medium">防护等级</dt>
-                      <dd class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ product?.protectionClass || 'IP68' }}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-
-                <!-- Description -->
-                <div class="space-y-4">
-                  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">商品描述</h3>
-                  <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed space-y-3">
-                    <p>{{ product?.description }}</p>
-                    <p
-                      v-if="product?.title?.includes('Reno')"
-                      class="text-gray-600 dark:text-gray-400"
-                    >
-                      OPPO Reno
-                      系列致力于为消费者提供最好的拍照体验和电池续航能力。该产品集合了最新的技术创新和精致的工业设计。
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -329,11 +226,11 @@
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
           <div
-            v-for="(related, idx) in relatedProducts"
-            :key="related.id"
+            v-for="(relatedItem, idx) in relatedProducts"
+            :key="relatedItem.id"
             :class="idx > 1 ? 'hidden sm:block' : ''"
           >
-            <ProductCard :product="related" />
+            <ProductCard :product="relatedItem" />
           </div>
         </div>
       </div>
@@ -367,17 +264,210 @@
 </template>
 
 <script setup lang="ts">
+import type { Product } from '~/types/product';
+import { useProductApi } from '~/composables/api/product';
 import { useProducts } from '~/composables/useProducts';
 
-const route = useRoute();
-const { getProductById, products, loadProducts } = useProducts();
+interface ProductColorOption {
+  name: string;
+  hex: string;
+}
 
-const product = computed(() => getProductById(Number(route.params.id)));
+interface ProductHighlight {
+  text: string;
+}
+
+interface ProductGuarantee {
+  name: string;
+  description?: string;
+}
+
+interface ProductService {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  discount?: string;
+}
+
+interface ProductDetailViewModel {
+  id: number;
+  code?: string;
+  title: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  rating?: number;
+  reviewCount?: number;
+  images: string[];
+  promotions?: string[];
+  colorOptions?: ProductColorOption[];
+  memoryOptions?: string[];
+  services?: ProductService[];
+  guarantees?: ProductGuarantee[];
+  highlights?: ProductHighlight[];
+  screenSize?: string;
+  screenType?: string;
+  battery?: string;
+  protectionClass?: string;
+  detailHtml?: string;
+}
+
+const route = useRoute();
+const productIdentifier = computed(() => String(route.params.id ?? '').trim());
+const { getDetail, related } = useProductApi();
+const { getProductByIdentifier, loadProducts } = useProducts();
+
+const apiProduct = ref<Product | null>(null);
+const relatedProducts = ref<Product[]>([]);
+const isLoading = ref(true);
 const activeImage = ref('');
 const selectedColor = ref('');
 const selectedMemory = ref('');
 const selectedServices = ref<string[]>([]);
 const quantity = ref(1);
+
+/** 转义文本内容，避免兜底富文本直接注入原始 HTML */
+function escapeHtml(value?: string): string {
+  if (!value) return '';
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+/** 将后端返回的分单位金额转换为页面展示的元金额 */
+function formatApiPrice(value?: number): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 0;
+  return Number(value.toFixed(2));
+}
+
+/** 归一化商品图片列表，保证详情页始终有可用主图 */
+function normalizeImages(images?: string[], fallbackImage?: string): string[] {
+  const normalizedImages = Array.isArray(images)
+    ? images.filter((item) => typeof item === 'string' && item.trim())
+    : [];
+
+  if (normalizedImages.length > 0) {
+    return normalizedImages;
+  }
+
+  return fallbackImage ? [fallbackImage] : [];
+}
+
+/** 根据现有商品信息生成兜底富文本内容 */
+function buildFallbackDetailHtml(product: Partial<ProductDetailViewModel>): string {
+  const highlightHtml = (product.highlights || [])
+    .map((item) => `<li>${escapeHtml(item.text)}</li>`)
+    .join('');
+  const promotionHtml = (product.promotions || [])
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join('');
+
+  return `
+    <section>
+      <h3>${escapeHtml(product.title || '商品介绍')}</h3>
+      <p>${escapeHtml(product.description || '暂无商品详情介绍')}</p>
+    </section>
+    ${highlightHtml ? `<section><h3>核心亮点</h3><ul>${highlightHtml}</ul></section>` : ''}
+    ${promotionHtml ? `<section><h3>优惠信息</h3><ul>${promotionHtml}</ul></section>` : ''}
+  `.trim();
+}
+
+/** 将后端商品详情映射为页面使用的展示模型 */
+function mapApiProductToViewModel(source: Product): ProductDetailViewModel {
+  const currentPrice = source.salePrice > 0 ? source.salePrice : source.price;
+  const originalPrice = source.salePrice > 0 && source.salePrice < source.price ? source.price : 0;
+  const images = normalizeImages(source.images, source.main_image);
+
+  const viewModel: ProductDetailViewModel = {
+    id: source.id,
+    code: source.code,
+    title: source.name,
+    description: source.description,
+    price: formatApiPrice(currentPrice),
+    originalPrice: originalPrice ? formatApiPrice(originalPrice) : undefined,
+    reviewCount: source.favorite_count || 0,
+    rating: source.favorite_count ? 4.8 : 0,
+    images,
+    promotions: source.tags?.map((tag) => tag.name).filter(Boolean) || [],
+    memoryOptions: [],
+    colorOptions: [],
+    services: [],
+    guarantees: [],
+    highlights: source.tags?.map((tag) => ({ text: tag.name })) || [],
+    detailHtml: source.detail_html?.trim()
+  };
+
+  if (!viewModel.detailHtml) {
+    viewModel.detailHtml = buildFallbackDetailHtml(viewModel);
+  }
+
+  return viewModel;
+}
+
+/** 将本地 mock 商品映射为页面使用的展示模型 */
+function mapMockProductToViewModel(source: Record<string, any>): ProductDetailViewModel {
+  const viewModel: ProductDetailViewModel = {
+    id: Number(source.id),
+    code: source.code,
+    title: source.title || source.name || '未命名商品',
+    description: source.description || '',
+    price: Number(source.price || 0),
+    originalPrice: source.originalPrice,
+    reviewCount: source.reviewCount || 0,
+    rating: source.rating || 0,
+    images: normalizeImages(source.images, source.main_image),
+    promotions: Array.isArray(source.promotions) ? source.promotions : [],
+    memoryOptions: Array.isArray(source.memoryOptions) ? source.memoryOptions : [],
+    colorOptions: Array.isArray(source.colorOptions) ? source.colorOptions : [],
+    services: Array.isArray(source.services) ? source.services : [],
+    guarantees: Array.isArray(source.guarantees) ? source.guarantees : [],
+    highlights: Array.isArray(source.highlights) ? source.highlights : [],
+    screenSize: source.screenSize,
+    screenType: source.screenType,
+    battery: source.battery,
+    protectionClass: source.protectionClass,
+    detailHtml:
+      typeof source.detail_html === 'string' && source.detail_html.trim()
+        ? source.detail_html
+        : undefined
+  };
+
+  if (!viewModel.detailHtml) {
+    viewModel.detailHtml = buildFallbackDetailHtml(viewModel);
+  }
+
+  return viewModel;
+}
+
+/** 将后端商品转换为 ProductCard 可直接展示的数据 */
+function mapApiProductToCardProduct(source: Product): Product {
+  const currentPrice = source.salePrice > 0 ? source.salePrice : source.price;
+  const originalPrice =
+    source.salePrice > 0 && source.salePrice < source.price ? source.price : source.salePrice;
+
+  return {
+    ...source,
+    price: formatApiPrice(currentPrice),
+    salePrice: originalPrice > 0 ? formatApiPrice(originalPrice) : 0,
+    main_image: source.main_image || source.images?.[0] || '',
+    images: normalizeImages(source.images, source.main_image)
+  };
+}
+
+const fallbackProduct = computed(() => {
+  const localProduct = getProductByIdentifier(productIdentifier.value);
+  return localProduct ? mapMockProductToViewModel(localProduct) : null;
+});
+
+const product = computed(() =>
+  apiProduct.value ? mapApiProductToViewModel(apiProduct.value) : fallbackProduct.value
+);
+
+const richTextContent = computed(() => product.value?.detailHtml || '');
 
 const guaranteeList = computed(() => {
   if (product.value?.guarantees?.length) return product.value.guarantees;
@@ -389,20 +479,76 @@ const guaranteeList = computed(() => {
   ];
 });
 
-// Initialize defaults when product loads
+/** 商品切换后同步默认选中的图、颜色、版本和数量 */
 watchEffect(() => {
   if (product.value) {
     activeImage.value = product.value.images?.[0] || '';
     selectedColor.value = product.value.colorOptions?.[0]?.name || '';
     selectedMemory.value = product.value.memoryOptions?.[0] || '256GB';
+    quantity.value = 1;
+    selectedServices.value = [];
   }
 });
 
-const relatedProducts = computed(() =>
-  products.value.filter((p) => p.id !== product.value?.id).slice(0, 4)
-);
+/** 加载相关推荐商品 */
+async function loadRelatedProducts(productCode?: string): Promise<void> {
+  if (!productCode) {
+    return;
+  }
 
-onMounted(async () => {
-  await loadProducts();
-});
+  try {
+    const response = await related(productCode, { limit: 4 });
+    relatedProducts.value = Array.isArray(response?.related)
+      ? response.related
+          .filter((item) => item.id !== product.value?.id)
+          .slice(0, 4)
+          .map((item) => mapApiProductToCardProduct(item))
+      : [];
+  } catch (error) {
+    console.error('Failed to load related products from API, fallback to mock data:', error);
+  }
+}
+
+/** 加载详情页数据，后端接口失败时自动回退到本地 mock 商品 */
+async function loadProductDetail(): Promise<void> {
+  if (!productIdentifier.value) {
+    apiProduct.value = null;
+    isLoading.value = false;
+    return;
+  }
+
+  isLoading.value = true;
+  apiProduct.value = null;
+
+  const [, detailResult] = await Promise.allSettled([
+    loadProducts(),
+    getDetail(productIdentifier.value)
+  ]);
+
+  if (detailResult.status === 'fulfilled') {
+    apiProduct.value = detailResult.value;
+  } else {
+    console.error(
+      'Failed to load product detail from API, fallback to mock data:',
+      detailResult.reason
+    );
+  }
+
+  const relatedProductCode =
+    detailResult.status === 'fulfilled'
+      ? detailResult.value.code
+      : getProductByIdentifier(productIdentifier.value)?.code;
+
+  await loadRelatedProducts(relatedProductCode);
+
+  isLoading.value = false;
+}
+
+watch(
+  productIdentifier,
+  async () => {
+    await loadProductDetail();
+  },
+  { immediate: true }
+);
 </script>
