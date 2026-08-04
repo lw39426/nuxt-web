@@ -169,7 +169,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 definePageMeta({
   hideFooter: true
 });
-gsap.registerPlugin(ScrollTrigger);
 
 // ─── refs ───────────────────────────────────────────────
 const rootEl = ref(null);
@@ -505,6 +504,9 @@ function setupAnimations() {
 }
 
 onMounted(() => {
+  // 仅在客户端注册 GSAP 插件（避免 SSR/水合不匹配）
+  gsap.registerPlugin(ScrollTrigger);
+
   initParticles(particleCanvas.value);
   setupAnimations();
 });

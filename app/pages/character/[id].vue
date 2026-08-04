@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCharacterData, type Region } from '~/composables/useCharacterData';
 import gsap from 'gsap';
+import { useRegionApi } from '~/composables/api/region';
 
 definePageMeta({
   hideNavbar: false,
@@ -13,6 +14,7 @@ const route = useRoute();
 const router = useRouter();
 const { fetchRegionsList, fetchRegionDetails, preloadAllRegionsIdle, idlePreloadNextRegion } =
   useCharacterData();
+const { getRegions, getRegionDetail } = useRegionApi();
 
 const DEFAULT_BACKGROUND =
   'https://uploadstatic.mihoyo.com/contentweb/20200211/2020021114220951905.jpg';
@@ -65,6 +67,39 @@ const loadRegionCharacters = async (slug: string) => {
   ) {
     return;
   }
+
+  try {
+    // 尝试从 API 获取数据，地区详情接口已经包含了角色列表
+    const apiRegion = await getRegionDetail(slug);
+
+    if (apiRegion) {
+      const rawChars = apiRegion.characters || [];
+      const chars = rawChars.map((c) => ({
+        id: c.id,
+        name: c.name,
+        element: c.element || '',
+        cv_cn: c.cv_cn || '',
+        cv_jp: c.cv_jp || '',
+        quote: c.quote || '',
+        description: c.description || '',
+        avatar: c.avatar_url || '',
+        coverImg: c.cover_img_url || '',
+        audio_enter: c.audio_enter_url || ''
+      }));
+
+      regions.value[slug] = {
+        ...regions.value[slug],
+        id: apiRegion.code,
+        name: apiRegion.name,
+        bgDay: apiRegion.bg_day_url || regions.value[slug]?.bgDay || '',
+        characters: chars
+      };
+      return;
+    }
+  } catch (err) {
+    console.warn(`API request failed for ${slug}, falling back to local data`, err);
+  }
+
   const detail = await fetchRegionDetails(slug);
   if (detail) {
     // 合并原有基础数据和详细数据
@@ -551,7 +586,24 @@ onMounted(async () => {
   window.addEventListener('resize', handleResize);
 
   // 1. 获取所有地区列表（基础信息，无角色数据）
-  const regionsList = await fetchRegionsList();
+  let regionsList: Region[] = [];
+  try {
+    const apiRegions = await getRegions();
+    if (apiRegions && apiRegions.length > 0) {
+      regionsList = apiRegions.map((r) => ({
+        id: r.code,
+        name: r.name,
+        bgDay: r.bg_day_url || '',
+        characters: []
+      }));
+    } else {
+      throw new Error('No regions from API');
+    }
+  } catch (err) {
+    console.warn('API getRegions failed, falling back to mock data', err);
+    regionsList = await fetchRegionsList();
+  }
+
   regions.value = regionsList.reduce(
     (acc, region) => {
       acc[region.id] = region;
@@ -895,7 +947,7 @@ onBeforeUnmount(() => {
 
 .character__sidebar {
   position: absolute;
-  z-index: 9;
+  z-index: 99;
   top: 0;
   left: 0;
   width: 370px;

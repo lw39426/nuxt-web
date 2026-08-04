@@ -71,13 +71,13 @@
         class="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] flex items-center justify-center"
       >
         <div
-          class="absolute rounded-full border border-purple-500/20 dark:border-purple-400/30 w-[220px] h-[220px] border-t-purple-600 dark:border-t-purple-400 animate-spin-slow"
+          class="orbit-ring absolute rounded-full border border-purple-500/20 dark:border-purple-400/30 w-[220px] h-[220px] border-t-purple-600 dark:border-t-purple-400 animate-spin-slow"
         ></div>
         <div
-          class="absolute rounded-full border border-pink-500/20 dark:border-fuchsia-400/30 w-[320px] h-[320px] border-l-pink-600 dark:border-l-fuchsia-400 animate-spin-reverse"
+          class="orbit-ring absolute rounded-full border border-pink-500/20 dark:border-fuchsia-400/30 w-[320px] h-[320px] border-l-pink-600 dark:border-l-fuchsia-400 animate-spin-reverse"
         ></div>
         <div
-          class="absolute rounded-full border border-purple-500/10 dark:border-purple-400/10 w-[420px] h-[420px] animate-spin-slower"
+          class="orbit-ring absolute rounded-full border border-purple-500/10 dark:border-purple-400/10 w-[420px] h-[420px] animate-spin-slower"
         ></div>
 
         <div
@@ -380,10 +380,15 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 definePageMeta({ hideFooter: true });
-gsap.registerPlugin(ScrollTrigger);
 
-// 主题状态
-const isDark = ref(false);
+// 主题状态 — 使用 @nuxtjs/color-mode（由 @nuxt/ui 自动安装）
+const colorMode = useColorMode();
+const isDark = computed({
+  get: () => colorMode.value === 'dark',
+  set: (v) => {
+    colorMode.preference = v ? 'dark' : 'light';
+  }
+});
 const toggleTheme = () => {
   isDark.value = !isDark.value;
 };
@@ -536,6 +541,9 @@ function initParticles(canvas) {
 let ctx; // GSAP Context
 
 onMounted(() => {
+  // 仅在客户端注册 GSAP 插件（避免 SSR/水合不匹配）
+  gsap.registerPlugin(ScrollTrigger);
+
   initParticles(particleCanvas.value);
 
   // 使用 GSAP Context 管理内存

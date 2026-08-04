@@ -1,7 +1,7 @@
-﻿// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface Character {
-  id: number
+  id: number | string
   name: string
   element: string
   cv_cn: string // 中文配音
