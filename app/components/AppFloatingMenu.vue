@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { ThemeMode } from '~/stores/theme';
-import { useThemeStore } from '~/stores/theme';
-
-// Theme Logic
-const themeStore = useThemeStore();
-const mode = computed(() => themeStore.mode);
-const setMode = (value: ThemeMode) => themeStore.setMode(value);
+// Theme Logic — 使用 @nuxtjs/color-mode（由 @nuxt/ui 自动安装）
+const colorMode = useColorMode();
+const mode = computed(() => colorMode.preference as 'system' | 'light' | 'dark');
+const setMode = (value: 'system' | 'light' | 'dark') => {
+  colorMode.preference = value;
+};
 const modeIndex = computed(() => (mode.value === 'system' ? 0 : mode.value === 'light' ? 1 : 2));
 
 // Scroll Logic
@@ -59,7 +58,7 @@ const getIcon = (m: string) => {
   }
 };
 
-const buttonClass = (value: ThemeMode) =>
+const buttonClass = (value: 'system' | 'light' | 'dark') =>
   [
     'flex-1 flex items-center justify-center py-1.5 rounded-full transition-colors relative z-10',
     'focus:outline-none',
@@ -112,9 +111,9 @@ const buttonClass = (value: ThemeMode) =>
                 v-for="m in ['system', 'light', 'dark']"
                 :key="m"
                 type="button"
-                :class="buttonClass(m as ThemeMode)"
+                :class="buttonClass(m as 'system' | 'light' | 'dark')"
                 :aria-label="m"
-                @click="setMode(m as ThemeMode)"
+                @click="setMode(m as 'system' | 'light' | 'dark')"
               >
                 <div :class="[getIcon(m), 'w-4 h-4']" />
               </button>

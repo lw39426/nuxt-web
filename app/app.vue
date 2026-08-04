@@ -1,11 +1,13 @@
 <template>
   <UApp>
-    <AppGlobalLoader />
     <NuxtLayout>
       <NuxtRouteAnnouncer />
       <NuxtPage />
     </NuxtLayout>
-    <AuthModal />
+    <ClientOnly>
+      <AppGlobalLoader />
+      <AuthModal />
+    </ClientOnly>
   </UApp>
 </template>
 
@@ -13,11 +15,18 @@
 import { nextTick, watch } from 'vue';
 import { useRoute, useRouter } from '#imports';
 import { useUiStore } from '~/stores/ui';
+import { useAuthStore } from '~/stores/auth';
 
 const route = useRoute();
 const router = useRouter();
 const uiStore = useUiStore();
+const authStore = useAuthStore();
 const { openAuthModal } = uiStore;
+
+// 初始化认证状态（从 Cookie 读取，确保刷新后登录状态不丢失）
+if (import.meta.client) {
+  authStore.initAuthFromCookie();
+}
 
 if (import.meta.client) {
   watch(

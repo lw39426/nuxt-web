@@ -6,28 +6,6 @@ import AiAssistant from '~/components/home/AiAssistant.vue';
 import ImmersiveExperience from '~/components/home/ImmersiveExperience.vue';
 import LatestNews from '~/components/home/LatestNews.vue';
 
-const prefersDark = ref(false);
-
-if (import.meta.client) {
-  const media = window.matchMedia('(prefers-color-scheme: dark)');
-
-  const updatePreferredTheme = () => {
-    prefersDark.value = media.matches;
-  };
-
-  updatePreferredTheme();
-
-  onMounted(() => {
-    media.addEventListener?.('change', updatePreferredTheme);
-    media.addListener?.(updatePreferredTheme);
-  });
-
-  onBeforeUnmount(() => {
-    media.removeEventListener?.('change', updatePreferredTheme);
-    media.removeListener?.(updatePreferredTheme);
-  });
-}
-
 useHead({
   link: [
     { rel: 'preconnect', href: 'https://images.unsplash.com' },

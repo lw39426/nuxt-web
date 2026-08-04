@@ -24,6 +24,13 @@ const sentryEnabled = process.env.NUXT_PUBLIC_SENTRY_ENABLED
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-11-27',
+  colorMode: {
+    preference: 'system',
+    fallback: 'light',
+    storageKey: 'nuxt-color-mode',
+    classSuffix: '',
+    disableTransition: true
+  },
   devtools: { enabled: !isProd },
   sourcemap: {
     client: process.env.NODE_ENV !== 'production',
@@ -86,7 +93,11 @@ export default defineNuxtConfig({
         '@vue/devtools-kit',
         'gsap',
         'gsap/ScrollTrigger',
-        'gsap/ScrollToPlugin'
+        'gsap/ScrollToPlugin',
+        'reka-ui',
+        '@nuxt/ui',
+        '@vueuse/core',
+        '@popperjs/core'
       ]
     }
   },

@@ -1,11 +1,39 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUiStore } from '~/stores/ui';
+import { useAuthStore } from '~/stores/auth';
 
 const route = useRoute();
 const uiStore = useUiStore();
 const { openAuthModal } = uiStore;
+const authStore = useAuthStore();
+
+const isDropdownOpen = ref(false);
+const dropdownWrapperRef = ref<HTMLElement | null>(null);
+const dropdownStyle = ref<Record<string, string>>({});
+
+const displayName = computed(() => authStore.user?.username || '用户');
+const avatarLetter = computed(() => displayName.value.charAt(0).toUpperCase());
+
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+  if (isDropdownOpen.value && dropdownWrapperRef.value) {
+    const rect = dropdownWrapperRef.value.getBoundingClientRect();
+    dropdownStyle.value = {
+      position: 'fixed',
+      top: `${rect.bottom + 8}px`,
+      right: `${window.innerWidth - rect.right}px`,
+      width: '192px'
+    };
+  }
+};
+
+const handleLogout = () => {
+  authStore.clearAuth();
+  isDropdownOpen.value = false;
+  navigateTo('/');
+};
 
 // 菜单配置
 const menuItems = [
@@ -252,9 +280,11 @@ onUnmounted(() => {
             </a>
           </div>
 
-          <!-- 右侧 Sign In 按钮 -->
+          <!-- 右侧区域 -->
           <div class="flex items-center gap-2 shrink-0">
+            <!-- 未登录：登录按钮 -->
             <button
+              v-if="!authStore.isAuthenticated"
               type="button"
               class="h-8 items-center justify-center relative mr-2 group hidden md:flex pl-4"
               @click="openAuthModal('login')"
@@ -285,13 +315,28 @@ onUnmounted(() => {
               ></span>
             </button>
 
-            <!-- 移动端菜单按钮 -->
+            <!-- 已登录：头像下拉菜单 -->
+            <div v-else ref="dropdownWrapperRef" class="relative hidden md:block">
+              <button
+                type="button"
+                class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm hover:ring-2 hover:ring-blue-300 transition-all"
+                @click="toggleDropdown"
+              >
+                {{ avatarLetter }}
+              </button>
+            </div>
+
+            <!-- 移动端菜单按钮（保持不变） -->
             <UButton
               class="md:hidden rounded-full"
               variant="ghost"
               color="neutral"
               :icon="isMobileMenuOpen ? 'i-carbon-close' : 'i-carbon-menu'"
-              @click="isMobileMenuOpen = !isMobileMenuOpen"
+              @click="
+                () => {
+                  isMobileMenuOpen = !isMobileMenuOpen;
+                }
+              "
             />
           </div>
         </div>
@@ -354,6 +399,56 @@ onUnmounted(() => {
       </div>
     </nav>
   </div>
+
+  <!-- 下拉菜单：使用 Teleport 渲染到 body，避免被 nav-shell 的 contain: paint 裁剪 -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-100 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-75 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div
+        v-if="isDropdownOpen"
+        class="rounded-xl bg-white dark:bg-gray-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-[100]"
+        :style="dropdownStyle"
+      >
+        <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-800">
+          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+            {{ displayName }}
+          </p>
+        </div>
+        <NuxtLink
+          to="/profile/account"
+          class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          @click="isDropdownOpen = false"
+        >
+          <span class="i-carbon-user w-4 h-4" />
+          个人中心
+        </NuxtLink>
+        <NuxtLink
+          to="/profile/orders"
+          class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          @click="isDropdownOpen = false"
+        >
+          <span class="i-carbon-package w-4 h-4" />
+          我的订单
+        </NuxtLink>
+        <button
+          class="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full"
+          @click="handleLogout"
+        >
+          <span class="i-carbon-logout w-4 h-4" />
+          退出登录
+        </button>
+      </div>
+    </Transition>
+
+    <!-- 点击外部关闭的透明层 -->
+    <div v-if="isDropdownOpen" class="fixed inset-0 z-[99]" @click="isDropdownOpen = false" />
+  </Teleport>
 </template>
 
 <style scoped>

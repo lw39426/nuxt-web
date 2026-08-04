@@ -39,10 +39,12 @@ const registerForm = ref({
 // --- Common State ---
 const captchaImage = ref('');
 const captchaKey = ref('');
+const captchaError = ref(false);
 const showPassword = ref(false);
 const isLoading = ref(false);
 
 const fetchCaptcha = async () => {
+  captchaError.value = false;
   try {
     const res = await getCode();
     if (res && res.image) {
@@ -51,6 +53,7 @@ const fetchCaptcha = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch captcha:', error);
+    captchaError.value = true;
   }
 };
 
@@ -146,7 +149,7 @@ const handleRegister = async () => {
     toast.add({
       id: 'auth-register-error',
       title: '注册失败',
-      description: error.message || '注册失败',
+      description: error.message || '系统繁忙，请稍后再试',
       color: 'error'
     });
     fetchCaptcha();
@@ -280,6 +283,7 @@ const handleRegister = async () => {
                       alt="captcha"
                       class="w-full h-full object-cover"
                     />
+                    <span v-else-if="captchaError" class="text-xs text-red-400">加载失败，点击重试</span>
                     <span v-else class="text-xs text-gray-400">加载中...</span>
                   </div>
                 </div>
@@ -447,6 +451,7 @@ const handleRegister = async () => {
                       alt="captcha"
                       class="w-full h-full object-cover"
                     />
+                    <span v-else-if="captchaError" class="text-xs text-red-400">加载失败，点击重试</span>
                     <span v-else class="text-xs text-gray-400">加载中...</span>
                   </div>
                 </div>
