@@ -1,6 +1,4 @@
-import * as Sentry from '@sentry/vue'
-
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   const publicSentry = useRuntimeConfig().public.sentry
 
   const enabled = Boolean(publicSentry.enabled) && Boolean(publicSentry.dsn)
@@ -18,6 +16,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
   }
 
+  // 仅在启用时动态加载 @sentry/vue，避免未启用时其库代码进入主入口 chunk
+  const Sentry = await import('@sentry/vue')
   const router = useRouter()
 
   Sentry.init({

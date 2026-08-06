@@ -25,7 +25,7 @@ const newProducts = computed(() => homeData.value?.new_products || []);
 const featuredTagName = computed(() => homeData.value?.featured?.tag_name || '精选推荐');
 const articles = computed(() => homeData.value?.articles || []);
 
-const bgImage = computed(() => '/futuristic-moon-background.jpg');
+const bgImage = computed(() => '/futuristic-moon-background.webp');
 
 const aiQuestion = ref('');
 const canAskAI = computed(() => aiQuestion.value.trim().length > 0);
@@ -47,7 +47,14 @@ const askAI = (question?: string) => {
     <section class="relative h-screen !h-svh">
       <!-- 背景图 -->
       <picture class="bg-image-hero top-[-5rem] absolute w-full h-full">
-        <img class="w-full h-full object-cover" loading="eager" :src="bgImage" alt="新一代SU7" />
+        <img
+          class="w-full h-full object-cover"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          :src="bgImage"
+          alt="新一代SU7"
+        />
       </picture>
 
       <!-- 英雄标题板块 -->

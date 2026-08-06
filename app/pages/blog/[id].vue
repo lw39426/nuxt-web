@@ -4,7 +4,9 @@ import { useArticleApi } from '~/composables/api/article';
 
 const route = useRoute();
 const articleCode = route.params.id as string;
-console.log('Article code from route:', articleCode);
+if (import.meta.dev) {
+  console.log('Article code from route:', articleCode);
+}
 
 const { detail, related } = useArticleApi();
 
@@ -53,7 +55,9 @@ const loadArticle = async () => {
   error.value = false;
   try {
     const data = await detail(articleCode);
-    console.log('Loaded article data:', data);
+    if (import.meta.dev) {
+      console.log('Loaded article data:', data);
+    }
     post.value = data;
   } catch (err) {
     console.error('Failed to load article:', err);

@@ -86,6 +86,29 @@ export default defineNuxtConfig({
   typescript: {
     strict: true
   },
+  nitro: {
+    // 生产环境对静态资源启用 gzip/brotli 预压缩，减小传输体积
+    compressPublicAssets: isProd ? { gzip: true, brotli: true } : false
+  },
+  routeRules: {
+    // 静态图片资源：长缓存（图片内容一经发布不再变更）
+    '/products/**': {
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+    },
+    '/articles/**': {
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+    },
+    '/images/**': {
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+    },
+    '/avatar.webp': {
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+    },
+    // 首页聚合数据：1 分钟 SWR 缓存，降低后端压力并加速返回
+    '/api/v1/home/data': {
+      cache: { maxAge: 60, staleMaxAge: 600, swr: true }
+    }
+  },
   vite: {
     optimizeDeps: {
       include: [

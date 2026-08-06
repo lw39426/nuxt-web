@@ -174,15 +174,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import { useCategoryApi } from '~/composables/api/category';
 import type { Product } from '~/types/product';
 
 const { getProductCateList, getProducts } = useCategoryApi();
 // useToast 必须在 setup 同步阶段调用，不能在 await 之后的回调中使用
 const toast = useToast();
-// 分类列表数据
-const categories = ref<any[]>([]);
 
 interface SeriesGroup {
   categoryId?: number;
@@ -190,54 +188,29 @@ interface SeriesGroup {
   categoryImage: string;
   products: Product[];
 }
+
 // 当前选中的分类名称
 const selectedCategory = ref<string | null>(null);
-// 分类产品列表数据
-const groupedProducts = ref<SeriesGroup[]>([]);
 
 /**
- * 初始化分类列表
+ * 服务端预取分类列表与商品数据，避免 CSR 等待
+ * - 首屏由 SSR 直接渲染，减少白屏等待
+ * - 任一步失败时兜底为空数据并提示
  */
-const initializeCategories = async () => {
-  try {
-    const res = await getProductCateList();
-    console.log('获取分类列表:', res);
-    if (res) {
-      categories.value = res.map((item: any) => ({
-        name: item.name,
-        image: item.imageUrl || '',
-        id: item.id
-      }));
+const { data, error } = await useAsyncData(
+  'products-store',
+  async () => {
+    const categoriesRes = await getProductCateList();
+    const categories = (categoriesRes || []).map((item: any) => ({
+      name: item.name,
+      image: item.imageUrl || '',
+      id: item.id
+    }));
 
-      if (categories.value.length > 0 && categories.value[0]) {
-        selectedCategory.value = categories.value[0]!.name;
-      }
-    }
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
-    categories.value = [];
-    toast.add({
-      id: 'products-categories-error',
-      title: '加载失败',
-      description: '分类列表加载失败，请刷新页面重试',
-      color: 'error'
-    });
-  }
-};
-
-/**
- * 初始化产品列表
- */
-const initializeProducts = async () => {
-  try {
-    if (categories.value.length === 0) {
-      return;
-    }
-
+    // 并发拉取每个分类下的商品
     const seriesList = await Promise.all(
-      categories.value.map(async (item) => {
+      categories.map(async (item) => {
         const productsRes = await getProducts(item.id, { page: 1, pageSize: 10 });
-        console.log('获取分类下的产品:', productsRes);
         const products = productsRes.data || [];
         return {
           categoryId: item.id,
@@ -248,25 +221,34 @@ const initializeProducts = async () => {
       })
     );
 
-    groupedProducts.value = seriesList.filter((item) => item.products.length > 0);
-  } catch (error) {
-    console.error('Failed to fetch products:', error);
-    groupedProducts.value = [];
+    return {
+      categories,
+      groupedProducts: seriesList.filter((item) => item.products.length > 0)
+    };
+  },
+  {
+    default: () => ({ categories: [], groupedProducts: [] as SeriesGroup[] })
+  }
+);
+
+const categories = computed(() => data.value?.categories || []);
+const groupedProducts = computed(() => data.value?.groupedProducts || []);
+
+// 默认选中第一个分类
+if (categories.value.length > 0 && categories.value[0]) {
+  selectedCategory.value = categories.value[0]!.name;
+}
+
+// 客户端拉取失败时提示（SSR 阶段不弹 toast）
+watchEffect(() => {
+  if (import.meta.client && error.value) {
     toast.add({
-      id: 'products-list-error',
+      id: 'products-store-error',
       title: '加载失败',
-      description: '商品列表加载失败，请刷新页面重试',
+      description: '数据加载失败，请刷新页面重试',
       color: 'error'
     });
   }
-};
-
-/**
- * 初始化加载数据
- */
-onMounted(async () => {
-  await initializeCategories();
-  await initializeProducts();
 });
 </script>
 

@@ -8,6 +8,8 @@
         <img
           :src="product?.main_image || ''"
           :alt="product?.name || ''"
+          loading="lazy"
+          decoding="async"
           class="w-full h-full object-contain p-4 sm:p-8"
         />
       </NuxtLink>
@@ -125,6 +127,8 @@ const toggleFavorite = () => {
 /** 将当前商品加入购物车 */
 const addToCart = () => {
   // Implement add to cart logic
-  console.log('Added to cart:', props.product?.name);
+  if (import.meta.dev) {
+    console.log('Added to cart:', props.product?.name);
+  }
 };
 </script>

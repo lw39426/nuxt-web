@@ -318,14 +318,60 @@ const productIdentifier = computed(() => String(route.params.id ?? '').trim());
 const { getDetail, related } = useProductApi();
 const { getProductByIdentifier, loadProducts } = useProducts();
 
-const apiProduct = ref<Product | null>(null);
-const relatedProducts = ref<Product[]>([]);
-const isLoading = ref(true);
 const activeImage = ref('');
 const selectedColor = ref('');
 const selectedMemory = ref('');
 const selectedServices = ref<string[]>([]);
 const quantity = ref(1);
+
+/**
+ * SSR 预取商品详情：接口优先、本地 Mock 兜底
+ * - 服务端直接渲染完整详情，客户端水合复用 payload，避免二次请求
+ * - 兜底数据一并放入返回值，保证 SSR 与客户端渲染一致
+ */
+const { data: detailData, pending } = await useAsyncData(
+  () => `product-detail-${productIdentifier.value}`,
+  async () => {
+    if (!productIdentifier.value) {
+      return { apiProduct: null, fallbackProduct: null, relatedItems: [] as Product[] };
+    }
+
+    // 接口优先，失败不抛出（由兜底接管），loadProducts 用于填充本地 mock 兜底列表
+    const [, detailResult] = await Promise.allSettled([
+      loadProducts(),
+      getDetail(productIdentifier.value)
+    ]);
+
+    const apiProduct = detailResult.status === 'fulfilled' ? detailResult.value : null;
+    const localProduct = getProductByIdentifier(productIdentifier.value);
+    const fallbackProduct = localProduct ? mapMockProductToViewModel(localProduct) : null;
+
+    // 相关推荐：优先用接口商品的 code，失败则回退到本地 mock
+    const relatedProductCode = apiProduct?.code || localProduct?.code;
+    let relatedItems: Product[] = [];
+    if (relatedProductCode) {
+      try {
+        const response = await related(relatedProductCode, { limit: 4 });
+        relatedItems = Array.isArray(response?.related)
+          ? response.related
+              .filter((item) => item.id !== (apiProduct?.id ?? localProduct?.id))
+              .slice(0, 4)
+              .map((item) => mapApiProductToCardProduct(item))
+          : [];
+      } catch (e) {
+        console.error('Failed to load related products, fallback to empty:', e);
+      }
+    }
+
+    return { apiProduct, fallbackProduct, relatedItems };
+  },
+  {
+    watch: [productIdentifier],
+    default: () => ({ apiProduct: null, fallbackProduct: null, relatedItems: [] as Product[] })
+  }
+);
+
+const isLoading = computed(() => pending.value);
 
 /** 转义文本内容，避免兜底富文本直接注入原始 HTML */
 function escapeHtml(value?: string): string {
@@ -458,13 +504,12 @@ function mapApiProductToCardProduct(source: Product): Product {
   };
 }
 
-const fallbackProduct = computed(() => {
-  const localProduct = getProductByIdentifier(productIdentifier.value);
-  return localProduct ? mapMockProductToViewModel(localProduct) : null;
-});
+const fallbackProduct = computed(() => detailData.value?.fallbackProduct ?? null);
 
 const product = computed(() =>
-  apiProduct.value ? mapApiProductToViewModel(apiProduct.value) : fallbackProduct.value
+  detailData.value?.apiProduct
+    ? mapApiProductToViewModel(detailData.value.apiProduct)
+    : fallbackProduct.value
 );
 
 const richTextContent = computed(() => product.value?.detailHtml || '');
@@ -490,65 +535,5 @@ watchEffect(() => {
   }
 });
 
-/** 加载相关推荐商品 */
-async function loadRelatedProducts(productCode?: string): Promise<void> {
-  if (!productCode) {
-    return;
-  }
-
-  try {
-    const response = await related(productCode, { limit: 4 });
-    relatedProducts.value = Array.isArray(response?.related)
-      ? response.related
-          .filter((item) => item.id !== product.value?.id)
-          .slice(0, 4)
-          .map((item) => mapApiProductToCardProduct(item))
-      : [];
-  } catch (error) {
-    console.error('Failed to load related products from API, fallback to mock data:', error);
-  }
-}
-
-/** 加载详情页数据，后端接口失败时自动回退到本地 mock 商品 */
-async function loadProductDetail(): Promise<void> {
-  if (!productIdentifier.value) {
-    apiProduct.value = null;
-    isLoading.value = false;
-    return;
-  }
-
-  isLoading.value = true;
-  apiProduct.value = null;
-
-  const [, detailResult] = await Promise.allSettled([
-    loadProducts(),
-    getDetail(productIdentifier.value)
-  ]);
-
-  if (detailResult.status === 'fulfilled') {
-    apiProduct.value = detailResult.value;
-  } else {
-    console.error(
-      'Failed to load product detail from API, fallback to mock data:',
-      detailResult.reason
-    );
-  }
-
-  const relatedProductCode =
-    detailResult.status === 'fulfilled'
-      ? detailResult.value.code
-      : getProductByIdentifier(productIdentifier.value)?.code;
-
-  await loadRelatedProducts(relatedProductCode);
-
-  isLoading.value = false;
-}
-
-watch(
-  productIdentifier,
-  async () => {
-    await loadProductDetail();
-  },
-  { immediate: true }
-);
+const relatedProducts = computed(() => detailData.value?.relatedItems ?? []);
 </script>
