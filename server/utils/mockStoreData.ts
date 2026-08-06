@@ -222,10 +222,10 @@ const STORE_SERIES_PRODUCTS: Record<string, MockProduct[]> = {
       rating: 4.5,
       reviewCount: 543,
       images: [
-        'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iPad-Air-Wi-Fi-Space-Gray-202303?wid=400&hei=400&fmt=png-alpha&.v=1678886290491'
+        'https://www.apple.com.cn/v/ipad-air/ah/images/over…product-tile/ipad_air__bbsxw9xstope_medium_2x.png'
       ],
       main_image:
-        'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iPad-Air-Wi-Fi-Space-Gray-202303?wid=400&hei=400&fmt=png-alpha&.v=1678886290491',
+        'https://www.apple.com.cn/v/ipad-air/ah/images/over…product-tile/ipad_air__bbsxw9xstope_medium_2x.png',
       brand: 'Apple',
       code: 'APPLE-IPAD-AIR',
       sales: 543,
@@ -358,6 +358,7 @@ const STORE_SERIES_PRODUCTS: Record<string, MockProduct[]> = {
 const PRODUCT_DETAIL_LIST: MockProduct[] = [
   {
     id: 1,
+    code: 'OPPO-RENO15-512',
     title: 'OPPO Reno15 星光蝴蝶结 12GB+512GB 官方标配',
     price: 3199,
     originalPrice: 3299,
@@ -416,6 +417,7 @@ const PRODUCT_DETAIL_LIST: MockProduct[] = [
   },
   {
     id: 2,
+    code: 'OPPO-RENO15-PRO-256',
     title: 'OPPO Reno15 Pro 星光蝴蝶结 12GB+256GB',
     price: 3599,
     originalPrice: 3699,
@@ -441,6 +443,7 @@ const PRODUCT_DETAIL_LIST: MockProduct[] = [
   },
   {
     id: 3,
+    code: 'OPPO-RENO14-256',
     title: 'OPPO Reno14 人鱼姬 12GB+256GB',
     price: 2599,
     originalPrice: 2699,
@@ -461,6 +464,7 @@ const PRODUCT_DETAIL_LIST: MockProduct[] = [
   },
   {
     id: 4,
+    code: 'OPPO-FIND-X9-PRO',
     title: 'OPPO Find X9 Pro',
     price: 4999,
     originalPrice: 5199,

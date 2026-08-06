@@ -16,7 +16,7 @@ export const mockProfile: UserProfile = {
   username: 'qinghe',
   email: 'qinghe@example.com',
   phone: '138****6621',
-  avatar: '/avatar.png',
+  avatar: '/avatar.webp',
   bio: '产品设计师，关注效率工具与生活美学。偶尔写点东西。',
   gender: 'female',
   birthday: '1996-04-18',
@@ -32,7 +32,7 @@ export const mockFavoriteProducts: FavoriteProduct[] = [
     id: 'p_1',
     title: 'Aurora 主动降噪头戴式耳机',
     brand: 'Aurora',
-    image: '/products/headphones.png',
+    image: '/products/headphones.webp',
     price: 1299,
     originalPrice: 1599,
     inStock: true,
@@ -44,7 +44,7 @@ export const mockFavoriteProducts: FavoriteProduct[] = [
     id: 'p_2',
     title: 'Keystone 68 客制化机械键盘',
     brand: 'Keystone',
-    image: '/products/keyboard.png',
+    image: '/products/keyboard.webp',
     price: 749,
     inStock: true,
     priceDropped: false,
@@ -55,7 +55,7 @@ export const mockFavoriteProducts: FavoriteProduct[] = [
     id: 'p_3',
     title: '恒温保冷不锈钢水壶 750ml',
     brand: 'Nordvik',
-    image: '/products/bottle.png',
+    image: '/products/bottle.webp',
     price: 189,
     originalPrice: 229,
     inStock: true,
@@ -67,7 +67,7 @@ export const mockFavoriteProducts: FavoriteProduct[] = [
     id: 'p_4',
     title: 'Lumen 护眼智能桌面台灯',
     brand: 'Lumen',
-    image: '/products/lamp.png',
+    image: '/products/lamp.webp',
     price: 459,
     inStock: false,
     priceDropped: false,
@@ -78,7 +78,7 @@ export const mockFavoriteProducts: FavoriteProduct[] = [
     id: 'p_5',
     title: '轻量通勤双肩背包 22L',
     brand: 'Carrywell',
-    image: '/products/backpack.png',
+    image: '/products/backpack.webp',
     price: 529,
     inStock: true,
     priceDropped: false,
@@ -89,7 +89,7 @@ export const mockFavoriteProducts: FavoriteProduct[] = [
     id: 'p_6',
     title: '手冲咖啡套装（含玻璃分享壶）',
     brand: 'Brewly',
-    image: '/products/coffee-maker.png',
+    image: '/products/coffee-maker.webp',
     price: 368,
     originalPrice: 428,
     inStock: true,
@@ -105,7 +105,7 @@ export const mockFavoriteArticles: FavoriteArticle[] = [
     title: '如何搭建一个真正让人愿意坐下来的工作台',
     excerpt:
       '桌面不是收纳比赛。从动线、光线到线材管理，聊聊我三年里踩过的坑和最后留下来的那几件东西。',
-    cover: '/articles/workspace.png',
+    cover: '/articles/workspace.webp',
     author: '陈叙',
     readMinutes: 8,
     tag: '生活方式',
@@ -116,7 +116,7 @@ export const mockFavoriteArticles: FavoriteArticle[] = [
     id: 'a_2',
     title: '前端性能优化：先测量，再动手',
     excerpt: '大多数优化都做在了错误的地方。这篇文章讲怎么用真实指标定位瓶颈，而不是凭感觉重构。',
-    cover: '/articles/coding.png',
+    cover: '/articles/coding.webp',
     author: 'Miles Zhou',
     readMinutes: 12,
     tag: '技术',
@@ -127,7 +127,7 @@ export const mockFavoriteArticles: FavoriteArticle[] = [
     id: 'a_3',
     title: '在家做出一杯稳定的手冲咖啡',
     excerpt: '水温、粉水比、研磨度——把变量一个个固定下来，你就能每天复现同一杯味道。',
-    cover: '/articles/coffee.png',
+    cover: '/articles/coffee.webp',
     author: '苏晚',
     readMinutes: 6,
     tag: '饮食',
@@ -138,7 +138,7 @@ export const mockFavoriteArticles: FavoriteArticle[] = [
     id: 'a_4',
     title: '设计系统里最容易被忽略的一件事：留白',
     excerpt: '间距不是装饰，而是信息层级的语言。一套间距标尺能让整个产品的观感立刻统一。',
-    cover: '/articles/design.png',
+    cover: '/articles/design.webp',
     author: '林清和',
     readMinutes: 10,
     tag: '设计',
@@ -158,7 +158,7 @@ export const mockOrders: Order[] = [
     items: [
       {
         title: 'Aurora 主动降噪头戴式耳机',
-        image: '/products/headphones.png',
+        image: '/products/headphones.webp',
         price: 1299,
         quantity: 1,
         spec: '午夜黑'
@@ -175,14 +175,14 @@ export const mockOrders: Order[] = [
     items: [
       {
         title: 'Keystone 68 客制化机械键盘',
-        image: '/products/keyboard.png',
+        image: '/products/keyboard.webp',
         price: 749,
         quantity: 1,
         spec: '奶白 / 茶轴'
       },
       {
         title: '恒温保冷不锈钢水壶 750ml',
-        image: '/products/bottle.png',
+        image: '/products/bottle.webp',
         price: 169,
         quantity: 1,
         spec: '森林绿'
@@ -199,7 +199,7 @@ export const mockOrders: Order[] = [
     items: [
       {
         title: '手冲咖啡套装（含玻璃分享壶）',
-        image: '/products/coffee-maker.png',
+        image: '/products/coffee-maker.webp',
         price: 368,
         quantity: 1,
         spec: '标准套装'
@@ -216,7 +216,7 @@ export const mockOrders: Order[] = [
     items: [
       {
         title: 'Lumen 护眼智能桌面台灯',
-        image: '/products/lamp.png',
+        image: '/products/lamp.webp',
         price: 459,
         quantity: 1,
         spec: '银色'
@@ -233,7 +233,7 @@ export const mockOrders: Order[] = [
     items: [
       {
         title: '轻量通勤双肩背包 22L',
-        image: '/products/backpack.png',
+        image: '/products/backpack.webp',
         price: 529,
         quantity: 1,
         spec: '炭灰'
@@ -247,7 +247,7 @@ export const mockHistory: HistoryEntry[] = [
     id: 'h_1',
     type: 'product',
     title: 'Aurora 主动降噪头戴式耳机',
-    image: '/products/headphones.png',
+    image: '/products/headphones.webp',
     meta: '¥1,299 · Aurora',
     viewedAt: '2026-07-26T08:41:00Z'
   },
@@ -255,7 +255,7 @@ export const mockHistory: HistoryEntry[] = [
     id: 'h_2',
     type: 'article',
     title: '前端性能优化：先测量，再动手',
-    image: '/articles/coding.png',
+    image: '/articles/coding.webp',
     meta: 'Miles Zhou · 12 分钟阅读',
     viewedAt: '2026-07-26T07:55:00Z'
   },
@@ -263,7 +263,7 @@ export const mockHistory: HistoryEntry[] = [
     id: 'h_3',
     type: 'product',
     title: 'Lumen 护眼智能桌面台灯',
-    image: '/products/lamp.png',
+    image: '/products/lamp.webp',
     meta: '¥459 · Lumen',
     viewedAt: '2026-07-25T21:30:00Z'
   },
@@ -271,7 +271,7 @@ export const mockHistory: HistoryEntry[] = [
     id: 'h_4',
     type: 'article',
     title: '设计系统里最容易被忽略的一件事：留白',
-    image: '/articles/design.png',
+    image: '/articles/design.webp',
     meta: '林清和 · 10 分钟阅读',
     viewedAt: '2026-07-25T14:12:00Z'
   },
@@ -279,7 +279,7 @@ export const mockHistory: HistoryEntry[] = [
     id: 'h_5',
     type: 'product',
     title: '手冲咖啡套装（含玻璃分享壶）',
-    image: '/products/coffee-maker.png',
+    image: '/products/coffee-maker.webp',
     meta: '¥368 · Brewly',
     viewedAt: '2026-07-24T19:08:00Z'
   },
@@ -287,7 +287,7 @@ export const mockHistory: HistoryEntry[] = [
     id: 'h_6',
     type: 'article',
     title: '在家做出一杯稳定的手冲咖啡',
-    image: '/articles/coffee.png',
+    image: '/articles/coffee.webp',
     meta: '苏晚 · 6 分钟阅读',
     viewedAt: '2026-07-23T10:26:00Z'
   },
@@ -295,7 +295,7 @@ export const mockHistory: HistoryEntry[] = [
     id: 'h_7',
     type: 'product',
     title: 'Keystone 68 客制化机械键盘',
-    image: '/products/keyboard.png',
+    image: '/products/keyboard.webp',
     meta: '¥749 · Keystone',
     viewedAt: '2026-07-21T16:47:00Z'
   }
@@ -357,7 +357,7 @@ export const mockComments: MyComment[] = [
     id: 'c_1',
     targetType: 'product',
     targetTitle: '手冲咖啡套装（含玻璃分享壶）',
-    targetImage: '/products/coffee-maker.png',
+    targetImage: '/products/coffee-maker.webp',
     content: '分享壶的做工比预期好，注水口收得很干净。滤杯稍微偏小，一次做两杯有点勉强。',
     rating: 4,
     likes: 32,
@@ -368,7 +368,7 @@ export const mockComments: MyComment[] = [
     id: 'c_2',
     targetType: 'article',
     targetTitle: '前端性能优化：先测量，再动手',
-    targetImage: '/articles/coding.png',
+    targetImage: '/articles/coding.webp',
     content: '「先测量」这点太重要了。我们团队之前花两周重构了一个根本不在关键路径上的组件。',
     likes: 118,
     replies: 12,
@@ -378,7 +378,7 @@ export const mockComments: MyComment[] = [
     id: 'c_3',
     targetType: 'product',
     targetTitle: 'Keystone 68 客制化机械键盘',
-    targetImage: '/products/keyboard.png',
+    targetImage: '/products/keyboard.webp',
     content: '茶轴手感很稳，键帽的透光排版也整齐。就是默认没有背光调节键，需要自己改配置。',
     rating: 5,
     likes: 47,
@@ -389,7 +389,7 @@ export const mockComments: MyComment[] = [
     id: 'c_4',
     targetType: 'article',
     targetTitle: '如何搭建一个真正让人愿意坐下来的工作台',
-    targetImage: '/articles/workspace.png',
+    targetImage: '/articles/workspace.webp',
     content: '关于线材管理那段深有同感，桌下走线槽是我去年最值的一笔投入。',
     likes: 64,
     replies: 8,
