@@ -30,11 +30,10 @@ const demoMessages = [
       '推荐 MacBook Pro 16英寸 M3芯片，32GB内存，512GB SSD，适合高强度开发工作。当前优惠价 ¥18,999。',
     hasProduct: true
   },
-  { role: 'user', content: '有没有更轻薄的选项？' },
   {
     role: 'ai',
     content:
-      '推荐 ThinkPad X1 Carbon Gen 12，仅重 0.99kg，14英寸2.8K OLED屏幕，同样适合编程。¥12,499起。',
+      '或者推荐 ThinkPad X1 Carbon Gen 12，仅重 0.99kg，14英寸2.8K OLED屏幕，同样适合编程。¥12,499起。',
     hasProduct: true
   }
 ];
@@ -64,21 +63,17 @@ const askAI = () => {
     />
 
     <div class="section-container relative z-10">
-      <!-- 标题区 -->
       <div class="text-center max-w-3xl mx-auto mb-16 md:mb-24">
         <p
-          class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-[0.4em] mb-4 flex items-center justify-center gap-2"
-        ></p>
-        <div class="i-lucide-sparkles text-sm animate-bounce" />
-        <p>AI 赋能</p>
-        <h2 class="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
-          <span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
-            你的专属 AI 助手
-          </span>
-        </h2>
-        <p class="text-base md:text-lg text-gray-500 dark:text-gray-400 leading-relaxed">
-          不只是聊天机器人，更是懂你的购物顾问
+          class="section-header-label text-purple-600 dark:text-purple-400 flex items-center justify-center gap-2"
+        >
+          <span>AI 赋能</span>
+          <span class="i-lucide-sparkles text-sm animate-bounce" />
         </p>
+        <h2 class="section-header-title">
+          <span> 你的专属 AI 助手 </span>
+        </h2>
+        <p class="section-header-desc mx-auto">不只是聊天机器人，更是懂你的购物顾问</p>
       </div>
 
       <!-- 能力卡片 + 对话演示 -->
@@ -88,10 +83,10 @@ const askAI = () => {
           <div
             v-for="cap in aiCapabilities"
             :key="cap.title"
-            class="group bg-gray-50 dark:bg-[#121417] rounded-3xl p-6 md:p-8 transition-all duration-500 hover:-translate-y-2 border border-gray-100 dark:border-white/5 hover:border-purple-500/30 dark:hover:border-purple-400/30 shadow-sm hover:shadow-xl hover:shadow-purple-500/10"
+            class="group bg-gray-50 dark:bg-[#121417] rounded-3xl p-6 md:p-8 transition-all duration-500 hover:-translate-y-1 border border-gray-100 dark:border-white/5 hover:border-pink-500/30 dark:hover:border-pink-400/30 shadow-sm hover:shadow-xl hover:shadow-pink-500/10"
           >
             <div
-              class="w-14 h-14 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center mb-6 shadow-sm group-hover:bg-purple-600 group-hover:text-white transition-all duration-500"
+              class="w-14 h-14 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center mb-6 shadow-sm group-hover:bg-pink-500 group-hover:text-white transition-all duration-500"
             >
               <div
                 :class="[
@@ -100,6 +95,7 @@ const askAI = () => {
                 ]"
               />
             </div>
+            <!-- 能力标题 -->
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
               {{ cap.title }}
             </h3>
@@ -183,7 +179,7 @@ const askAI = () => {
             <!-- 输入框 -->
             <div class="px-6 pb-6 pt-2">
               <div
-                class="flex items-center gap-3 bg-gray-50 dark:bg-white/5 rounded-2xl px-5 py-3.5 border border-gray-100 dark:border-white/10 transition-all focus-within:border-purple-500/50 focus-within:ring-4 focus-within:ring-purple-500/5"
+                class="flex items-center gap-3 bg-gray-50 dark:bg-white/5 rounded-2xl px-5 py-1 border border-gray-100 dark:border-white/10 transition-all focus-within:border-purple-500/50 focus-within:ring-4 focus-within:ring-purple-500/5"
               >
                 <input
                   v-model="aiQuestion"
@@ -193,10 +189,10 @@ const askAI = () => {
                   @keydown.enter.prevent="askAI"
                 />
                 <button
-                  class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500"
+                  class="w-10 h-8 rounded-xl flex items-center justify-center transition-all duration-500"
                   :class="
                     canAskAI
-                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 hover:scale-110 active:scale-95'
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 active:scale-95'
                       : 'bg-gray-200 dark:bg-gray-800 text-gray-400'
                   "
                   :disabled="!canAskAI"

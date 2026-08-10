@@ -51,21 +51,11 @@ const activeTag = ref(0);
 
     <div class="section-container relative z-10">
       <!-- 标题区 -->
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16 gap-8">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-4 gap-8">
         <div class="max-w-xl">
-          <p
-            class="text-xs font-bold text-home-accent dark:text-blue-400 uppercase tracking-[0.3em] mb-4"
-          >
-            智能购物
-          </p>
-          <h2
-            class="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight"
-          >
-            智能购物体验
-          </h2>
-          <p class="text-base md:text-lg text-gray-500 dark:text-gray-400 leading-relaxed">
-            AI驱动的个性化推荐，让每一次浏览都精准触达你的心意
-          </p>
+          <p class="section-header-label text-home-accent dark:text-blue-400">智能购物</p>
+          <h2 class="section-header-title">智能购物体验</h2>
+          <p class="section-header-desc">AI驱动的个性化推荐，让每一次浏览都精准触达你的心意</p>
         </div>
 
         <!-- 标签 -->
@@ -88,7 +78,7 @@ const activeTag = ref(0);
 
       <!-- 标签切换 -->
       <div
-        class="flex flex-wrap gap-2 mb-12 bg-white/50 dark:bg-white/5 p-1.5 rounded-2xl w-fit backdrop-blur-sm border border-gray-100 dark:border-white/5"
+        class="flex flex-wrap gap-2 bg-white/50 dark:bg-white/5 p-1.5 rounded-2xl w-fit backdrop-blur-sm border border-gray-100 dark:border-white/5"
       >
         <button
           v-for="tab in tabs"
@@ -114,12 +104,7 @@ const activeTag = ref(0);
         v-if="displayProducts.length > 0"
         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
       >
-        <ProductCard
-          v-for="product in displayProducts"
-          :key="product.id"
-          :product="product"
-          class="hover:-translate-y-2 transition-transform duration-500"
-        />
+        <ProductCard v-for="product in displayProducts" :key="product.id" :product="product" />
       </div>
 
       <!-- 骨架屏 -->

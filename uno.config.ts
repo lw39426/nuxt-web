@@ -28,6 +28,10 @@ export default defineConfig({
   ],
   transformers: [transformerDirectives()],
   theme: {
+    // fontFamily: {
+    //   sans: 'Inter, system-ui, -apple-system, sans-serif',
+    //   display: 'ClashDisplay-Variable, Inter, system-ui, sans-serif'
+    // },
     colors: {
       home: {
         black: '#000000ff',
@@ -66,6 +70,22 @@ export default defineConfig({
       'inline-block px-3 py-1 text-xs font-bold text-green-700 bg-green-100 dark:text-green-400 dark:bg-green-950 rounded-full uppercase tracking-wider',
     //灰色标签
     'badge-gray':
-      'inline-block px-3 py-1 text-xs font-bold text-gray-700 bg-gray-300 dark:text-gray-700 dark:bg-gray-550 rounded-full uppercase tracking-wider'
+      'inline-block px-3 py-1 text-xs font-bold text-gray-700 bg-gray-300 dark:text-gray-700 dark:bg-gray-550 rounded-full uppercase tracking-wider',
+
+    // 模块标题规范
+    'section-header-label':
+      'text-xs font-bold uppercase tracking-[0.4em] mb-4 transition-colors duration-300',
+    'section-header-title':
+      'text-3xl md:text-4xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white transition-colors duration-300',
+    'section-header-desc':
+      'text-base md:text-lg text-gray-500 dark:text-gray-400 leading-relaxed max-w-3xl',
+
+    // footer 通用字体样式（统一在 footer-title/footer-link/footer-desc/footer-copy 中调整字号）
+    'footer-title':
+      'text-sm font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wide mb-3',
+    'footer-link':
+      'text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors',
+    'footer-desc': 'text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[200px]',
+    'footer-copy': 'text-xs text-gray-400 dark:text-gray-500'
   }
 })

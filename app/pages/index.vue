@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useHomeApi } from '~/composables/api/home';
-import ExploreBrands from '~/components/home/ExploreBrands.vue';
 import SmartShopping from '~/components/home/SmartShopping.vue';
 import AiAssistant from '~/components/home/AiAssistant.vue';
 import ImmersiveExperience from '~/components/home/ImmersiveExperience.vue';
@@ -19,7 +18,6 @@ const { getHomeData } = useHomeApi();
 const { data: homeData } = await useAsyncData('home-config', () => getHomeData());
 
 // 解构数据
-const categories = computed(() => homeData.value?.categories || []);
 const hotProducts = computed(() => homeData.value?.hot_products || []);
 const newProducts = computed(() => homeData.value?.new_products || []);
 const featuredTagName = computed(() => homeData.value?.featured?.tag_name || '精选推荐');
@@ -91,9 +89,6 @@ const askAI = (question?: string) => {
         </div>
       </div>
     </section>
-
-    <!-- ========== 2. 探索品牌 ========== -->
-    <ExploreBrands :categories="categories" />
 
     <!-- ========== 3. 智能购物体验 ========== -->
     <SmartShopping

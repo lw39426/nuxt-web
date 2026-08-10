@@ -11,7 +11,20 @@ const props = withDefaults(defineProps<Props>(), {
 
 const displayArticles = computed(() => props.articles.slice(0, 4));
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
+] as const;
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
@@ -75,24 +88,14 @@ const finalArticles = computed(() => {
 </script>
 
 <template>
-  <section class="py-24 md:py-32 bg-white dark:bg-black content-visibility-auto">
+  <section class="py-8 md:py-16 bg-white dark:bg-black content-visibility-auto">
     <div class="section-container">
       <!-- 标题区 -->
       <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-14 gap-6">
         <div class="max-w-xl">
-          <p
-            class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4"
-          >
-            资讯中心
-          </p>
-          <h2
-            class="text-4xl md:text-6xl font-semibold text-gray-900 dark:text-white mb-5 tracking-tight"
-          >
-            最新资讯
-          </h2>
-          <p class="text-base md:text-lg text-gray-500 dark:text-gray-400 leading-relaxed">
-            掌握科技前沿动态，获取专业选购建议
-          </p>
+          <p class="section-header-label text-gray-400 dark:text-gray-500">资讯中心</p>
+          <h2 class="section-header-title mb-5">最新资讯</h2>
+          <p class="section-header-desc">掌握科技前沿动态，获取专业选购建议</p>
         </div>
         <NuxtLink
           to="/blog"
@@ -108,13 +111,15 @@ const finalArticles = computed(() => {
         <!-- 左侧：大卡片 -->
         <NuxtLink
           :to="`/blog/${finalArticles[0]?.code || finalArticles[0]?.id}`"
-          class="group relative rounded-3xl overflow-hidden bg-[#f5f5f7] dark:bg-[#1d1d1f] block"
+          class="group relative block rounded-3xl shadow-lg shadow-gray-200/80 dark:shadow-black/10 transition-shadow duration-300 hover:shadow-xl hover:shadow-gray-200/80 dark:hover:shadow-black/20"
         >
-          <div class="relative h-full min-h-[420px] md:min-h-[500px]">
+          <div
+            class="relative h-full min-h-[420px] md:min-h-[500px] rounded-3xl overflow-hidden bg-[#f5f5f7] border-1 border-gray-300 dark:bg-[#1d1d1f] dark:border-white/10"
+          >
             <img
               :src="finalArticles[0]?.image"
               :alt="finalArticles[0]?.title"
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+              class="w-full h-full object-cover"
               loading="lazy"
             />
             <div
@@ -162,7 +167,7 @@ const finalArticles = computed(() => {
               <img
                 :src="article.image"
                 :alt="article.title"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                class="w-full h-full object-cover"
                 loading="lazy"
               />
             </div>

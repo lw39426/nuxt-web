@@ -1,4 +1,53 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+interface FooterLink {
+  label: string;
+  to?: string;
+  href?: string;
+}
+
+interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+
+const columns: FooterColumn[] = [
+  {
+    title: '探索',
+    links: [
+      { label: '全部商品', to: '/products' },
+      { label: '热销榜单', to: '/products' },
+      { label: '新品上市', to: '/products' },
+      { label: '资讯中心', to: '/blog' }
+    ]
+  },
+  {
+    title: '服务',
+    links: [
+      { label: '售后服务', href: '#' },
+      { label: '配送说明', href: '#' },
+      { label: '退换政策', href: '#' },
+      { label: '常见问题', href: '#' }
+    ]
+  },
+  {
+    title: '关于',
+    links: [
+      { label: '关于我们', to: '/about' },
+      { label: '加入我们', href: '#' },
+      { label: '联系方式', href: '#' },
+      { label: 'AI 助手', to: '/ai-page' }
+    ]
+  },
+  {
+    title: '法律',
+    links: [
+      { label: '隐私政策', href: '#' },
+      { label: '服务条款', href: '#' },
+      { label: 'Cookie 政策', href: '#' }
+    ]
+  }
+];
+</script>
 <template>
   <footer class="bg-[#f5f5f7] dark:bg-[#1d1d1f] pt-12 md:pt-16 pb-8">
     <div class="max-w-7xl mx-auto px-5 md:px-8">
@@ -20,156 +69,18 @@
             </div>
             <span class="font-semibold text-base text-gray-900 dark:text-white">Lyoo</span>
           </NuxtLink>
-          <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-[200px]">
-            新一代智能购物平台，用科技连接品质生活。
-          </p>
+          <p class="footer-desc">新一代智能购物平台，用科技连接品质生活。</p>
         </div>
 
-        <!-- 探索 -->
-        <div>
-          <h3
-            class="text-[11px] font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wide mb-3"
-          >
-            探索
+        <!-- 链接列 -->
+        <div v-for="column in columns" :key="column.title">
+          <h3 class="footer-title">
+            {{ column.title }}
           </h3>
           <ul class="space-y-2">
-            <li>
-              <NuxtLink
-                to="/products"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >全部商品</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink
-                to="/products"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >热销榜单</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink
-                to="/products"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >新品上市</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink
-                to="/blog"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >资讯中心</NuxtLink
-              >
-            </li>
-          </ul>
-        </div>
-
-        <!-- 服务 -->
-        <div>
-          <h3
-            class="text-[11px] font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wide mb-3"
-          >
-            服务
-          </h3>
-          <ul class="space-y-2">
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >售后服务</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >配送说明</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >退换政策</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >常见问题</a
-              >
-            </li>
-          </ul>
-        </div>
-
-        <!-- 关于 -->
-        <div>
-          <h3
-            class="text-[11px] font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wide mb-3"
-          >
-            关于
-          </h3>
-          <ul class="space-y-2">
-            <li>
-              <NuxtLink
-                to="/about"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >关于我们</NuxtLink
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >加入我们</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >联系方式</a
-              >
-            </li>
-            <li>
-              <NuxtLink
-                to="/ai-page"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >AI 助手</NuxtLink
-              >
-            </li>
-          </ul>
-        </div>
-
-        <!-- 法律 -->
-        <div>
-          <h3
-            class="text-[11px] font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wide mb-3"
-          >
-            法律
-          </h3>
-          <ul class="space-y-2">
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >隐私政策</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >服务条款</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >Cookie 政策</a
-              >
+            <li v-for="link in column.links" :key="link.label">
+              <NuxtLink v-if="link.to" :to="link.to" class="footer-link">{{ link.label }}</NuxtLink>
+              <a v-else :href="link.href" class="footer-link">{{ link.label }}</a>
             </li>
           </ul>
         </div>
@@ -178,9 +89,7 @@
       <!-- 分隔线 -->
       <div class="border-t border-gray-200 dark:border-gray-800 pt-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-          <p class="text-[11px] text-gray-400 dark:text-gray-500">
-            Copyright © 2026 Lyoo. 保留所有权利。
-          </p>
+          <p class="footer-copy">Copyright © 2026 Lyoo. 保留所有权利。</p>
           <div class="flex items-center gap-5">
             <a
               href="#"
