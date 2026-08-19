@@ -16,6 +16,12 @@ const form = ref({
   description: ''
 });
 
+const genderOptions = [
+  { label: '保密', value: 0 },
+  { label: '男', value: 1 },
+  { label: '女', value: 2 }
+];
+
 const loadProfile = async () => {
   isLoading.value = true;
   error.value = false;
@@ -154,14 +160,7 @@ onMounted(loadProfile);
           </div>
           <div>
             <label class="text-xs text-gray-500 dark:text-gray-400 mb-1 block">性别</label>
-            <select
-              v-model="form.gender"
-              class="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm text-gray-900 dark:text-white outline-none"
-            >
-              <option :value="0">保密</option>
-              <option :value="1">男</option>
-              <option :value="2">女</option>
-            </select>
+            <BaseSelect v-model="form.gender" size="md" :options="genderOptions" />
           </div>
           <div>
             <label class="text-xs text-gray-500 dark:text-gray-400 mb-1 block">生日</label>

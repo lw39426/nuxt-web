@@ -75,7 +75,6 @@ onMounted(loadOrders);
         {{ tab.label }}
       </button>
     </div>
-
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-20">
       <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400" />
@@ -83,14 +82,20 @@ onMounted(loadOrders);
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
-      <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div
+          class="i-carbon-warning flex items-center justify-center items-center justify-center gap-2 w-12 h-12 text-gray-300"
+        />
+      </div>
       <p class="text-gray-500 mb-4">加载失败</p>
-      <UButton color="primary" variant="outline" @click="loadOrders">重试</UButton>
+      <UButton color="neutral" variant="outline" @click="loadOrders">重试</UButton>
     </div>
 
     <!-- Empty -->
     <div v-else-if="filteredOrders.length === 0" class="text-center py-20">
-      <div class="i-carbon-package text-5xl text-gray-300 mb-4" />
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="i-carbon-package text-5xl text-gray-300 mb-4" />
+      </div>
       <p class="text-gray-500">暂无订单</p>
     </div>
 

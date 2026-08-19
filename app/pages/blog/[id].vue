@@ -140,7 +140,9 @@ const readTime = computed(() => {
 
     <!-- Error State -->
     <div v-else-if="error || !post" class="text-center py-32">
-      <div class="text-6xl mb-4">📝</div>
+      <div class="text-6xl flex items-center justify-center gap-2 mb-4">
+        <div class="i-carbon-blog w-12 h-12"></div>
+      </div>
       <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">文章不存在</h2>
       <p class="text-gray-500 dark:text-gray-400 mb-6">该文章可能已被删除或链接无效</p>
       <NuxtLink

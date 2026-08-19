@@ -80,9 +80,11 @@ onMounted(loadFavorites);
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
-      <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+      </div>
       <p class="text-gray-500 mb-4">加载失败</p>
-      <UButton color="primary" variant="outline" @click="loadFavorites">重试</UButton>
+      <UButton color="neutral" variant="outline" @click="loadFavorites">重试</UButton>
     </div>
 
     <!-- Empty -->
@@ -90,7 +92,9 @@ onMounted(loadFavorites);
       v-else-if="(activeTab === 'product' ? productFavorites : articleFavorites).length === 0"
       class="text-center py-20"
     >
-      <div class="i-carbon-favorite text-5xl text-gray-300 mb-4" />
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="i-carbon-favorite text-5xl text-gray-300 mb-4" />
+      </div>
       <p class="text-gray-500">暂无收藏</p>
     </div>
 

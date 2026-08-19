@@ -69,14 +69,18 @@ onMounted(loadHistory);
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
-      <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+      </div>
       <p class="text-gray-500 mb-4">加载失败</p>
-      <UButton color="primary" variant="outline" @click="loadHistory">重试</UButton>
+      <UButton color="neutral" variant="outline" @click="loadHistory">重试</UButton>
     </div>
 
     <!-- Empty -->
     <div v-else-if="history.length === 0" class="text-center py-20">
-      <div class="i-carbon-time text-5xl text-gray-300 mb-4" />
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <div class="i-carbon-time text-5xl text-gray-300 mb-4" />
+      </div>
       <p class="text-gray-500">暂无浏览记录</p>
     </div>
 

@@ -263,6 +263,19 @@ const sidebarCities = computed<SidebarCity[]>(() => {
   });
 });
 
+// 移动端地区下拉选项（复用 sidebarCities 数据）
+const regionOptions = computed(() =>
+  sidebarCities.value.map((city) => ({
+    label: city.name,
+    value: city.slug,
+    disabled: city.disabled
+  }))
+);
+
+const changeRegion = (value: string | number | boolean | null) => {
+  router.push({ params: { id: String(value) }, query: { char: 0 } });
+};
+
 const switchCharacter = (index: number) => {
   // Prevent animation if clicking the same character
   if (index === charIndex.value) return;
@@ -695,24 +708,17 @@ onBeforeUnmount(() => {
       </li>
     </ul>
 
-    <!-- 移动端地区选择 -->
-    <select
-      class="sm:hidden absolute top-24 left-4 z-20 bg-black/55 text-white border border-white/30 rounded px-3 py-2 text-sm backdrop-blur-sm"
-      :value="currentRegionSlug"
-      @change="
-        (e) =>
-          router.push({ params: { id: (e.target as HTMLSelectElement).value }, query: { char: 0 } })
-      "
-    >
-      <option
-        v-for="city in sidebarCities"
-        :key="city.slug"
-        :value="city.slug"
-        :disabled="city.disabled"
-      >
-        {{ city.name }}
-      </option>
-    </select>
+    <!-- 移动端地区选择 (Region Selector) -->
+    <BaseSelect
+      class="sm:hidden absolute top-24 left-4 z-20"
+      :fluid="false"
+      variant="overlay"
+      size="sm"
+      :model-value="currentRegionSlug"
+      :options="regionOptions"
+      placeholder="选择地区"
+      @update:model-value="changeRegion"
+    />
 
     <!-- 3. 主要内容 Main Content (Character Details) -->
     <div

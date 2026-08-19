@@ -79,6 +79,9 @@ const currentPage = ref(1);
 const pageSize = 10;
 const loadMoreTrigger = ref<HTMLElement | null>(null);
 
+/** 空数据状态：非加载中且无文章 */
+const isEmpty = computed(() => !isLoading.value && displayedPosts.value.length === 0);
+
 /** 加载文章列表 */
 const loadArticles = async (reset = false) => {
   if (isLoading.value || (!hasMore.value && !reset)) return;
@@ -196,7 +199,7 @@ onMounted(() => {
 
       <!-- 筛选器: 分类标签Filter Tabs -->
       <div
-        class="flex flex-wrap items-center justify-center gap-2 mb-12 overflow-x-auto pb-2 scrollbar-hide"
+        class="flex flex-wrap items-center justify-start gap-2 mb-12 overflow-x-auto pb-2 scrollbar-hide"
       >
         <button
           class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
@@ -229,8 +232,10 @@ onMounted(() => {
       </div>
 
       <!-- 空数据状态 -->
-      <div v-if="!isLoading && displayedPosts.length === 0" class="text-center py-20 text-gray-400">
-        <div class="text-5xl mb-4">📭</div>
+      <div v-if="isEmpty" class="text-center py-20 text-gray-400">
+        <div class="text-5xl flex items-center justify-center gap-2 mb-4">
+          <div class="i-carbon-blog w-12 h-12"></div>
+        </div>
         <p class="text-sm">暂无文章，换个分类试试吧</p>
       </div>
 
@@ -240,7 +245,7 @@ onMounted(() => {
       </div>
 
       <!-- 加载更多触发器 / 底部状态 -->
-      <div ref="loadMoreTrigger" class="flex justify-center mt-12 py-8">
+      <div v-if="!isEmpty" ref="loadMoreTrigger" class="flex justify-center mt-12 py-8">
         <div v-if="isLoading" class="flex items-center gap-2 text-gray-500">
           <div class="i-carbon-circle-dash w-6 h-6 animate-spin"></div>
           <span>加载中...</span>
