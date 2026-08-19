@@ -174,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useCategoryApi } from '~/composables/api/category';
 import type { Product } from '~/types/product';
 
@@ -207,19 +207,23 @@ const { data, error } = await useAsyncData(
       id: item.id
     }));
 
-    // 并发拉取每个分类下的商品
-    const seriesList = await Promise.all(
-      categories.map(async (item) => {
-        const productsRes = await getProducts(item.id, { page: 1, pageSize: 10 });
-        const products = productsRes.data || [];
-        return {
-          categoryId: item.id,
-          category: item.name,
-          categoryImage: item.image,
-          products: products as Product[]
-        } as SeriesGroup;
-      })
-    );
+    // 并发拉取每个分类下的商品；单个分类失败不拖垮整页（跳过失败项）
+    const seriesList = (
+      await Promise.allSettled(
+        categories.map(async (item) => {
+          const productsRes = await getProducts(item.id, { page: 1, pageSize: 10 });
+          const products = productsRes.data || [];
+          return {
+            categoryId: item.id,
+            category: item.name,
+            categoryImage: item.image,
+            products: products as Product[]
+          } as SeriesGroup;
+        })
+      )
+    )
+      .filter((r): r is PromiseFulfilledResult<SeriesGroup> => r.status === 'fulfilled')
+      .map((r) => r.value);
 
     return {
       categories,
@@ -239,17 +243,25 @@ if (categories.value.length > 0 && categories.value[0]) {
   selectedCategory.value = categories.value[0]!.name;
 }
 
-// 客户端拉取失败时提示（SSR 阶段不弹 toast）
-watchEffect(() => {
-  if (import.meta.client && error.value) {
-    toast.add({
-      id: 'products-store-error',
-      title: '加载失败',
-      description: '数据加载失败，请刷新页面重试',
-      color: 'error'
-    });
-  }
-});
+// 客户端拉取失败时提示一次（SSR 阶段不弹 toast，且每次页面挂载最多提示一次，避免反复弹窗）
+let errorNotified = false;
+if (import.meta.client) {
+  watch(
+    error,
+    (err) => {
+      if (err && !errorNotified) {
+        errorNotified = true;
+        toast.add({
+          id: 'products-store-error',
+          title: '加载失败',
+          description: '数据加载失败，请刷新页面重试',
+          color: 'error'
+        });
+      }
+    },
+    { immediate: true }
+  );
+}
 </script>
 
 <style scoped>

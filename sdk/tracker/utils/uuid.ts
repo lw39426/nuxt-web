@@ -16,7 +16,6 @@ function getRandomBytes(len: number): Uint8Array {
 
 export function uuidV4(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    // @ts-expect-error - randomUUID exists in modern browsers
     return crypto.randomUUID()
   }
 
