@@ -37,6 +37,7 @@ const handleLogout = () => {
 
 // 菜单配置
 const menuItems = [
+  { name: 'Home', href: '/', icon: 'i-carbon-home' },
   { name: 'Products', href: '/products', icon: 'i-carbon-cube' },
   { name: 'Blog', href: '/blog', icon: 'i-carbon-blog' },
   { name: '元神', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
@@ -264,7 +265,7 @@ onUnmounted(() => {
                   />
                 </svg>
               </div>
-              <p class="font-bold font-display text-xl text-gray-900 dark:text-white">Lyoo</p>
+              <p class="font-bold font-display text-xl text-gray-900 dark:text-white">Mimo</p>
             </a>
           </div>
 

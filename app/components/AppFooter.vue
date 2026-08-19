@@ -67,7 +67,7 @@ const columns: FooterColumn[] = [
                 />
               </svg>
             </div>
-            <span class="font-semibold text-base text-gray-900 dark:text-white">Lyoo</span>
+            <span class="font-semibold text-base text-gray-900 dark:text-white">Mimo</span>
           </NuxtLink>
           <p class="footer-desc">新一代智能购物平台，用科技连接品质生活。</p>
         </div>
@@ -89,7 +89,7 @@ const columns: FooterColumn[] = [
       <!-- 分隔线 -->
       <div class="border-t border-gray-200 dark:border-gray-800 pt-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-          <p class="footer-copy">Copyright © 2026 Lyoo. 保留所有权利。</p>
+          <p class="footer-copy">Copyright © 2026 Mimo. 保留所有权利。</p>
           <div class="flex items-center gap-5">
             <a
               href="#"

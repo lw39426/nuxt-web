@@ -122,7 +122,7 @@ const buttonClass = (value: 'system' | 'light' | 'dark') =>
 
           <!-- Back to Top -->
           <button
-            v-if="showBackToTop"
+            v-show="showBackToTop"
             class="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 rounded-xl transition-colors text-sm font-medium"
             @click="backToTop"
           >

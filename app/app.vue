@@ -22,17 +22,18 @@ const router = useRouter();
 const uiStore = useUiStore();
 const authStore = useAuthStore();
 const { openAuthModal } = uiStore;
+const { public: runtimePublic } = useRuntimeConfig();
+console.log('NUXT_PUBLIC_API_BASE:', runtimePublic.apiBase);
 
-// 初始化认证状态（从 Cookie 读取，确保刷新后登录状态不丢失）
-if (import.meta.client) {
-  authStore.initAuthFromCookie();
-}
+// 初始化认证状态（从 Cookie 读取，确保刷新后登录状态不丢失，SSR 与客户端均执行）
+authStore.initAuthFromCookie();
 
 if (import.meta.client) {
   watch(
     () => route.query.authModal,
     async (authModal) => {
       if (authModal !== 'login') return;
+      if (authStore.isAuthenticated) return;
 
       openAuthModal('login');
 

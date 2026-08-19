@@ -13,7 +13,9 @@
     <AppFooter v-if="!$route.meta.hideFooter" />
 
     <!-- Floating Menu -->
-    <AppFloatingMenu v-if="!$route.meta.hideFloatingMenu" />
+    <ClientOnly>
+      <AppFloatingMenu v-if="!$route.meta.hideFloatingMenu" />
+    </ClientOnly>
 
     <!-- 小星AI入口 -->
     <NuxtLink
