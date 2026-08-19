@@ -1,5 +1,6 @@
 import { useAuthStore } from '~/stores/auth'
 import { useUiStore } from '~/stores/ui'
+import { useRuntimeConfig, useCookie, useToast } from '#imports'
 
 export interface ApiError {
   code?: number
@@ -29,17 +30,24 @@ const requestLocks = new Map<string, Promise<any>>()
 
 export function useApi() {
   const config = useRuntimeConfig()
-  // 服务端走内网直连（BFF模式），客户端走 Nginx 代理地址
-  const apiBase = (import.meta.server ? config.apiSecretBase : config.public.apiBase) as string
+  // 优先使用 NUXT_PUBLIC_API_BASE，客户端与服务端均直连后端（需后端开启 CORS）
+  // 未配置时回退：服务端走内网直连（BFF模式），客户端走相对路径同源请求 Nuxt Server 的 API 路由
+  const apiBase =
+    (config.public.apiBase as string) ||
+    (import.meta.server ? (config.apiSecretBase as string) : '')
   const authStore = import.meta.client ? useAuthStore() : null
   const uiStore = import.meta.client ? useUiStore() : null
   const tokenCookie = useCookie<string | null>('auth_token')
   const refreshTokenCookie = useCookie<string | null>('refresh_token')
   const toast = import.meta.client ? useToast() : null
 
-  console.log('当前请求 baseURL:', apiBase)
+  const baseURL = apiBase ? `${apiBase}/api/v1` : '/api/v1'
+
+  // if (import.meta.dev) {
+  //   console.log(`[${import.meta.server ? 'SERVER' : 'CLIENT'}] 当前请求 baseURL:`, baseURL)
+  // }
   const client = $fetch.create({
-    baseURL: apiBase + '/api/v1',
+    baseURL,
     credentials: 'include',
     // 全局请求拦截器：添加 Bearer Token
     onRequest({ options }) {
@@ -56,11 +64,26 @@ export function useApi() {
 
   /**
    * 统一错误处理与 Toast 提示
+   *
+   * 区分两类错误：
+   * 1. 网络层错误（服务端无响应、DNS 失败、超时）→ 友好提示，不暴露内部 URL
+   * 2. 业务层错误（HTTP 4xx/5xx 且有响应体）→ 展示服务端返回的消息
    */
   function handleError(e: any, suppressErrorToast = false): never {
+    const statusCode = e?.status || e?.code
+    const rawMessage = e?.data?.message || e?.message || ''
+
+    // 判断是否为网络层错误：无状态码，或错误信息包含浏览器 fetch 失败的特征
+    const isNetworkError =
+      !statusCode ||
+      statusCode === 0 ||
+      /Failed to fetch|fetch failed|NetworkError|ECONNREFUSED|timeout/i.test(rawMessage)
+
     const err: ApiError = {
-      message: e?.data?.message || e?.message || '网络错误',
-      code: e?.status || e?.code
+      message: isNetworkError
+        ? '网络连接失败，请检查网络后重试'
+        : rawMessage || '系统繁忙，请稍后再试',
+      code: statusCode
     }
 
     // 在客户端使用 Nuxt UI 的 Toast 弹出错误提示
@@ -73,7 +96,7 @@ export function useApi() {
 
         toast.add({
           id: `api-error-${err.code || 'global'}`, // 同一个 id 在 Nuxt UI 中会替换掉旧弹窗，而不是堆叠
-          title: '请求失败',
+          title: isNetworkError ? '网络异常' : '请求失败',
           description: err.message,
           color: 'error'
         })
@@ -101,7 +124,9 @@ export function useApi() {
 
     // 如果已经有完全相同的请求在进行中，直接复用它的 Promise，防止并发竞态
     if (requestLocks.has(requestKey)) {
-      console.log(`🚀 [Request Queue] 命中并发请求锁，复用请求:`, url)
+      if (import.meta.dev) {
+        console.log(`🚀 [Request Queue] 命中并发请求锁，复用请求:`, url)
+      }
       return requestLocks.get(requestKey)
     }
 
@@ -128,7 +153,9 @@ export function useApi() {
         if (!refreshPromise) {
           // 如果当前没有刷新任务，发起刷新
           refreshPromise = new Promise((resolve) => {
-            console.log('🔄 检测到 401，开始静默刷新 Token...')
+            if (import.meta.dev) {
+              console.log('🔄 检测到 401，开始静默刷新 Token...')
+            }
             const rt = refreshTokenCookie.value
 
             if (!rt) {
@@ -136,7 +163,6 @@ export function useApi() {
               resolve(false)
               return
             }
-
             ;(async () => {
               try {
                 // 注意：这里必须使用无拦截器的 fetch 或者特定逻辑，防止死循环
@@ -159,7 +185,9 @@ export function useApi() {
                     refreshToken: rt,
                     user: null
                   })
-                  console.log('✅ Token 刷新成功')
+                  if (import.meta.dev) {
+                    console.log('✅ Token 刷新成功')
+                  }
                   resolve(true)
                 } else {
                   throw new Error('刷新失败')

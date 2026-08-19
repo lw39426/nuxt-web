@@ -1,7 +1,8 @@
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const globalPageLoading = useState<boolean>('globalPageLoading', () => true)
+  // 初始为 false：SSR 首屏内容已由服务端渲染，水合后无需再显示全屏遮罩
+  const globalPageLoading = useState<boolean>('globalPageLoading', () => false)
   const indicator = useLoadingIndicator({ duration: 1800, throttle: 80 })
   const router = useRouter()
   const FULLSCREEN_MIN_VISIBLE = 180
@@ -9,7 +10,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   let hideTimer: ReturnType<typeof setTimeout> | null = null
   let watchdogTimer: ReturnType<typeof setTimeout> | null = null
   let shownAt = 0
-  let shouldShowFullscreen = true
+  // 首次进入页面（SSR 首屏）不显示全屏遮罩，仅在路由切换时显示
+  let shouldShowFullscreen = false
+  // let shouldShowFullscreen = true
 
   const isSoftNavigation = (
     to: RouteLocationNormalizedLoaded,
@@ -74,7 +77,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   router.beforeEach((to, from) => {
-    shouldShowFullscreen = !isSoftNavigation(to, from)
+    // 首次导航（from 为空，即 SSR 首屏）不显示全屏遮罩，避免水合等待感
+    shouldShowFullscreen = !!from.name && !isSoftNavigation(to, from)
+    // shouldShowFullscreen = !isSoftNavigation(to, from)
   })
 
   startLoading()
