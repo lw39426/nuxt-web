@@ -90,20 +90,20 @@ const askAI = (question?: string) => {
       </div>
     </section>
 
-    <!-- ========== 3. 智能购物体验 ========== -->
+    <!-- ========== 2. 智能购物体验 ========== -->
     <SmartShopping
       :hot-products="hotProducts"
       :new-products="newProducts"
       :featured-tag-name="featuredTagName"
     />
 
-    <!-- ========== 4. 专属AI助手 ========== -->
+    <!-- ========== 3. 专属AI助手 ========== -->
     <AiAssistant />
 
-    <!-- ========== 5. 沉浸式互动体验 ========== -->
+    <!-- ========== 4. 沉浸式互动体验 ========== -->
     <ImmersiveExperience />
 
-    <!-- ========== 6. 最新资讯 ========== -->
+    <!-- ========== 5. 最新资讯 ========== -->
     <LatestNews :articles="articles" />
   </main>
 </template>

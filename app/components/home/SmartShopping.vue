@@ -27,12 +27,6 @@ const displayProducts = computed(() => {
   }
 });
 
-const tabs = [
-  { key: 'hot' as const, label: '热销榜单', icon: 'i-carbon-fire' },
-  { key: 'new' as const, label: '新品上市', icon: 'i-carbon-new' },
-  { key: 'featured' as const, label: '精选推荐', icon: 'i-carbon-star' }
-];
-
 const smartTags = ['AI推荐', '限时特惠', '会员专享', '品质优选'];
 const activeTag = ref(0);
 </script>
@@ -51,7 +45,7 @@ const activeTag = ref(0);
 
     <div class="section-container relative z-10">
       <!-- 标题区 -->
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-4 gap-8">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-6 gap-8">
         <div class="max-w-xl">
           <p class="section-header-label text-home-accent dark:text-blue-400">智能购物</p>
           <h2 class="section-header-title">智能购物体验</h2>
@@ -74,29 +68,6 @@ const activeTag = ref(0);
             {{ tag }}
           </button>
         </div>
-      </div>
-
-      <!-- 标签切换 -->
-      <div
-        class="flex flex-wrap gap-2 bg-white/50 dark:bg-white/5 p-1.5 rounded-2xl w-fit backdrop-blur-sm border border-gray-100 dark:border-white/5"
-      >
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          class="flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-500"
-          :class="
-            activeTab === tab.key
-              ? 'bg-white dark:bg-[#121417] text-home-accent dark:text-blue-400 shadow-md border border-gray-100 dark:border-white/10'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          "
-          @click="activeTab = tab.key"
-        >
-          <div
-            :class="[tab.icon, activeTab === tab.key ? 'scale-110' : '']"
-            class="transition-transform duration-300"
-          />
-          {{ tab.label }}
-        </button>
       </div>
 
       <!-- 商品网格 -->

@@ -18,8 +18,7 @@ const experiences = [
     title: 'AR 实景试穿',
     subtitle: 'VIRTUAL FITTING',
     desc: '打破空间界限，将心仪单品瞬间置于真实环境。厘米级空间感知，精准还原材质质感。',
-    image:
-      'https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=modern+minimalist+living+room+with+a+person+using+smartphone+to+preview+a+designer+chair+ar+experience&image_size=landscape_16_9',
+    image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1200&q=80',
     stats: '实时追踪'
   },
   {
@@ -173,12 +172,7 @@ onUnmounted(() => {
             "
           >
             <!-- 背景图片：仅保留微弱的呼吸感 -->
-            <img
-              :src="exp.image"
-              :alt="exp.title"
-              class="w-full h-full object-cover transition-transform duration-[10000ms] linear"
-              :class="activeExperience === idx ? 'scale-110' : 'scale-100'"
-            />
+            <img :src="exp.image" :alt="exp.title" class="w-full h-full object-cover" />
 
             <!-- 遮罩：使用项目常用的渐变规范 -->
             <div
