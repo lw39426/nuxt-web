@@ -13,14 +13,12 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref<string | null>(null)
   const user = ref<AuthUser | null>(null)
 
-  // 初始化时从 Cookie 读取（仅在客户端）
+  // 初始化时从 Cookie 读取（SSR 服务端读请求 Cookie，客户端读浏览器 Cookie）
   const initAuthFromCookie = () => {
-    if (import.meta.client) {
-      const tokenCookie = useCookie<string | null>('auth_token')
-      const refreshTokenCookie = useCookie<string | null>('refresh_token')
-      token.value = tokenCookie.value
-      refreshToken.value = refreshTokenCookie.value
-    }
+    const tokenCookie = useCookie<string | null>('auth_token')
+    const refreshTokenCookie = useCookie<string | null>('refresh_token')
+    token.value = tokenCookie.value
+    refreshToken.value = refreshTokenCookie.value
   }
 
   // 设置认证信息（写入内存与 Cookie）

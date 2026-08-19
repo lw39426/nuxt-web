@@ -5,7 +5,7 @@ import { useAuthStore } from '~/stores/auth';
 
 const uiStore = useUiStore();
 const authStore = useAuthStore();
-const { loginByUsername, register, getCode } = useAuth();
+const { loginByUsername, loginByPhone, register, getCode } = useAuth();
 const isOpen = computed(() => uiStore.authModalOpen);
 const currentView = computed(() => uiStore.authModalView);
 const close = () => uiStore.closeAuthModal();
@@ -22,7 +22,7 @@ const loginForm = ref({
 const account = ref('');
 const accountOptions = [
   { label: '快速选择账号', value: '', password: '' },
-  { label: 'user', value: 'user', password: '123456' },
+  { label: 'user', value: 'liwanwan', password: '111111' },
   { label: '运营账号 ops', value: 'ops', password: '123456' }
 ];
 
@@ -42,6 +42,93 @@ const captchaKey = ref('');
 const captchaError = ref(false);
 const showPassword = ref(false);
 const isLoading = ref(false);
+
+// --- Login Mode & Phone Login State ---
+const loginMode = ref<'username' | 'phone'>('username');
+const phoneForm = ref({
+  phone: '13111111111',
+  password: '111111',
+  code: ''
+});
+const smsCountdown = ref(0);
+const smsLoading = ref(false);
+let smsTimer: ReturnType<typeof setInterval> | null = null;
+
+const sendSmsCode = async () => {
+  if (smsCountdown.value > 0 || smsLoading.value) return;
+  const phone = phoneForm.value.phone.trim();
+  if (!/^1[3-9]\d{9}$/.test(phone)) {
+    const toast = useToast();
+    toast.add({
+      id: 'auth-sms-phone-error',
+      title: '校验失败',
+      description: '请输入正确的手机号',
+      color: 'error'
+    });
+    return;
+  }
+  smsLoading.value = true;
+  try {
+    await getCode(phone);
+    smsCountdown.value = 60;
+    if (smsTimer) clearInterval(smsTimer);
+    smsTimer = setInterval(() => {
+      smsCountdown.value--;
+      if (smsCountdown.value <= 0 && smsTimer) {
+        clearInterval(smsTimer);
+        smsTimer = null;
+      }
+    }, 1000);
+  } catch (error: any) {
+    console.error('Failed to send sms code:', error);
+    const toast = useToast();
+    toast.add({
+      id: 'auth-sms-error',
+      title: '发送失败',
+      description: error.message || '验证码发送失败，请稍后再试',
+      color: 'error'
+    });
+  } finally {
+    smsLoading.value = false;
+  }
+};
+
+const handlePhoneLogin = async () => {
+  isLoading.value = true;
+  try {
+    const res = await loginByPhone({
+      phone: phoneForm.value.phone.trim(),
+      code: phoneForm.value.code.trim()
+    });
+
+    if (res && res.access_token) {
+      authStore.setAuth({
+        token: res.access_token,
+        refreshToken: res.refresh_token,
+        user: res.user || { id: 0, username: phoneForm.value.phone }
+      });
+      close();
+    }
+  } catch (error: any) {
+    console.error('Phone login failed:', error);
+    const toast = useToast();
+    toast.add({
+      id: 'auth-phone-login-error',
+      title: '登录失败',
+      description: error.message || '系统繁忙，请稍后再试',
+      color: 'error'
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onUnmounted(() => {
+  if (smsTimer) {
+    clearInterval(smsTimer);
+    smsTimer = null;
+  }
+});
 
 const fetchCaptcha = async () => {
   captchaError.value = false;
@@ -69,6 +156,14 @@ watch(isOpen, (newVal: any) => {
     registerForm.value.password = '';
     registerForm.value.confirmPassword = '';
     registerForm.value.captcha = '';
+    loginMode.value = 'username';
+    phoneForm.value.phone = '';
+    phoneForm.value.code = '';
+    if (smsTimer) {
+      clearInterval(smsTimer);
+      smsTimer = null;
+    }
+    smsCountdown.value = 0;
   }
 });
 
@@ -208,99 +303,141 @@ const handleRegister = async () => {
 
               <form
                 class="mt-6 space-y-4 sm:mt-7 lg:mt-5 lg:space-y-3"
-                @submit.prevent="handleLogin"
+                @submit.prevent="loginMode === 'phone' ? handlePhoneLogin() : handleLogin()"
               >
-                <div>
-                  <label for="quick-account" class="sr-only">快速选择账号</label>
-                  <div class="relative">
-                    <select
+                <!-- 用户名密码登录 -->
+                <template v-if="loginMode === 'username'">
+                  <div>
+                    <label for="quick-account" class="sr-only">快速选择账号</label>
+                    <BaseSelect
                       id="quick-account"
                       v-model="account"
-                      class="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
-                    >
-                      <option v-for="item in accountOptions" :key="item.label" :value="item.value">
-                        {{ item.label }}
-                      </option>
-                    </select>
-                    <span
-                      class="i-carbon-chevron-down pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                      :options="accountOptions"
+                      placeholder="快速选择账号"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label for="login" class="sr-only">用户名</label>
-                  <input
-                    id="login"
-                    v-model="loginForm.email"
-                    type="text"
-                    placeholder="请输入用户名"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label for="password" class="sr-only">密码</label>
-                  <div class="relative">
+                  <div>
+                    <label for="login" class="sr-only">用户名</label>
                     <input
-                      id="password"
-                      v-model="loginForm.password"
-                      :type="showPassword ? 'text' : 'password'"
-                      placeholder="密码"
-                      class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 pr-12 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
-                    />
-                    <button
-                      type="button"
-                      class="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300 lg:w-11"
-                      @click="showPassword = !showPassword"
-                    >
-                      <span
-                        :class="showPassword ? 'i-carbon-view-off' : 'i-carbon-view'"
-                        class="h-5 w-5"
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                <div class="flex gap-3">
-                  <div class="flex-1 relative">
-                    <label for="captcha" class="sr-only">验证码</label>
-                    <input
-                      id="captcha"
-                      v-model="loginForm.captcha"
+                      id="login"
+                      v-model="loginForm.email"
                       type="text"
-                      placeholder="验证码"
+                      placeholder="请输入用户名"
                       class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
                     />
                   </div>
-                  <div
-                    class="h-12 w-32 rounded-xl border border-slate-200 overflow-hidden cursor-pointer flex items-center justify-center bg-gray-50 dark:border-slate-700 lg:h-11"
-                    @click="fetchCaptcha"
-                  >
-                    <img
-                      v-if="captchaImage"
-                      :src="captchaImage"
-                      alt="captcha"
-                      class="w-full h-full object-cover"
-                    />
-                    <span v-else-if="captchaError" class="text-xs text-red-400">加载失败，点击重试</span>
-                    <span v-else class="text-xs text-gray-400">加载中...</span>
-                  </div>
-                </div>
 
-                <div class="flex items-center justify-between text-sm">
-                  <label class="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <div>
+                    <label for="password" class="sr-only">密码</label>
+                    <div class="relative">
+                      <input
+                        id="password"
+                        v-model="loginForm.password"
+                        :type="showPassword ? 'text' : 'password'"
+                        placeholder="密码"
+                        class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 pr-12 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                      />
+                      <button
+                        type="button"
+                        class="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300 lg:w-11"
+                        @click="showPassword = !showPassword"
+                      >
+                        <span
+                          :class="showPassword ? 'i-carbon-view-off' : 'i-carbon-view'"
+                          class="h-5 w-5"
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <div class="flex-1 relative">
+                      <label for="captcha" class="sr-only">验证码</label>
+                      <input
+                        id="captcha"
+                        v-model="loginForm.captcha"
+                        type="text"
+                        placeholder="验证码"
+                        class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                      />
+                    </div>
+                    <div
+                      class="h-12 w-32 rounded-xl border border-slate-200 overflow-hidden cursor-pointer flex items-center justify-center bg-gray-50 dark:border-slate-700 lg:h-11"
+                      @click="fetchCaptcha"
+                    >
+                      <img
+                        v-if="captchaImage"
+                        :src="captchaImage"
+                        alt="captcha"
+                        class="w-full h-full object-cover"
+                      />
+                      <span v-else-if="captchaError" class="text-xs text-red-400"
+                        >加载失败，点击重试</span
+                      >
+                      <span v-else class="text-xs text-gray-400">加载中...</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between text-sm">
+                    <label
+                      class="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300"
+                    >
+                      <input
+                        v-model="loginForm.rememberMe"
+                        type="checkbox"
+                        class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>记住账号</span>
+                    </label>
+                    <a href="#" class="font-medium text-blue-600 transition hover:text-blue-500"
+                      >忘记密码?</a
+                    >
+                  </div>
+                </template>
+
+                <!-- 手机号登录 -->
+                <template v-else>
+                  <div>
+                    <label for="phone" class="sr-only">手机号</label>
                     <input
-                      v-model="loginForm.rememberMe"
-                      type="checkbox"
-                      class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      id="phone"
+                      v-model="phoneForm.phone"
+                      type="tel"
+                      maxlength="11"
+                      placeholder="请输入手机号"
+                      class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
                     />
-                    <span>记住账号</span>
-                  </label>
-                  <a href="#" class="font-medium text-blue-600 transition hover:text-blue-500"
-                    >忘记密码?</a
-                  >
-                </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <div class="flex-1 relative">
+                      <label for="sms-code" class="sr-only">短信验证码</label>
+                      <input
+                        id="sms-code"
+                        v-model="phoneForm.code"
+                        type="text"
+                        maxlength="6"
+                        placeholder="短信验证码"
+                        class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      :disabled="smsCountdown > 0 || smsLoading"
+                      class="h-12 w-32 shrink-0 rounded-xl border border-slate-200 bg-white text-sm font-medium text-blue-600 transition hover:border-blue-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 lg:h-11"
+                      @click="sendSmsCode"
+                    >
+                      {{
+                        smsCountdown > 0
+                          ? `${smsCountdown}s 后重发`
+                          : smsLoading
+                            ? '发送中...'
+                            : '获取验证码'
+                      }}
+                    </button>
+                  </div>
+                </template>
 
                 <button
                   type="submit"
@@ -311,15 +448,16 @@ const handleRegister = async () => {
                     v-if="isLoading"
                     class="i-carbon-circle-dash animate-spin h-5 w-5 inline-block align-middle"
                   />
-                  <span v-else>登录</span>
+                  <span v-else>{{ loginMode === 'phone' ? '手机号登录' : '登录' }}</span>
                 </button>
 
                 <div class="grid grid-cols-2 gap-3 lg:gap-2.5">
                   <button
                     type="button"
                     class="h-11 rounded-xl border border-slate-200 bg-white text-base font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-10 lg:text-sm"
+                    @click="loginMode = loginMode === 'username' ? 'phone' : 'username'"
                   >
-                    手机号登录
+                    {{ loginMode === 'username' ? '手机号登录' : '用户名登录' }}
                   </button>
                   <button
                     type="button"
@@ -451,7 +589,9 @@ const handleRegister = async () => {
                       alt="captcha"
                       class="w-full h-full object-cover"
                     />
-                    <span v-else-if="captchaError" class="text-xs text-red-400">加载失败，点击重试</span>
+                    <span v-else-if="captchaError" class="text-xs text-red-400"
+                      >加载失败，点击重试</span
+                    >
                     <span v-else class="text-xs text-gray-400">加载中...</span>
                   </div>
                 </div>
