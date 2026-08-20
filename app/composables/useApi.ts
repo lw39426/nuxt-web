@@ -1,6 +1,6 @@
 import { useAuthStore } from '~/stores/auth'
 import { useUiStore } from '~/stores/ui'
-import { useRuntimeConfig, useCookie, useToast } from '#imports'
+import { useCookie, useToast } from '#imports'
 
 export interface ApiError {
   code?: number
@@ -29,19 +29,15 @@ const errorToastCache = new Set<string>()
 const requestLocks = new Map<string, Promise<any>>()
 
 export function useApi() {
-  const config = useRuntimeConfig()
-  // 优先使用 NUXT_PUBLIC_API_BASE，客户端与服务端均直连后端（需后端开启 CORS）
-  // 未配置时回退：服务端走内网直连（BFF模式），客户端走相对路径同源请求 Nuxt Server 的 API 路由
-  const apiBase =
-    (config.public.apiBase as string) ||
-    (import.meta.server ? (config.apiSecretBase as string) : '')
+  // 所有请求均走 Nuxt 自身的 API 路由（server/api/）
   const authStore = import.meta.client ? useAuthStore() : null
   const uiStore = import.meta.client ? useUiStore() : null
   const tokenCookie = useCookie<string | null>('auth_token')
   const refreshTokenCookie = useCookie<string | null>('refresh_token')
   const toast = import.meta.client ? useToast() : null
 
-  const baseURL = apiBase ? `${apiBase}/api/v1` : '/api/v1'
+  // 统一使用 Nuxt 自身的 API 路由
+  const baseURL = '/api/v1'
 
   // if (import.meta.dev) {
   //   console.log(`[${import.meta.server ? 'SERVER' : 'CLIENT'}] 当前请求 baseURL:`, baseURL)
@@ -170,7 +166,6 @@ export function useApi() {
                 const refreshRes = await $fetch<ApiResponse<{ access_token: string }>>(
                   '/api/v1/auth/refreshToken',
                   {
-                    baseURL: apiBase,
                     method: 'POST',
                     headers: {
                       Authorization: `Bearer ${rt}`

@@ -42,6 +42,17 @@ export default defineNuxtConfig({
   alias: {
     '@sdk': resolve(__dirname, 'sdk')
   },
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: ''
+        }
+      ]
+    }
+  },
   icon: {
     serverBundle: isProd
       ? {
@@ -56,14 +67,9 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
-    // 仅在服务端可用 (Node.js) - Nuxt 走内网直接连 Flask，速度极快！
-    // apiSecretBase: process.env.NUXT_API_SECRET_BASE || 'http://127.0.0.1:5000',
     public: {
-      // 客户端与服务端均可用 - 浏览器用的地址，走 Nginx 代理
-      apiBase: process.env.NUXT_PUBLIC_API_BASE,
-      useMock: process.env.NUXT_PUBLIC_USE_MOCK
-        ? process.env.NUXT_PUBLIC_USE_MOCK === 'true'
-        : true,
+      // 是否启用 Mock 模式（BFF 层读取）
+      useMock: process.env.NUXT_PUBLIC_USE_MOCK === 'true' || true,
       tracker: {
         enabled: trackerEnabled,
         appId: process.env.NUXT_PUBLIC_TRACKER_APP_ID || 'nuxtweb',
@@ -122,6 +128,9 @@ export default defineNuxtConfig({
         '@vueuse/core',
         '@popperjs/core'
       ]
+    },
+    define: {
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: true
     }
   },
   build: {

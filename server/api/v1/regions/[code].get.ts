@@ -1,27 +1,14 @@
 import { buildRegionDetailPayload } from '../../../utils/mockCharacterRegions'
 
+/**
+ * 获取地区详情接口
+ * GET /api/v1/regions/:code
+ */
 export default defineEventHandler((event) => {
-  const code = getRouterParam(event, 'code')
-
-  if (!code) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'region code is required'
-    })
-  }
-
-  const data = buildRegionDetailPayload(code)
-
-  if (!data) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'region not found'
-    })
-  }
-
+  const code = getRouterParam(event, 'code') ?? ''
   return {
     code: 200,
     message: 'success',
-    data
+    data: buildRegionDetailPayload(code)
   }
 })

@@ -1,15 +1,18 @@
 import { getMockArticles } from '../../../utils/mockArticles'
 
-export default defineEventHandler((event) => {
+/**
+ * 获取文章列表接口
+ * GET /api/v1/article/list
+ * 查询参数: page, pageSize, category_id, keyword
+ */
+export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const page = Number(query.page || 1)
-  const pageSize = Number(query.pageSize || 10)
-  const categoryId = query.category_id !== undefined ? Number(query.category_id) : undefined
+  const { page = 1, pageSize = 10, _category_id, _keyword } = query
 
+  // 使用模拟数据
   const result = getMockArticles({
-    page: Number.isFinite(page) ? page : 1,
-    pageSize: Number.isFinite(pageSize) ? pageSize : 10,
-    category_id: categoryId
+    page: Number(page),
+    pageSize: Number(pageSize)
   })
 
   return {
