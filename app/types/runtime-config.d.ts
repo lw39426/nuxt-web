@@ -1,6 +1,10 @@
 declare module 'nuxt/schema' {
+  interface RuntimeConfig {
+    apiSecretBase: string
+    apiTimeout: number
+  }
+
   interface PublicRuntimeConfig {
-    apiBase: string
     useMock: boolean
     tracker: {
       enabled: boolean

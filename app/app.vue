@@ -22,9 +22,8 @@ const router = useRouter();
 const uiStore = useUiStore();
 const authStore = useAuthStore();
 const { openAuthModal } = uiStore;
-const { public: runtimePublic } = useRuntimeConfig();
-console.log('NUXT_PUBLIC_API_BASE:', runtimePublic.apiBase);
-
+// const { public: runtimePublic } = useRuntimeConfig();
+// console.log('NUXT_PUBLIC_API_BASE:', runtimePublic.apiBase);
 // 初始化认证状态（从 Cookie 读取，确保刷新后登录状态不丢失，SSR 与客户端均执行）
 authStore.initAuthFromCookie();
 

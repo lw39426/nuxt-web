@@ -144,12 +144,18 @@ const fetchCaptcha = async () => {
   }
 };
 
-// Fetch captcha when modal opens
+// 弹窗打开、或在打开状态下切换登录/注册视图时，重新拉取验证码。
+// 合并为单个 watch：openAuthModal 会同时修改 open 与 view，
+// 数组形式的 watch 对同一批次的多个变更只触发一次回调，避免重复请求。
+watch([isOpen, currentView], ([open]) => {
+  if (!open) return;
+  showPassword.value = false;
+  fetchCaptcha();
+});
+
+// 弹窗关闭时重置表单状态
 watch(isOpen, (newVal: any) => {
-  if (newVal) {
-    fetchCaptcha();
-  } else {
-    // Reset forms when closing
+  if (!newVal) {
     showPassword.value = false;
     loginForm.value.password = '';
     loginForm.value.captcha = '';
@@ -165,11 +171,6 @@ watch(isOpen, (newVal: any) => {
     }
     smsCountdown.value = 0;
   }
-});
-
-watch(currentView, () => {
-  fetchCaptcha();
-  showPassword.value = false;
 });
 
 watch(account, (value: string) => {

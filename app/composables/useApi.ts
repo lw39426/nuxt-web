@@ -45,6 +45,9 @@ export function useApi() {
   const client = $fetch.create({
     baseURL,
     credentials: 'include',
+    // 关闭 ofetch 默认重试：ofetch 对 GET 请求在 502/503/504 等状态下会自动重试 1 次，
+    // 导致同一个接口在后端不可用时发出两次请求。重试与降级已由 BFF 层统一处理。
+    retry: 0,
     // 全局请求拦截器：添加 Bearer Token
     onRequest({ options }) {
       // 优先从内存状态中获取 token，其次从 cookie 获取

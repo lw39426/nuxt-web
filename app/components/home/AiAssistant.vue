@@ -117,7 +117,7 @@ const askAI = () => {
                 <div
                   class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20"
                 >
-                  <div class="i-carbon-sparkles text-white text-lg" />
+                  <!-- <div class="i-carbon- text-white text-lg" /> -->
                 </div>
                 <span
                   class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-surface animate-pulse"

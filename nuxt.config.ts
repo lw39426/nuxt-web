@@ -67,9 +67,15 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    // 仅服务端可用：Flask 后端地址，BFF 层内网直连
+    apiSecretBase: process.env.NUXT_API_SECRET_BASE || 'http://127.0.0.1:5050',
+    // 仅服务端可用：BFF 请求 Flask 的超时时间（毫秒）
+    apiTimeout: envNumber('NUXT_API_TIMEOUT', 8000),
     public: {
-      // 是否启用 Mock 模式（BFF 层读取）
-      useMock: process.env.NUXT_PUBLIC_USE_MOCK === 'true' || true,
+      // 是否启用 Mock 模式（true=强制 Mock，false=优先调 Flask 并在失败时降级）
+      useMock: process.env.NUXT_PUBLIC_USE_MOCK
+        ? process.env.NUXT_PUBLIC_USE_MOCK === 'true'
+        : true,
       tracker: {
         enabled: trackerEnabled,
         appId: process.env.NUXT_PUBLIC_TRACKER_APP_ID || 'nuxtweb',
