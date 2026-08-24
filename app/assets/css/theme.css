@@ -1,0 +1,220 @@
+/*
+ * ============================================================
+ * theme.css — 主题变量的唯一事实源（Single Source of Truth）
+ * ------------------------------------------------------------
+ * 职责：
+ *   1. 定义「原始色板」：各主题共享的颜色原料
+ *   2. 定义「语义 token」：背景 / 文字 / 线框 / 品牌色，随主题翻转
+ *   3. 语义 token 由 uno.config.ts 中的 theme.colors 映射为可用的类名：
+ *        bg-canvas       页面底色
+ *        bg-surface      卡片表面
+ *        bg-elevated     悬浮/弹层底色
+ *        bg-glass        毛玻璃（需搭配 backdrop-blur）
+ *        text-fg         主文字      text-fg-muted 次级文字   text-fg-subtle 弱文字
+ *        border-line     线框        border-line-strong 强线框
+ *        bg-brand        品牌底      text-brand  文字品牌   bg-brand-soft 品牌弱底
+ *        text-on-brand   品牌底上的文字
+ *        bg-accent / text-accent / bg-accent-soft
+ *
+ * 为什么组件里不用再写 dark:* ？
+ *   因为这里是 CSS 变量：.dark 一出现，var() 自动翻转，
+ *   组件里写 bg-surface 即可同时适配 light/dark 两套主题。
+ *
+ * 新增主题 = 在末尾新增一个语义 token 块（见示例 [data-theme='oled']）。
+ * 注意：本文件所有 token 均为语义命名，不直接写业务色值进组件。
+ * ============================================================
+ */
+
+/* ---------- 1. 原始色板：品牌色（各主题共享） ---------- */
+:root {
+  --brand-500: #0fba81; /* 品牌主色（绿），与全站 selection / 图标一致 */
+  --brand-400: #2fd3a6;
+  --brand-300: #5ce6c0;
+  --brand-200: #8ff2d8;
+  --brand-600: #0aa374;
+  --brand-700: #087e5c;
+}
+
+/* ---------- 2. 语义 token —— 浅色主题（默认） ---------- */
+:root,
+.light {
+  /* 背景层级 */
+  --canvas: #ffffff; /* 页面底色 */
+  --canvas-elevated: #f4f4f5; /* 悬浮 / 弹层底色 */
+  --surface: #ffffff; /* 卡片表面 */
+  --surface-muted: #f7f7f8; /* 次级表面（卡片 hover / 输入框底） */
+  --glass-bg: rgba(255, 255, 255, 0.9); /* 毛玻璃容器 */
+
+  /* 文字层级 */
+  --fg: #18181b; /* 主文字 */
+  --fg-muted: #71717a; /* 次级文字 */
+  --fg-subtle: #a1a1aa; /* 弱文字 / 占位 */
+
+  /* 线框 */
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
+
+  /* 品牌 */
+  --brand: var(--brand-500);
+  --brand-soft: rgba(15, 186, 129, 0.12); /* 品牌色悬浮/选中底色 */
+  --brand-hover: var(--brand-600); /* 品牌实底 hover（浅色主题下加深） */
+  --brand-active: var(--brand-700); /* 品牌实底 active/pressed */
+  --on-brand: #ffffff;
+
+  /* 强调色（蓝紫，用于选中态 / 渐变装饰，需时再全站统一） */
+  --accent: #455293;
+  --accent-soft: rgba(69, 82, 147, 0.1);
+
+  /* 阴影 / 遮罩 */
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --overlay: rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- 3. 语义 token —— 深色主题 ---------- */
+.dark {
+  --canvas: #08070f; /* 原 main.css body 写死的深底 */
+  --canvas-elevated: #1f1f23;
+  --surface: #18181b;
+  --surface-muted: #121417; /* 次级表面（卡片 hover / 输入框底） */
+  --glass-bg: #232327e6; /* 毛玻璃容器 rgb(24 24 27 / 0.9) */
+
+  --fg: #fafafa;
+  --fg-muted: #ceced3;
+  --fg-subtle: #11182780; /* 弱文字#6b6b72 / 占位 */
+
+  --line: #333338;
+  --line-strong: #3a3a41;
+
+  --brand: var(--brand-400);
+  --brand-soft: rgba(47, 211, 166, 0.12);
+  --brand-hover: var(--brand-300); /* 深色主题下 hover 变亮 */
+  --brand-active: var(--brand-200);
+  --on-brand: #06281e;
+
+  --accent: #8b93ff;
+  --accent-soft: rgba(139, 147, 255, 0.12);
+
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --overlay: rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- 4. 组件模式类 ----------
+ * 直接写成普通 CSS（引用语义 token var）而非 @apply：
+ *   Tailwind v4 vite 插件会处理 main.css 的整条 import 链，
+ *   而 text-fg / bg-brand 等语义类是 UnoCSS 专属，Tailwind 不识别，
+ *   一旦被 @apply 引用会直接报 "Cannot apply unknown utility class"。
+ * 这里的类名即组件中直接使用的 className。
+ */
+@layer components {
+  /* 状态标签（语义状态色，不属于主题变量，light/dark 各写一份） */
+  .badge-green {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #15803d;
+    background-color: #dcfce7;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .dark .badge-green {
+    color: #4ade80;
+    background-color: #052e16;
+  }
+  .badge-gray {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #374151;
+    background-color: #d1d5db;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .dark .badge-gray {
+    color: #374151;
+    background-color: #1f2937;
+  }
+
+  /* 模块标题规范（标题/描述走 fg 语义 token，.dark 自动翻转） */
+  .section-header-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    margin-bottom: 1.25rem;
+    transition: color 0.3s;
+  }
+  .section-header-title {
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+    transition: color 0.3s;
+  }
+  @media (min-width: 768px) {
+    .section-header-title {
+      font-size: 2.75rem;
+    }
+  }
+  .section-header-desc {
+    font-size: 1rem;
+    line-height: 1.625;
+    color: var(--fg-muted);
+    max-width: 48rem;
+  }
+  @media (min-width: 768px) {
+    .section-header-desc {
+      font-size: 1.125rem;
+    }
+  }
+
+  /* footer 通用字体样式（统一在 footer-title/footer-link/footer-desc/footer-copy 中调整字号） */
+  .footer-title {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fg);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+  .footer-link {
+    font-size: 0.875rem;
+    color: var(--fg-muted);
+    transition: color 0.15s;
+  }
+  .footer-link:hover {
+    color: var(--fg);
+  }
+  .footer-desc {
+    font-size: 0.875rem;
+    line-height: 1.625;
+    color: var(--fg-muted);
+    max-width: 200px;
+  }
+  .footer-copy {
+    font-size: 0.75rem;
+    color: var(--fg-subtle);
+  }
+}
+
+/* ---------- 5. 扩展新主题的写法（示例，启用时打开注释即可） ---------- */
+/*
+[data-theme='oled'] {
+  --canvas: #000000;
+  --surface: #050505;
+  --surface-muted: #0a0a0a;
+  --canvas-elevated: #111111;
+  --fg: #eeeeee;
+  --fg-muted: #888888;
+  --fg-subtle: #555555;
+  --line: #1c1c1c;
+  --brand: #3efcc0;
+  --glass-bg: rgba(0, 0, 0, 0.9);
+  --shadow-soft: 0 0 0;
+}
+*/

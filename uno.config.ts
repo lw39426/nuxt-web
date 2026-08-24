@@ -33,59 +33,45 @@ export default defineConfig({
     //   display: 'ClashDisplay-Variable, Inter, system-ui, sans-serif'
     // },
     colors: {
-      home: {
-        black: '#000000ff',
-        white: '#F7F7F8',
-        gray: '#666666',
-        light: '#F7F7F8',
-        border: '#E5E7EB',
-        breadcrumb: '#605995ff', // 面包屑默认样式 #a350ecff
-        breadcrumbDark: '#736dac', // 面包屑暗黑样式 #8e4fc5ff
-        accent: '#455293', // 面包屑激活样式 #a350ecff
-        accentDark: '#455293' // 面包屑激活暗黑样式 #8e4fc5ff
-      },
-      mingtext: {
-        dark: '#0B0C10',
-        light: '#F7F7F8',
-        gray: '#f1f1f1ff', // #9f9f9fff
-        title: '#0B0C10',
-        subtitle: '#666666'
-      },
-      card: {
-        dark: '#121417',
-        light: '#F7F7F8' // 卡片背景颜色 #F7F7F8
-      }
+      // ============================================================
+      // 语义色板：值来自 app/assets/css/theme.css 的 CSS 变量
+      // .dark 出现时代理值自动翻转，组件写 bg-surface 即可双主题适配，
+      // 生成类名：
+      //   bg-canvas / bg-surface / bg-elevated / bg-surface-muted / bg-glass
+      //   text-fg / text-fg-muted / text-fg-subtle
+      //   border-line / border-line-strong
+      //   bg-brand / text-brand / bg-brand-soft / text-on-brand
+      //   hover:bg-brand-hover / active:bg-brand-active
+      //   bg-accent / text-accent / bg-accent-soft
+      // 注意：这些 token 不支持 /opacity 修饰符；实测 bg-brand/90 会"静默丢弃 /90"
+      // 生成 100% 不透明，极易踩坑。需要透明度/交互态请用 -soft/-hover/-active 变体
+      // 完整速查表见 docs/tokens.md
+      // ============================================================
+      canvas: 'var(--canvas)',
+      elevated: 'var(--canvas-elevated)',
+      surface: 'var(--surface)',
+      surfaceMuted: 'var(--surface-muted)',
+      glass: 'var(--glass-bg)',
+      fg: 'var(--fg)',
+      fgMuted: 'var(--fg-muted)',
+      fgSubtle: 'var(--fg-subtle)',
+      line: 'var(--line)',
+      lineStrong: 'var(--line-strong)',
+      brand: 'var(--brand)',
+      brandSoft: 'var(--brand-soft)',
+      brandHover: 'var(--brand-hover)',
+      brandActive: 'var(--brand-active)',
+      onBrand: 'var(--on-brand)',
+      accent: 'var(--accent)',
+      accentSoft: 'var(--accent-soft)'
     }
   },
   // 自定义快捷css方式
+  // 注意：带颜色/交互态（hover: 等）的组合类请直接写到 app/assets/css/theme.css
+  // 用普通 CSS + var() 引用语义 token 定义，不要在这里用 uno shortcuts / CSS @apply 引用语义类：
+  //   - uno shortcuts 解析对"多段颜色名"（如 text-fg-muted）和变体存在静默丢弃 bug（66.5.10-beta）
+  //   - Tailwind v4 vite 插件会处理 main.css 的 import 链，@apply 引用 UnoCSS 语义类会直接构建失败
   shortcuts: {
-    'section-container': 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8',
-    // 首页卡片背景
-    'bg-dark-card': 'bg-[#121417] rounded-xl aspect-video mb-4 overflow-hidden relative',
-    // 阅读更多按钮
-    'read-more-btn':
-      'flex items-center gap-2 px-6 py-3 text-sm font-bold text-white dark:text-black bg-home-black dark:bg-home-white/80 rounded-full hover:bg-home-accent/90',
-    // 绿色标签
-    'badge-green':
-      'inline-block px-3 py-1 text-xs font-bold text-green-700 bg-green-100 dark:text-green-400 dark:bg-green-950 rounded-full uppercase tracking-wider',
-    //灰色标签
-    'badge-gray':
-      'inline-block px-3 py-1 text-xs font-bold text-gray-700 bg-gray-300 dark:text-gray-700 dark:bg-gray-550 rounded-full uppercase tracking-wider',
-
-    // 模块标题规范
-    'section-header-label':
-      'text-xs font-bold uppercase tracking-[0.4em] mb-4 transition-colors duration-300',
-    'section-header-title':
-      'text-3xl md:text-4xl font-bold tracking-tight mb-6 text-gray-900 dark:text-white transition-colors duration-300',
-    'section-header-desc':
-      'text-base md:text-lg text-gray-500 dark:text-gray-400 leading-relaxed max-w-3xl',
-
-    // footer 通用字体样式（统一在 footer-title/footer-link/footer-desc/footer-copy 中调整字号）
-    'footer-title':
-      'text-sm font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wide mb-3',
-    'footer-link':
-      'text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors',
-    'footer-desc': 'text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[200px]',
-    'footer-copy': 'text-xs text-gray-400 dark:text-gray-500'
+    'section-container': 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
   }
 })
