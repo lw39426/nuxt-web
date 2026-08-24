@@ -1,14 +1,11 @@
 /**
  * 取消订单接口
  * POST /api/v1/orders/:id/cancel
- * 需要鉴权
+ * 需要鉴权；写操作仅代理 Flask，不允许 Mock 降级
  */
 export default defineEventHandler(async (event) => {
-  const _id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id')
+  const body = await readBody(event).catch(() => ({}))
 
-  // TODO: 取消订单
-  return {
-    code: 200,
-    message: '订单已取消'
-  }
+  return proxyOnly<null>(event, `/orders/${id}/cancel`, { body: body ?? {} })
 })

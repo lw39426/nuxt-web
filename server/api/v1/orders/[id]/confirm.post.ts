@@ -1,14 +1,11 @@
 /**
  * 确认收货接口
  * POST /api/v1/orders/:id/confirm
- * 需要鉴权
+ * 需要鉴权；写操作仅代理 Flask，不允许 Mock 降级
  */
 export default defineEventHandler(async (event) => {
-  const _id = getRouterParam(event, 'id')
+  const id = getRouterParam(event, 'id')
+  const body = await readBody(event).catch(() => ({}))
 
-  // TODO: 确认收货
-  return {
-    code: 200,
-    message: '已确认收货'
-  }
+  return proxyOnly<null>(event, `/orders/${id}/confirm`, { body: body ?? {} })
 })

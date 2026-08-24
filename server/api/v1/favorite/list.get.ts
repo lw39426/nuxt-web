@@ -4,33 +4,38 @@ import { mockFavoriteProducts, mockFavoriteArticles } from '../../../utils/mock-
  * 获取收藏列表接口
  * GET /api/v1/favorite/list
  * 查询参数: page, pageSize, item_type
- * 需要鉴权
+ * 需要鉴权；优先代理 Flask，失败时降级为 Mock 数据
  */
-export default defineEventHandler(async (event) => {
+export default defineEventHandler((event) => {
   const query = getQuery(event)
-  const { page = 1, pageSize = 10, item_type } = query
+  const page = Number(query.page) || 1
+  const pageSize = Number(query.pageSize) || 10
+  const itemType = query.item_type
 
-  // 根据类型返回不同的收藏数据
-  let favorites = []
-  if (item_type === 'product') {
-    favorites = mockFavoriteProducts
-  } else if (item_type === 'article') {
-    favorites = mockFavoriteArticles
-  } else {
-    favorites = [...mockFavoriteProducts, ...mockFavoriteArticles]
-  }
+  /** 构造收藏列表 Mock 数据：按类型筛选后做内存分页 */
+  const buildMock = () => {
+    let favorites: any[]
+    if (itemType === 'product') {
+      favorites = mockFavoriteProducts
+    } else if (itemType === 'article') {
+      favorites = mockFavoriteArticles
+    } else {
+      favorites = [...mockFavoriteProducts, ...mockFavoriteArticles]
+    }
 
-  return {
-    code: 200,
-    message: 'success',
-    data: {
-      favorites,
+    const total = favorites.length
+    const start = (page - 1) * pageSize
+
+    return {
+      favorites: favorites.slice(start, start + pageSize),
       pagination: {
-        page: Number(page),
-        pageSize: Number(pageSize),
-        total: favorites.length,
-        totalPages: Math.ceil(favorites.length / Number(pageSize))
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
       }
     }
   }
+
+  return withMockFallback(event, '/favorite/list', buildMock)
 })

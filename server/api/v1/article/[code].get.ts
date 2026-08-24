@@ -1,25 +1,20 @@
+import { getMockArticles } from '../../../utils/mockArticles'
+
 /**
  * 获取文章详情接口
  * GET /api/v1/article/:code
+ * 优先代理 Flask，失败时降级为 Mock 数据
  */
-export default defineEventHandler(async (event) => {
-  const code = getRouterParam(event, 'code')
+export default defineEventHandler((event) => {
+  const code = getRouterParam(event, 'code') || ''
 
-  // TODO: 从数据库查询文章详情
-  return {
-    code: 200,
-    message: 'success',
-    data: {
-      id: 1,
-      code,
-      title: '示例文章',
-      content: '这是文章内容...',
-      author: '作者',
-      category_id: 1,
-      tags: [],
-      views: 100,
-      likes: 10,
-      created_at: '2024-01-01 00:00:00'
-    }
+  /** 构造文章详情 Mock 数据：按 code 或 id 匹配，未命中回退首篇 */
+  const buildMock = () => {
+    const { articles } = getMockArticles({ page: 1, pageSize: 1000 })
+    return (
+      articles.find((item) => item.code === code || String(item.id) === code) ?? articles[0] ?? null
+    )
   }
+
+  return withMockFallback(event, `/article/${code}`, buildMock)
 })

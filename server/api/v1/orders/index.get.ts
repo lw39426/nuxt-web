@@ -1,25 +1,33 @@
+import { mockOrders } from '../../../utils/mock-data'
+
 /**
  * 获取订单列表接口
  * GET /api/v1/orders
  * 查询参数: page, pageSize, status
- * 需要鉴权
+ * 需要鉴权；优先代理 Flask，失败时降级为 Mock 数据
  */
-export default defineEventHandler(async (event) => {
+export default defineEventHandler((event) => {
   const query = getQuery(event)
-  const { page = 1, pageSize = 10, _status } = query
+  const page = Number(query.page) || 1
+  const pageSize = Number(query.pageSize) || 10
+  const status = query.status ? String(query.status) : ''
 
-  // TODO: 查询订单列表
-  return {
-    code: 200,
-    message: 'success',
-    data: {
-      orders: [],
+  /** 构造订单列表 Mock 数据：按状态过滤后做内存分页 */
+  const buildMock = () => {
+    const list = status ? mockOrders.filter((item) => item.status === status) : mockOrders
+    const total = list.length
+    const start = (page - 1) * pageSize
+
+    return {
+      orders: list.slice(start, start + pageSize),
       pagination: {
-        page: Number(page),
-        pageSize: Number(pageSize),
-        total: 0,
-        totalPages: 0
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
       }
     }
   }
+
+  return withMockFallback(event, '/orders', buildMock)
 })

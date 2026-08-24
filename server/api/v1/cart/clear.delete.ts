@@ -1,12 +1,8 @@
 /**
  * 清空购物车接口
  * DELETE /api/v1/cart/clear
- * 需要鉴权
+ * 需要鉴权；写操作仅代理 Flask，不允许 Mock 降级
  */
-export default defineEventHandler(() => {
-  // TODO: 清空购物车
-  return {
-    code: 200,
-    message: '购物车已清空'
-  }
-})
+export default defineEventHandler((event) =>
+  proxyOnly<null>(event, '/cart/clear', { method: 'DELETE' })
+)

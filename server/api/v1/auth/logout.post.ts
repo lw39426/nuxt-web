@@ -1,11 +1,8 @@
 /**
  * 用户登出接口
  * POST /api/v1/auth/logout
+ * 后端不可用时仍返回成功，保证前端能正常清理本地登录态
  */
-export default defineEventHandler(async () => {
-  // TODO: 清除 Redis/数据库中的 token 缓存
-  return {
-    code: 200,
-    message: '登出成功'
-  }
-})
+export default defineEventHandler((event) =>
+  withMockFallback<null>(event, '/auth/logout', () => null, { body: {} })
+)
