@@ -88,18 +88,18 @@ const finalArticles = computed(() => {
 </script>
 
 <template>
-  <section class="py-8 md:py-16 bg-white dark:bg-black content-visibility-auto">
+  <section class="py-8 md:py-16 bg-canvas content-visibility-auto">
     <div class="section-container">
       <!-- 标题区 -->
       <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-14 gap-6">
         <div class="max-w-xl">
-          <p class="section-header-label text-gray-400 dark:text-gray-500">资讯中心</p>
+          <p class="section-header-label text-fg-subtle">资讯中心</p>
           <h2 class="section-header-title mb-5">最新资讯</h2>
           <p class="section-header-desc">掌握科技前沿动态，获取专业选购建议</p>
         </div>
         <NuxtLink
           to="/blog"
-          class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-900 dark:text-white hover:opacity-60 transition-opacity shrink-0"
+          class="inline-flex items-center gap-1.5 text-sm font-medium text-fg hover:opacity-60 transition-opacity shrink-0"
         >
           查看全部
           <div class="i-carbon-arrow-right" />
@@ -114,7 +114,7 @@ const finalArticles = computed(() => {
           class="group relative block rounded-3xl shadow-lg shadow-gray-200/80 dark:shadow-black/10 transition-shadow duration-300 hover:shadow-xl hover:shadow-gray-200/80 dark:hover:shadow-black/20"
         >
           <div
-            class="relative h-full min-h-[420px] md:min-h-[500px] rounded-3xl overflow-hidden bg-[#f5f5f7] border-1 border-gray-300 dark:bg-[#1d1d1f] dark:border-white/10"
+            class="relative h-full min-h-[420px] md:min-h-[500px] rounded-3xl overflow-hidden bg-surface-muted border-1 border-line"
           >
             <img
               :src="finalArticles[0]?.image"
@@ -160,7 +160,7 @@ const finalArticles = computed(() => {
             v-for="article in finalArticles.slice(1)"
             :key="article.id"
             :to="`/blog/${article.code || article.id}`"
-            class="group flex gap-5 p-4 rounded-2xl bg-[#f5f5f7] dark:bg-[#1d1d1f] transition-colors duration-300 hover:bg-gray-200 dark:hover:bg-[#2d2d2f] flex-1"
+            class="group flex gap-5 p-4 rounded-2xl bg-surface-muted transition-colors duration-300 hover:bg-elevated flex-1"
           >
             <!-- 缩略图 -->
             <div class="shrink-0 w-32 h-28 md:w-40 md:h-32 rounded-xl overflow-hidden">
@@ -176,20 +176,20 @@ const finalArticles = computed(() => {
             <div class="flex flex-col justify-between min-w-0 flex-1 py-0.5">
               <div>
                 <span
-                  class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-gray-400 mb-2"
+                  class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-elevated text-fg-muted mb-2"
                 >
                   {{ article.category_name || '资讯' }}
                 </span>
                 <h3
-                  class="text-sm md:text-[15px] font-semibold text-gray-900 dark:text-white group-hover:opacity-70 transition-opacity line-clamp-2 mb-1.5"
+                  class="text-sm md:text-[15px] font-semibold text-fg group-hover:opacity-70 transition-opacity line-clamp-2 mb-1.5"
                 >
                   {{ article.title }}
                 </h3>
-                <p class="text-xs text-gray-400 dark:text-gray-500 line-clamp-1 hidden md:block">
+                <p class="text-xs text-fg-subtle line-clamp-1 hidden md:block">
                   {{ article.description }}
                 </p>
               </div>
-              <div class="flex items-center gap-3 text-[11px] text-gray-400 dark:text-gray-500">
+              <div class="flex items-center gap-3 text-[11px] text-fg-subtle">
                 <span class="flex items-center gap-1">
                   <div class="i-carbon-calendar" />
                   {{ formatDate(article.published_date) }}

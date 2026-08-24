@@ -109,7 +109,7 @@ onMounted(loadAddresses);
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">地址管理</h1>
+      <h1 class="text-2xl font-bold text-fg">地址管理</h1>
       <UButton color="primary" size="sm" @click="openCreateModal">
         <span class="i-carbon-add w-4 h-4 mr-1" />
         新增地址
@@ -118,20 +118,20 @@ onMounted(loadAddresses);
 
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-20">
-      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400" />
+      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-fg-subtle" />
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
-      <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
-      <p class="text-gray-500 mb-4">加载失败</p>
+      <div class="i-carbon-warning text-5xl text-fg-subtle mb-4" />
+      <p class="text-fg-muted mb-4">加载失败</p>
       <UButton color="primary" variant="outline" @click="loadAddresses">重试</UButton>
     </div>
 
     <!-- Empty -->
     <div v-else-if="addresses.length === 0" class="text-center py-20">
-      <div class="i-carbon-location text-5xl text-gray-300 mb-4" />
-      <p class="text-gray-500 mb-4">暂无收货地址</p>
+      <div class="i-carbon-location text-5xl text-fg-subtle mb-4" />
+      <p class="text-fg-muted mb-4">暂无收货地址</p>
       <UButton color="primary" variant="outline" @click="openCreateModal">添加地址</UButton>
     </div>
 
@@ -140,15 +140,13 @@ onMounted(loadAddresses);
       <div
         v-for="address in addresses"
         :key="address.id"
-        class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 sm:p-6"
+        class="bg-surface-muted rounded-2xl p-4 sm:p-6"
       >
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-2">
-              <span class="font-medium text-gray-900 dark:text-white">{{
-                address.recipient_name
-              }}</span>
-              <span class="text-sm text-gray-500">{{ address.phone }}</span>
+              <span class="font-medium text-fg">{{ address.recipient_name }}</span>
+              <span class="text-sm text-fg-muted">{{ address.phone }}</span>
               <span
                 v-if="address.is_default"
                 class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
@@ -156,7 +154,7 @@ onMounted(loadAddresses);
                 默认
               </span>
             </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ address.address_line }}</p>
+            <p class="text-sm text-fg-muted">{{ address.address_line }}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0 ml-4">
             <UButton
@@ -182,38 +180,38 @@ onMounted(loadAddresses);
     <!-- Modal -->
     <UModal v-model="showModal">
       <div class="p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <h3 class="text-lg font-semibold text-fg mb-4">
           {{ editingAddress ? '编辑地址' : '新增地址' }}
         </h3>
         <form class="space-y-4" @submit.prevent="handleSubmit">
           <div>
-            <label class="text-sm text-gray-600 dark:text-gray-400 mb-1 block">收件人</label>
+            <label class="text-sm text-fg-muted mb-1 block">收件人</label>
             <input
               v-model="form.recipient_name"
               type="text"
               required
               placeholder="请输入收件人姓名"
-              class="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500"
+              class="w-full h-10 rounded-lg border border-line bg-surface px-3 text-sm text-fg outline-none focus:border-blue-500"
             />
           </div>
           <div>
-            <label class="text-sm text-gray-600 dark:text-gray-400 mb-1 block">手机号</label>
+            <label class="text-sm text-fg-muted mb-1 block">手机号</label>
             <input
               v-model="form.phone"
               type="tel"
               required
               placeholder="请输入手机号"
-              class="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500"
+              class="w-full h-10 rounded-lg border border-line bg-surface px-3 text-sm text-fg outline-none focus:border-blue-500"
             />
           </div>
           <div>
-            <label class="text-sm text-gray-600 dark:text-gray-400 mb-1 block">详细地址</label>
+            <label class="text-sm text-fg-muted mb-1 block">详细地址</label>
             <textarea
               v-model="form.address_line"
               required
               rows="2"
               placeholder="请输入详细地址"
-              class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 resize-none"
+              class="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-blue-500 resize-none"
             />
           </div>
           <div class="flex items-center gap-2">
@@ -223,9 +221,7 @@ onMounted(loadAddresses);
               type="checkbox"
               class="h-4 w-4 rounded border-gray-300 text-blue-600"
             />
-            <label for="is-default" class="text-sm text-gray-600 dark:text-gray-400"
-              >设为默认地址</label
-            >
+            <label for="is-default" class="text-sm text-fg-muted">设为默认地址</label>
           </div>
           <div class="flex justify-end gap-3 pt-2">
             <UButton

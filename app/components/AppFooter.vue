@@ -49,7 +49,7 @@ const columns: FooterColumn[] = [
 ];
 </script>
 <template>
-  <footer class="bg-[#f5f5f7] dark:bg-[#1d1d1f] pt-12 md:pt-16 pb-8">
+  <footer class="bg-canvas-elevated pt-12 md:pt-16 pb-8">
     <div class="max-w-7xl mx-auto px-5 md:px-8">
       <!-- 上部内容 -->
       <div class="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-10 mb-12">
@@ -67,7 +67,7 @@ const columns: FooterColumn[] = [
                 />
               </svg>
             </div>
-            <span class="font-semibold text-base text-gray-900 dark:text-white">Mimo</span>
+            <span class="font-semibold text-base text-fg">Mimo</span>
           </NuxtLink>
           <p class="footer-desc">新一代智能购物平台，用科技连接品质生活。</p>
         </div>
@@ -87,26 +87,17 @@ const columns: FooterColumn[] = [
       </div>
 
       <!-- 分隔线 -->
-      <div class="border-t border-gray-200 dark:border-gray-800 pt-6">
+      <div class="border-t border-line pt-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-3">
           <p class="footer-copy">Copyright © 2026 Mimo. 保留所有权利。</p>
           <div class="flex items-center gap-5">
-            <a
-              href="#"
-              class="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <a href="#" class="text-fg-subtle hover:text-fg transition-colors">
               <div class="i-carbon-logo-github w-4 h-4" />
             </a>
-            <a
-              href="#"
-              class="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <a href="#" class="text-fg-subtle hover:text-fg transition-colors">
               <div class="i-carbon-logo-twitter w-4 h-4" />
             </a>
-            <a
-              href="#"
-              class="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <a href="#" class="text-fg-subtle hover:text-fg transition-colors">
               <div class="i-carbon-logo-instagram w-4 h-4" />
             </a>
           </div>

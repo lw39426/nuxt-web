@@ -282,12 +282,12 @@ const handleRegister = async () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[430px] lg:max-w-[390px] overflow-hidden rounded-2xl bg-white dark:bg-slate-950 p-6 shadow-2xl sm:p-8"
+            class="relative w-full max-w-[430px] lg:max-w-[390px] overflow-hidden rounded-2xl bg-surface p-6 shadow-2xl sm:p-8"
           >
             <!-- Close Button -->
             <button
               type="button"
-              class="absolute right-4 top-4 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors"
+              class="absolute right-4 top-4 rounded-full p-1 text-fg-subtle hover:bg-surface-muted hover:text-fg transition-colors"
               @click="close"
             >
               <span class="i-carbon-close block h-5 w-5" />
@@ -296,7 +296,7 @@ const handleRegister = async () => {
             <!-- Login View -->
             <div v-if="currentView === 'login'">
               <h3
-                class="text-[18px] leading-tight font-semibold tracking-tight text-slate-800 dark:text-slate-100 sm:text-[18px]"
+                class="text-[18px] leading-tight font-semibold tracking-tight text-fg sm:text-[18px]"
               >
                 欢迎回来 <span class="ml-1 inline-block">👋🏻</span>
               </h3>
@@ -324,7 +324,7 @@ const handleRegister = async () => {
                       v-model="loginForm.email"
                       type="text"
                       placeholder="请输入用户名"
-                      class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                      class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                     />
                   </div>
 
@@ -336,11 +336,11 @@ const handleRegister = async () => {
                         v-model="loginForm.password"
                         :type="showPassword ? 'text' : 'password'"
                         placeholder="密码"
-                        class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 pr-12 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                        class="h-12 w-full rounded-xl border border-line bg-surface px-4 pr-12 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                       />
                       <button
                         type="button"
-                        class="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300 lg:w-11"
+                        class="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-fg-subtle transition hover:text-fg lg:w-11"
                         @click="showPassword = !showPassword"
                       >
                         <span
@@ -359,11 +359,11 @@ const handleRegister = async () => {
                         v-model="loginForm.captcha"
                         type="text"
                         placeholder="验证码"
-                        class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                        class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                       />
                     </div>
                     <div
-                      class="h-12 w-32 rounded-xl border border-slate-200 overflow-hidden cursor-pointer flex items-center justify-center bg-gray-50 dark:border-slate-700 lg:h-11"
+                      class="h-12 w-32 rounded-xl border border-line overflow-hidden cursor-pointer flex items-center justify-center bg-surface-muted lg:h-11"
                       @click="fetchCaptcha"
                     >
                       <img
@@ -375,14 +375,12 @@ const handleRegister = async () => {
                       <span v-else-if="captchaError" class="text-xs text-red-400"
                         >加载失败，点击重试</span
                       >
-                      <span v-else class="text-xs text-gray-400">加载中...</span>
+                      <span v-else class="text-xs text-fg-subtle">加载中...</span>
                     </div>
                   </div>
 
                   <div class="flex items-center justify-between text-sm">
-                    <label
-                      class="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300"
-                    >
+                    <label class="inline-flex items-center gap-2 text-fg-muted">
                       <input
                         v-model="loginForm.rememberMe"
                         type="checkbox"
@@ -406,7 +404,7 @@ const handleRegister = async () => {
                       type="tel"
                       maxlength="11"
                       placeholder="请输入手机号"
-                      class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                      class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                     />
                   </div>
 
@@ -419,13 +417,13 @@ const handleRegister = async () => {
                         type="text"
                         maxlength="6"
                         placeholder="短信验证码"
-                        class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                        class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                       />
                     </div>
                     <button
                       type="button"
                       :disabled="smsCountdown > 0 || smsLoading"
-                      class="h-12 w-32 shrink-0 rounded-xl border border-slate-200 bg-white text-sm font-medium text-blue-600 transition hover:border-blue-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 lg:h-11"
+                      class="h-12 w-32 shrink-0 rounded-xl border border-line bg-surface text-sm font-medium text-blue-600 transition hover:border-blue-300 disabled:cursor-not-allowed disabled:opacity-50 lg:h-11"
                       @click="sendSmsCode"
                     >
                       {{
@@ -454,23 +452,23 @@ const handleRegister = async () => {
                 <div class="grid grid-cols-2 gap-3 lg:gap-2.5">
                   <button
                     type="button"
-                    class="h-11 rounded-xl border border-slate-200 bg-white text-base font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-10 lg:text-sm"
+                    class="h-11 rounded-xl border border-line bg-surface text-base font-medium text-fg transition hover:border-blue-300 hover:text-blue-600 lg:h-10 lg:text-sm"
                     @click="loginMode = loginMode === 'username' ? 'phone' : 'username'"
                   >
                     {{ loginMode === 'username' ? '手机号登录' : '用户名登录' }}
                   </button>
                   <button
                     type="button"
-                    class="h-11 rounded-xl border border-slate-200 bg-white text-base font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-10 lg:text-sm"
+                    class="h-11 rounded-xl border border-line bg-surface text-base font-medium text-fg transition hover:border-blue-300 hover:text-blue-600 lg:h-10 lg:text-sm"
                   >
                     扫码登录
                   </button>
                 </div>
 
-                <div class="flex items-center gap-4 py-1 text-slate-400">
-                  <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+                <div class="flex items-center gap-4 py-1 text-fg-subtle">
+                  <span class="h-px flex-1 bg-line" />
                   <span class="text-sm">其他登录方式</span>
-                  <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+                  <span class="h-px flex-1 bg-line" />
                 </div>
 
                 <div class="flex items-center justify-center gap-4">
@@ -482,7 +480,7 @@ const handleRegister = async () => {
                   </button>
                   <button
                     type="button"
-                    class="grid h-9 w-9 place-items-center rounded-full text-slate-700 transition hover:bg-slate-100 hover:scale-105 dark:text-slate-200 dark:hover:bg-slate-800"
+                    class="grid h-9 w-9 place-items-center rounded-full text-fg transition hover:bg-surface-muted hover:scale-105"
                   >
                     <span class="i-carbon-logo-github h-6 w-6" />
                   </button>
@@ -494,7 +492,7 @@ const handleRegister = async () => {
                   </button>
                 </div>
 
-                <p class="pt-1 text-center text-base text-slate-600 dark:text-slate-400 lg:text-sm">
+                <p class="pt-1 text-center text-base text-fg-muted lg:text-sm">
                   还没有账号?
                   <button
                     type="button"
@@ -509,10 +507,8 @@ const handleRegister = async () => {
 
             <!-- Register View -->
             <div v-else>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">创建账号</h1>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">
-                欢迎加入我们，开启您的旅程。
-              </p>
+              <h1 class="text-2xl font-bold text-fg mb-2">创建账号</h1>
+              <p class="text-sm text-fg-muted mb-8">欢迎加入我们，开启您的旅程。</p>
 
               <form class="space-y-4 lg:space-y-3" @submit.prevent="handleRegister">
                 <div>
@@ -520,7 +516,7 @@ const handleRegister = async () => {
                     v-model="registerForm.username"
                     type="text"
                     placeholder="请输入用户名"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                    class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                   />
                 </div>
 
@@ -529,7 +525,7 @@ const handleRegister = async () => {
                     v-model="registerForm.phone"
                     type="text"
                     placeholder="请输入手机号"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                    class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                   />
                 </div>
 
@@ -538,7 +534,7 @@ const handleRegister = async () => {
                     v-model="registerForm.nickname"
                     type="text"
                     placeholder="请输入昵称"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                    class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                   />
                 </div>
 
@@ -547,11 +543,11 @@ const handleRegister = async () => {
                     v-model="registerForm.password"
                     :type="showPassword ? 'text' : 'password'"
                     placeholder="请输入密码"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 pr-12 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                    class="h-12 w-full rounded-xl border border-line bg-surface px-4 pr-12 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                   />
                   <button
                     type="button"
-                    class="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300 lg:w-11"
+                    class="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-fg-subtle transition hover:text-fg lg:w-11"
                     @click="showPassword = !showPassword"
                   >
                     <span
@@ -566,7 +562,7 @@ const handleRegister = async () => {
                     v-model="registerForm.confirmPassword"
                     :type="showPassword ? 'text' : 'password'"
                     placeholder="请再次输入密码"
-                    class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 pr-12 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                    class="h-12 w-full rounded-xl border border-line bg-surface px-4 pr-12 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                   />
                 </div>
 
@@ -576,11 +572,11 @@ const handleRegister = async () => {
                       v-model="registerForm.captcha"
                       type="text"
                       placeholder="验证码"
-                      class="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 placeholder:text-slate-400 outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:h-11 lg:text-sm"
+                      class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                     />
                   </div>
                   <div
-                    class="h-12 w-32 rounded-xl border border-slate-200 overflow-hidden cursor-pointer flex items-center justify-center bg-gray-50 dark:border-slate-700 lg:h-11"
+                    class="h-12 w-32 rounded-xl border border-line overflow-hidden cursor-pointer flex items-center justify-center bg-surface-muted lg:h-11"
                     @click="fetchCaptcha"
                   >
                     <img
@@ -592,7 +588,7 @@ const handleRegister = async () => {
                     <span v-else-if="captchaError" class="text-xs text-red-400"
                       >加载失败，点击重试</span
                     >
-                    <span v-else class="text-xs text-gray-400">加载中...</span>
+                    <span v-else class="text-xs text-fg-subtle">加载中...</span>
                   </div>
                 </div>
 
@@ -610,7 +606,7 @@ const handleRegister = async () => {
                   </button>
                 </div>
 
-                <p class="pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                <p class="pt-4 text-center text-sm text-fg-muted">
                   已有账号?
                   <button
                     type="button"

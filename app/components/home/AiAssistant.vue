@@ -51,9 +51,7 @@ const askAI = () => {
 </script>
 
 <template>
-  <section
-    class="relative py-24 md:py-32 bg-white dark:bg-black overflow-hidden content-visibility-auto"
-  >
+  <section class="relative py-24 md:py-32 bg-canvas overflow-hidden content-visibility-auto">
     <!-- 背景光晕 -->
     <div
       class="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse"
@@ -70,9 +68,7 @@ const askAI = () => {
           <span>AI 赋能</span>
           <span class="i-lucide-sparkles text-sm animate-bounce" />
         </p>
-        <h2 class="section-header-title">
-          <span> 你的专属 AI 助手 </span>
-        </h2>
+        <h2 class="section-header-title">你的专属 AI 助手</h2>
         <p class="section-header-desc mx-auto">不只是聊天机器人，更是懂你的购物顾问</p>
       </div>
 
@@ -83,23 +79,23 @@ const askAI = () => {
           <div
             v-for="cap in aiCapabilities"
             :key="cap.title"
-            class="group bg-gray-50 dark:bg-[#121417] rounded-3xl p-6 md:p-8 transition-all duration-500 hover:-translate-y-1 border border-gray-100 dark:border-white/5 hover:border-pink-500/30 dark:hover:border-pink-400/30 shadow-sm hover:shadow-xl hover:shadow-pink-500/10"
+            class="group bg-surface-muted rounded-3xl p-6 md:p-8 transition-all duration-500 hover:-translate-y-1 border border-line hover:border-pink-500/30 dark:hover:border-pink-400/30 shadow-sm hover:shadow-xl hover:shadow-pink-500/10"
           >
             <div
-              class="w-14 h-14 rounded-2xl bg-white dark:bg-white/5 flex items-center justify-center mb-6 shadow-sm group-hover:bg-pink-500 group-hover:text-white transition-all duration-500"
+              class="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mb-6 shadow-sm group-hover:bg-pink-500 group-hover:text-white transition-all duration-500"
             >
               <div
                 :class="[
                   cap.icon,
-                  'text-2xl text-gray-700 dark:text-gray-300 group-hover:text-white transition-colors duration-300'
+                  'text-2xl text-fg group-hover:text-white transition-colors duration-300'
                 ]"
               />
             </div>
             <!-- 能力标题 -->
-            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+            <h3 class="text-lg font-bold text-fg mb-2">
               {{ cap.title }}
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+            <p class="text-sm text-fg-muted leading-relaxed">
               {{ cap.desc }}
             </p>
           </div>
@@ -113,12 +109,10 @@ const askAI = () => {
           />
 
           <div
-            class="relative bg-white dark:bg-[#121417] rounded-[32px] overflow-hidden shadow-2xl border border-gray-100 dark:border-white/10 backdrop-blur-xl"
+            class="relative bg-surface rounded-[32px] overflow-hidden shadow-2xl border border-line backdrop-blur-xl"
           >
             <!-- 顶部栏 -->
-            <div
-              class="flex items-center gap-4 px-6 py-5 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5"
-            >
+            <div class="flex items-center gap-4 px-6 py-5 border-b border-line bg-surface-muted">
               <div class="relative">
                 <div
                   class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20"
@@ -126,11 +120,11 @@ const askAI = () => {
                   <div class="i-carbon-sparkles text-white text-lg" />
                 </div>
                 <span
-                  class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-[#121417] animate-pulse"
+                  class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-surface animate-pulse"
                 />
               </div>
               <div>
-                <p class="text-base font-bold text-gray-900 dark:text-white">小星 AI</p>
+                <p class="text-base font-bold text-fg">小星 AI</p>
                 <p
                   class="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-widest"
                 >
@@ -151,14 +145,14 @@ const askAI = () => {
                   class="max-w-[85%] rounded-[20px] px-5 py-3.5 text-sm leading-relaxed shadow-sm"
                   :class="
                     msg.role === 'user'
-                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-br-none'
-                      : 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 rounded-bl-none border border-gray-100 dark:border-white/5'
+                      ? 'bg-fg text-canvas rounded-br-none'
+                      : 'bg-surface-muted text-fg rounded-bl-none border border-line'
                   "
                 >
                   {{ msg.content }}
                   <div
                     v-if="msg.hasProduct"
-                    class="mt-3 pt-3 border-t border-black/5 dark:border-white/10 flex items-center justify-between group/link cursor-pointer"
+                    class="mt-3 pt-3 border-t border-line flex items-center justify-between group/link cursor-pointer"
                   >
                     <div class="flex items-center gap-2">
                       <div
@@ -179,13 +173,13 @@ const askAI = () => {
             <!-- 输入框 -->
             <div class="px-6 pb-6 pt-2">
               <div
-                class="flex items-center gap-3 bg-gray-50 dark:bg-white/5 rounded-2xl px-5 py-1 border border-gray-100 dark:border-white/10 transition-all focus-within:border-purple-500/50 focus-within:ring-4 focus-within:ring-purple-500/5"
+                class="flex items-center gap-3 bg-surface-muted rounded-2xl px-5 py-1 border border-line transition-all focus-within:border-purple-500/50 focus-within:ring-4 focus-within:ring-purple-500/5"
               >
                 <input
                   v-model="aiQuestion"
                   type="text"
                   placeholder="试试问AI：推荐一款适合我的耳机..."
-                  class="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
+                  class="flex-1 bg-transparent text-sm text-fg placeholder:text-fg-subtle outline-none"
                   @keydown.enter.prevent="askAI"
                 />
                 <button
@@ -193,7 +187,7 @@ const askAI = () => {
                   :class="
                     canAskAI
                       ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 active:scale-95'
-                      : 'bg-gray-200 dark:bg-gray-800 text-gray-400'
+                      : 'bg-surface-muted text-fg-subtle'
                   "
                   :disabled="!canAskAI"
                   @click="askAI"
@@ -210,7 +204,7 @@ const askAI = () => {
       <div class="text-center mt-20">
         <NuxtLink
           to="/ai-page"
-          class="inline-flex items-center gap-3 px-10 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full text-sm font-bold hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1 transition-all duration-500 group"
+          class="inline-flex items-center gap-3 px-10 py-4 bg-fg text-canvas rounded-full text-sm font-bold hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1 transition-all duration-500 group"
         >
           <div class="i-lucide-sparkles text-lg group-hover:rotate-12 transition-transform" />
           立即体验 AI 助手

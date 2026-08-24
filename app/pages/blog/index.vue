@@ -150,7 +150,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-black pb-10">
+  <div class="min-h-screen bg-canvas pb-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
       <!-- 头部宣传区域Hero Post -->
       <NuxtLink
@@ -205,8 +205,8 @@ onMounted(() => {
           class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
           :class="[
             activeCategory === null
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20'
+              ? 'bg-fg text-canvas'
+              : 'bg-surface-muted text-fg-muted hover:bg-elevated'
           ]"
           @click="selectCategory(null)"
         >
@@ -218,21 +218,21 @@ onMounted(() => {
           class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
           :class="[
             activeCategory === cat.id
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20'
+              ? 'bg-fg text-canvas'
+              : 'bg-surface-muted text-fg-muted hover:bg-elevated'
           ]"
           @click="selectCategory(cat.id)"
         >
           {{ cat.name }}
         </button>
         <!-- RSS 订阅按钮，未来可设置为用户订阅、加载更多 -->
-        <button class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        <button class="p-2 text-fg-subtle hover:text-fg">
           <div class="i-carbon-rss w-5 h-5"></div>
         </button>
       </div>
 
       <!-- 空数据状态 -->
-      <div v-if="isEmpty" class="text-center py-20 text-gray-400">
+      <div v-if="isEmpty" class="text-center py-20 text-fg-subtle">
         <div class="text-5xl flex items-center justify-center gap-2 mb-4">
           <div class="i-carbon-blog w-12 h-12"></div>
         </div>
@@ -246,11 +246,11 @@ onMounted(() => {
 
       <!-- 加载更多触发器 / 底部状态 -->
       <div v-if="!isEmpty" ref="loadMoreTrigger" class="flex justify-center mt-12 py-8">
-        <div v-if="isLoading" class="flex items-center gap-2 text-gray-500">
+        <div v-if="isLoading" class="flex items-center gap-2 text-fg-muted">
           <div class="i-carbon-circle-dash w-6 h-6 animate-spin"></div>
           <span>加载中...</span>
         </div>
-        <div v-else-if="!hasMore" class="text-gray-400 text-sm">- 到底了，没有更多内容了 -</div>
+        <div v-else-if="!hasMore" class="text-fg-subtle text-sm">- 到底了，没有更多内容了 -</div>
         <!-- 这里的空 div 用于 IntersectionObserver 监听 -->
         <div v-else class="h-4 w-full"></div>
       </div>

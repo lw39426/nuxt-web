@@ -54,28 +54,28 @@ onMounted(loadComments);
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">我的评论</h1>
+    <h1 class="text-2xl font-bold text-fg mb-6">我的评论</h1>
 
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-20">
-      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400" />
+      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-fg-subtle" />
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
       <div class="flex items-center justify-center gap-2 mb-4">
-        <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+        <div class="i-carbon-warning text-5xl text-fg-subtle mb-4" />
       </div>
-      <p class="text-gray-500 mb-4">加载失败</p>
+      <p class="text-fg-muted mb-4">加载失败</p>
       <UButton color="neutral" variant="outline" @click="loadComments">重试</UButton>
     </div>
 
     <!-- Empty -->
     <div v-else-if="comments.length === 0" class="text-center py-20">
       <div class="flex items-center justify-center gap-2 mb-4">
-        <div class="i-carbon-chat text-5xl text-gray-300 mb-4" />
+        <div class="i-carbon-chat text-5xl text-fg-subtle mb-4" />
       </div>
-      <p class="text-gray-500">暂无评论</p>
+      <p class="text-fg-muted">暂无评论</p>
     </div>
 
     <!-- Comment List -->
@@ -83,12 +83,12 @@ onMounted(loadComments);
       <div
         v-for="comment in comments"
         :key="comment.id"
-        class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 sm:p-6"
+        class="bg-surface-muted rounded-2xl p-4 sm:p-6"
       >
         <div class="flex items-start justify-between">
           <div class="flex-1">
-            <p class="text-sm text-gray-900 dark:text-white mb-2">{{ comment.content }}</p>
-            <div class="flex items-center gap-4 text-xs text-gray-500">
+            <p class="text-sm text-fg mb-2">{{ comment.content }}</p>
+            <div class="flex items-center gap-4 text-xs text-fg-muted">
               <span>{{ formatDate(comment.created_at) }}</span>
               <span v-if="comment.like_count">👍 {{ comment.like_count }}</span>
             </div>

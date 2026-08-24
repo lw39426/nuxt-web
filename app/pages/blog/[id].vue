@@ -120,22 +120,22 @@ const readTime = computed(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-black pb-20">
+  <div class="min-h-screen bg-canvas pb-20">
     <!-- Back Button -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       <NuxtLink to="/blog" class="inline-flex items-center gap-2 group">
         <div
-          class="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center transition-transform group-hover:-translate-x-1"
+          class="w-8 h-8 rounded-full bg-fg text-canvas flex items-center justify-center transition-transform group-hover:-translate-x-1"
         >
           <div class="i-carbon-arrow-left w-5 h-5" />
         </div>
-        <span class="font-medium text-gray-900 dark:text-white">所有故事</span>
+        <span class="font-medium text-fg">所有故事</span>
       </NuxtLink>
     </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="flex justify-center items-center py-32">
-      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400"></div>
+      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-fg-subtle"></div>
     </div>
 
     <!-- Error State -->
@@ -143,11 +143,11 @@ const readTime = computed(() => {
       <div class="text-6xl flex items-center justify-center gap-2 mb-4">
         <div class="i-carbon-blog w-12 h-12"></div>
       </div>
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">文章不存在</h2>
-      <p class="text-gray-500 dark:text-gray-400 mb-6">该文章可能已被删除或链接无效</p>
+      <h2 class="text-xl font-bold text-fg mb-2">文章不存在</h2>
+      <p class="text-fg-muted mb-6">该文章可能已被删除或链接无效</p>
       <NuxtLink
         to="/blog"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-fg text-canvas rounded-full text-sm font-medium"
       >
         返回博客列表
       </NuxtLink>
@@ -157,17 +157,17 @@ const readTime = computed(() => {
     <template v-else>
       <!-- Article Header -->
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-12 text-center">
-        <h1 class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8 leading-tight">
+        <h1 class="text-3xl md:text-5xl font-bold text-fg mb-8 leading-tight">
           {{ post.title }}
         </h1>
         <div
           class="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 mb-6"
         >
           <span class="uppercase tracking-wider">{{ post.category_name }}</span>
-          <span class="text-gray-300 dark:text-gray-700">•</span>
-          <span class="text-gray-500 dark:text-gray-400">{{ formattedDate }}</span>
-          <span class="text-gray-300 dark:text-gray-700">•</span>
-          <span class="text-gray-500 dark:text-gray-400">{{ readTime }}</span>
+          <span class="text-fg-subtle">•</span>
+          <span class="text-fg-muted">{{ formattedDate }}</span>
+          <span class="text-fg-subtle">•</span>
+          <span class="text-fg-muted">{{ readTime }}</span>
         </div>
         <div class="flex items-center justify-center gap-3 mb-12">
           <!-- 有头像时显示头像，否则降级显示姓名首字母 -->
@@ -179,15 +179,15 @@ const readTime = computed(() => {
           />
           <div
             v-else
-            class="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
+            class="h-12 w-12 rounded-full bg-surface-muted flex items-center justify-center"
           >
-            <span class="text-lg font-bold text-gray-600 dark:text-gray-300">
+            <span class="text-lg font-bold text-fg-muted">
               {{ authorName.charAt(0) }}
             </span>
           </div>
           <div class="text-left">
-            <div class="font-bold text-gray-900 dark:text-white">{{ authorName }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400">
+            <div class="font-bold text-fg">{{ authorName }}</div>
+            <div class="text-sm text-fg-muted">
               浏览 {{ post.views ?? 0 }} · 赞 {{ post.likes ?? 0 }} · 评论 {{ totalComments }}
             </div>
           </div>
@@ -203,31 +203,21 @@ const readTime = computed(() => {
 
       <!-- Content -->
       <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <article
-          class="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300"
-        >
+        <article class="prose prose-lg dark:prose-invert max-w-none text-fg-muted">
           <div v-html="post.content"></div>
         </article>
 
         <!-- Share / Tags -->
-        <div
-          class="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center"
-        >
-          <div class="text-sm text-gray-500">分享这篇文章</div>
+        <div class="mt-12 pt-8 border-t border-line flex justify-between items-center">
+          <div class="text-sm text-fg-muted">分享这篇文章</div>
           <div class="flex gap-4">
-            <button
-              class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-            >
+            <button class="p-2 rounded-full bg-surface-muted hover:bg-elevated transition-colors">
               <div class="i-carbon-logo-twitter w-5 h-5"></div>
             </button>
-            <button
-              class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-            >
+            <button class="p-2 rounded-full bg-surface-muted hover:bg-elevated transition-colors">
               <div class="i-carbon-logo-linkedin w-5 h-5"></div>
             </button>
-            <button
-              class="p-2 rounded-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-            >
+            <button class="p-2 rounded-full bg-surface-muted hover:bg-elevated transition-colors">
               <div class="i-carbon-link w-5 h-5"></div>
             </button>
           </div>
@@ -236,7 +226,7 @@ const readTime = computed(() => {
 
       <!-- Related Posts -->
       <div v-if="relatedPosts.length" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">推荐阅读</h2>
+        <h2 class="text-2xl font-bold text-fg mb-8">推荐阅读</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <BlogCard v-for="rp in relatedPosts" :key="rp.id" :blog-post="rp" />
         </div>

@@ -143,17 +143,17 @@ const triggerVariantClasses = computed(() => {
     md: 'h-10 rounded-lg px-3 text-sm',
     lg: 'h-12 rounded-xl px-4 text-base lg:h-11 lg:text-sm'
   }[props.size];
-  return `${sizeClass} border border-slate-200 bg-white text-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200`;
+  return `${sizeClass} border border-line bg-surface text-fg`;
 });
 
 const focusClasses = 'border-blue-500 ring-3 ring-blue-500/20 dark:border-blue-500';
 
-const chevronClasses = isOverlay.value ? 'text-white/70' : 'text-slate-400';
+const chevronClasses = isOverlay.value ? 'text-white/70' : 'text-fg-subtle';
 
 const panelVariantClasses = computed(() =>
   isOverlay.value
     ? 'rounded border border-white/20 bg-black/90 p-1 text-white shadow-2xl backdrop-blur-md'
-    : 'rounded-xl border border-slate-200 bg-white p-1 text-slate-200 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'
+    : 'rounded-xl border border-line bg-surface p-1 text-fg shadow-2xl'
 );
 
 const optionSizeClasses = computed(() => {
@@ -166,7 +166,7 @@ const optionSizeClasses = computed(() => {
 });
 // 文字颜色相关
 // 选项基础类名
-const baseOptionClasses = 'text-slate-500 dark:text-slate-200';
+const baseOptionClasses = 'text-fg-muted';
 // 选中状态背景色（不含文字颜色，避免覆盖禁用状态颜色）
 const selectedBgClasses = isOverlay.value
   ? 'bg-white/10 font-medium'
@@ -175,11 +175,9 @@ const selectedBgClasses = isOverlay.value
 const selectedTextClasses = isOverlay.value ? 'text-white' : 'text-blue-600 dark:text-blue-400';
 const optionHoverClasses = isOverlay.value ? 'hover:bg-white/10' : 'hover:bg-blue-500/10';
 const checkClasses = isOverlay.value ? 'text-white' : 'text-blue-600 dark:text-blue-400';
-const placeholderClasses = isOverlay.value ? 'text-white/60' : 'text-slate-400 dark:text-slate-500';
+const placeholderClasses = isOverlay.value ? 'text-white/60' : 'text-fg-subtle';
 // 禁用状态文字颜色（不使用透明度，改用色系区分）
-const disabledTextClasses = isOverlay.value
-  ? 'text-white/40'
-  : 'text-slate-300 dark:text-slate-500';
+const disabledTextClasses = isOverlay.value ? 'text-white/40' : 'text-fg-subtle';
 </script>
 
 <template>

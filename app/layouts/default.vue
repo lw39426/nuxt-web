@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="font-sans text-gray-900 dark:text-white bg-white dark:bg-black selection:bg-[#0fba81]/20 selection:text-900 flex flex-col min-h-screen"
-  >
+  <div class="font-sans text-fg bg-canvas selection:bg-brand-soft flex flex-col min-h-screen">
     <!-- 导航栏 -->
     <AppNavbarLayout v-if="!$route.meta.hideNavbar" />
 
@@ -22,7 +20,7 @@
       v-if="!$route.path.includes('/ai-page')"
       to="/ai-page"
       target="_blank"
-      class="fixed right-6 bottom-42 z-50 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center group"
+      class="fixed right-6 bottom-62 z-50 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center group"
       title="小星AI专属陪伴"
     >
       <span class="i-lucide-sparkles text-2xl animate-pulse"></span>

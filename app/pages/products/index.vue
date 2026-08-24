@@ -1,11 +1,11 @@
 <template>
-  <div class="bg-white dark:bg-black min-h-screen pb-20">
+  <div class="bg-canvas min-h-screen pb-20">
     <!-- Store Header Section头部分类列表 -->
     <!-- 
       Implemented based on Apple Store design
       Features: Gradient title, category navigation, responsive layout
     -->
-    <div class="bg-gray-50 dark:bg-neutral-900 pt-8 md:pt-16 md:pb-8 md:mb-8">
+    <div class="bg-canvas-elevated pt-8 md:pt-16 md:pb-8 md:mb-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Title and Subtitle Area 标题副标题区域 -->
         <div
@@ -19,15 +19,15 @@
                 商店
               </span>
             </h1>
-            <div class="mt-4 text-xl font-medium text-gray-500">
-              <span class="text-gray-900 dark:text-white font-bold">佳节到，别具好礼来欢庆。</span>
+            <div class="mt-4 text-xl font-medium text-fg-muted">
+              <span class="text-fg font-bold">佳节到，别具好礼来欢庆。</span>
             </div>
           </div>
 
           <div class="mt-4 md:mt-0 text-right">
             <a
               href="#"
-              class="text-gray-700 text-sm flex items-center gap-1 font-medium hover:text-black md:justify-end"
+              class="text-fg-muted text-sm flex items-center gap-1 font-medium hover:text-fg md:justify-end"
             >
               查找 Apple Store 零售店
               <div class="i-carbon-chevron-right text-xs" />
@@ -47,8 +47,8 @@
               :class="[
                 'flex flex-col items-center min-w-[80px] cursor-pointer group/item space-y-3 pb-2 border-b-4 transition-colors',
                 selectedCategory === category.name
-                  ? 'border-home-accent dark:border-home-accentDark'
-                  : 'border-transparent hover:border-gray-300 dark:hover:border-gray-700'
+                  ? 'border-accent'
+                  : 'border-transparent hover:border-line-strong'
               ]"
               @click="selectedCategory = category.name"
             >
@@ -64,7 +64,7 @@
                 />
               </div>
               <!-- Label -->
-              <span class="text-xs font-medium text-gray-900 dark:text-white">
+              <span class="text-xs font-medium text-fg">
                 {{ category.name }}
               </span>
             </div>
@@ -74,7 +74,7 @@
     </div>
 
     <!-- 产品系列展示区域 -->
-    <div class="bg-white dark:bg-black py-12 md:py-16">
+    <div class="bg-canvas py-12 md:py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- 每个系列的展示块 -->
         <div v-if="groupedProducts.length > 0" class="space-y-16 md:space-y-24">
@@ -87,7 +87,7 @@
             <!-- 系列标题 + 特色产品卡片 -->
             <div class="mb-12">
               <!-- 系列名称标题 -->
-              <h2 class="text-2xl md:text-3xl font-bold mb-8 text-gray-900 dark:text-white">
+              <h2 class="text-2xl md:text-3xl font-bold mb-8 text-fg">
                 {{ series.category }} 系列
               </h2>
 
@@ -154,7 +154,7 @@
             <!-- 分割线 -->
             <div
               v-if="series !== groupedProducts[groupedProducts.length - 1]"
-              class="mt-16 md:mt-24 border-t border-gray-200 dark:border-gray-800"
+              class="mt-16 md:mt-24 border-t border-line"
             ></div>
           </div>
         </div>
@@ -164,9 +164,9 @@
           v-else
           class="flex flex-col items-center justify-center py-20 text-gray-500 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800"
         >
-          <div class="i-carbon-package text-6xl mb-4 text-gray-300 dark:text-gray-600"></div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">暂无数据</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">敬请期待···</p>
+          <div class="i-carbon-package text-6xl mb-4 text-fg-subtle"></div>
+          <h3 class="text-lg font-semibold text-fg mb-2">暂无数据</h3>
+          <p class="text-sm text-fg-muted">敬请期待···</p>
         </div>
       </div>
     </div>

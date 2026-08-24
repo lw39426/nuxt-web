@@ -2,7 +2,7 @@
   <div class="group relative flex flex-col h-full">
     <!-- Image Container -->
     <div
-      class="relative w-full h-[160px] sm:h-[256px] aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-gray-800/50 rounded-xl"
+      class="relative w-full h-[160px] sm:h-[256px] aspect-[4/5] overflow-hidden bg-surface-muted rounded-xl"
     >
       <NuxtLink :to="productDetailPath" class="block w-full h-full mx-auto">
         <img
@@ -20,7 +20,7 @@
       >
         <!-- Favorite Button -->
         <button
-          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 transition-colors"
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface shadow-md flex items-center justify-center text-fg-subtle hover:text-red-500 hover:bg-elevated transition-colors"
           @click.stop="toggleFavorite"
         >
           <div
@@ -36,7 +36,7 @@
     <!-- Content -->
     <div class="pt-3 flex flex-col flex-1">
       <div class="mb-1 sm:mb-2 flex items-center gap-2 flex-wrap">
-        <span class="text-[10px] sm:text-xs font-medium text-gray-400 uppercase tracking-wider">{{
+        <span class="text-[10px] sm:text-xs font-medium text-fg-subtle uppercase tracking-wider">{{
           product.brand || 'Brand'
         }}</span>
         <span
@@ -50,7 +50,7 @@
       </div>
       <NuxtLink :to="productDetailPath" class="block mb-1 sm:mb-2">
         <h3
-          class="text-sm sm:text-base font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-black/70 dark:group-hover:text-white/70 transition-colors"
+          class="text-sm sm:text-base font-medium text-fg group-hover:text-fg-muted line-clamp-2 transition-colors"
         >
           {{ product?.name }}
         </h3>
@@ -60,18 +60,16 @@
         <div class="flex items-end justify-between mb-3">
           <div class="flex flex-col">
             <div class="flex items-baseline gap-2">
-              <span class="text-base sm:text-lg font-bold text-gray-900 dark:text-white"
-                >¥{{ currentPrice }}</span
-              >
-              <span v-if="hasDiscount" class="text-xs text-gray-400 line-through"
+              <span class="text-base sm:text-lg font-bold text-fg">¥{{ currentPrice }}</span>
+              <span v-if="hasDiscount" class="text-xs text-fg-subtle line-through"
                 >¥{{ originalPrice }}</span
               >
             </div>
             <div class="flex items-center gap-2 mt-0.5 sm:mt-1">
-              <span class="text-[10px] sm:text-xs text-gray-400"
+              <span class="text-[10px] sm:text-xs text-fg-subtle"
                 >销量: {{ product.sales || 0 }}</span
               >
-              <span class="text-[10px] sm:text-xs text-gray-400"
+              <span class="text-[10px] sm:text-xs text-fg-subtle"
                 >库存: {{ product.stock || 0 }}</span
               >
             </div>
@@ -80,7 +78,7 @@
 
         <!-- Add to Bag Button -->
         <button
-          class="w-full py-2 border border-gray-900 dark:border-white rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+          class="w-full py-2 border border-fg rounded-lg text-xs sm:text-sm font-medium hover:bg-fg hover:text-canvas transition-colors"
           @click.stop="addToCart"
         >
           Add to bag
@@ -96,7 +94,7 @@ import type { Product } from '~/types/product';
 const props = defineProps<{
   product: Product;
 }>();
-
+// console.log(props.product);
 const isFavorite = ref(false);
 const productDetailPath = computed(() => `/products/${props.product.code || props.product.id}`);
 

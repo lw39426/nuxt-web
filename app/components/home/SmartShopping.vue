@@ -33,11 +33,11 @@ const activeTag = ref(0);
 
 <template>
   <section
-    class="relative py-24 md:py-32 bg-gray-50 dark:bg-[#08070f] overflow-hidden content-visibility-auto"
+    class="relative py-24 md:py-32 bg-canvas-elevated overflow-hidden content-visibility-auto"
   >
     <!-- 背景装饰渐变 -->
     <div
-      class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-home-accent/5 dark:bg-blue-600/5 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none"
+      class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent-soft rounded-full blur-[120px] -translate-y-1/2 pointer-events-none"
     />
     <div
       class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-500/5 dark:bg-purple-600/5 rounded-full blur-[100px] translate-y-1/2 pointer-events-none"
@@ -47,7 +47,7 @@ const activeTag = ref(0);
       <!-- 标题区 -->
       <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-6 gap-8">
         <div class="max-w-xl">
-          <p class="section-header-label text-home-accent dark:text-blue-400">智能购物</p>
+          <p class="section-header-label text-accent">智能购物</p>
           <h2 class="section-header-title">智能购物体验</h2>
           <p class="section-header-desc">AI驱动的个性化推荐，让每一次浏览都精准触达你的心意</p>
         </div>
@@ -60,8 +60,8 @@ const activeTag = ref(0);
             class="px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-300 border"
             :class="
               activeTag === idx
-                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-lg shadow-black/10 dark:shadow-white/5'
-                : 'bg-white dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20'
+                ? 'bg-fg text-canvas border-fg shadow-lg shadow-black/10 dark:shadow-white/5'
+                : 'bg-surface text-fg-muted border-line hover:border-line-strong'
             "
             @click="activeTag = idx"
           >
@@ -80,13 +80,13 @@ const activeTag = ref(0);
 
       <!-- 骨架屏 -->
       <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-        <div v-for="i in 8" :key="i" class="bg-white dark:bg-[#121417] rounded-2xl p-4">
-          <div class="aspect-[4/5] bg-gray-100 dark:bg-gray-800 rounded-xl mb-4 animate-pulse" />
-          <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded mb-2 animate-pulse w-3/4" />
-          <div class="h-3 bg-gray-100 dark:bg-gray-800 rounded mb-4 animate-pulse w-1/2" />
+        <div v-for="i in 8" :key="i" class="bg-surface rounded-2xl p-4">
+          <div class="aspect-[4/5] bg-elevated rounded-xl mb-4 animate-pulse" />
+          <div class="h-4 bg-elevated rounded mb-2 animate-pulse w-3/4" />
+          <div class="h-3 bg-elevated rounded mb-4 animate-pulse w-1/2" />
           <div class="flex justify-between items-center">
-            <div class="h-5 bg-gray-100 dark:bg-gray-800 rounded animate-pulse w-16" />
-            <div class="h-8 bg-gray-100 dark:bg-gray-800 rounded animate-pulse w-20" />
+            <div class="h-5 bg-elevated rounded animate-pulse w-16" />
+            <div class="h-8 bg-elevated rounded animate-pulse w-20" />
           </div>
         </div>
       </div>
@@ -95,7 +95,7 @@ const activeTag = ref(0);
       <div class="text-center mt-14">
         <NuxtLink
           to="/products"
-          class="inline-flex items-center gap-2 px-8 py-3 bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-full text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 transition-all duration-300"
+          class="inline-flex items-center gap-2 px-8 py-3 bg-surface border border-line rounded-full text-sm font-medium text-fg hover:bg-surface-muted transition-all duration-300"
         >
           浏览全部商品
           <div class="i-carbon-arrow-right" />

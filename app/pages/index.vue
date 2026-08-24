@@ -2,7 +2,6 @@
 import { useHomeApi } from '~/composables/api/home';
 import SmartShopping from '~/components/home/SmartShopping.vue';
 import AiAssistant from '~/components/home/AiAssistant.vue';
-import ImmersiveExperience from '~/components/home/ImmersiveExperience.vue';
 import LatestNews from '~/components/home/LatestNews.vue';
 
 useHead({
@@ -76,11 +75,11 @@ const askAI = (question?: string) => {
             v-model="aiQuestion"
             type="text"
             placeholder="你想了解什么？"
-            class="flex-1 bg-transparent border-none outline-none text-mingtext-dark/70 dark:text-mingtext-gray placeholder-mingtext-dark/70 dark:placeholder-mingtext-gray px-4 text-sm"
+            class="flex-1 bg-transparent border-none outline-none text-fg placeholder-fg-subtle px-4 text-sm"
             @keydown.enter.prevent="askAI()"
           />
           <button
-            class="bg-white text-mingtext-dark/70 px-6 py-2 rounded-full text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:bg-gray-100"
+            class="bg-white text-black/70 px-6 py-2 rounded-full text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:bg-gray-100"
             :disabled="!canAskAI"
             @click="askAI()"
           >
@@ -101,7 +100,7 @@ const askAI = (question?: string) => {
     <AiAssistant />
 
     <!-- ========== 4. 沉浸式互动体验 ========== -->
-    <ImmersiveExperience />
+    <!-- <ImmersiveExperience /> -->
 
     <!-- ========== 5. 最新资讯 ========== -->
     <LatestNews :articles="articles" />

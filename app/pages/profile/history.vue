@@ -50,7 +50,7 @@ onMounted(loadHistory);
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">浏览历史</h1>
+      <h1 class="text-2xl font-bold text-fg">浏览历史</h1>
       <UButton
         v-if="history.length > 0"
         color="neutral"
@@ -64,24 +64,24 @@ onMounted(loadHistory);
 
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-20">
-      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400" />
+      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-fg-subtle" />
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
       <div class="flex items-center justify-center gap-2 mb-4">
-        <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+        <div class="i-carbon-warning text-5xl text-fg-subtle mb-4" />
       </div>
-      <p class="text-gray-500 mb-4">加载失败</p>
+      <p class="text-fg-muted mb-4">加载失败</p>
       <UButton color="neutral" variant="outline" @click="loadHistory">重试</UButton>
     </div>
 
     <!-- Empty -->
     <div v-else-if="history.length === 0" class="text-center py-20">
       <div class="flex items-center justify-center gap-2 mb-4">
-        <div class="i-carbon-time text-5xl text-gray-300 mb-4" />
+        <div class="i-carbon-time text-5xl text-fg-subtle mb-4" />
       </div>
-      <p class="text-gray-500">暂无浏览记录</p>
+      <p class="text-fg-muted">暂无浏览记录</p>
     </div>
 
     <!-- History List -->
@@ -89,7 +89,7 @@ onMounted(loadHistory);
       <div
         v-for="item in history"
         :key="item.id"
-        class="flex items-center gap-4 bg-gray-50 dark:bg-gray-900 rounded-xl p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        class="flex items-center gap-4 bg-surface-muted rounded-xl p-3 hover:bg-elevated transition-colors"
       >
         <img
           :src="item.image"
@@ -97,10 +97,10 @@ onMounted(loadHistory);
           class="h-14 w-14 rounded-lg object-cover shrink-0"
         />
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ item.title }}</p>
-          <p class="text-xs text-gray-500 mt-1">{{ item.meta }}</p>
+          <p class="text-sm font-medium text-fg truncate">{{ item.title }}</p>
+          <p class="text-xs text-fg-muted mt-1">{{ item.meta }}</p>
         </div>
-        <span class="text-xs text-gray-400 shrink-0">{{ formatTime(item.viewedAt) }}</span>
+        <span class="text-xs text-fg-subtle shrink-0">{{ formatTime(item.viewedAt) }}</span>
       </div>
     </div>
   </div>

@@ -62,14 +62,12 @@ const buttonClass = (value: 'system' | 'light' | 'dark') =>
   [
     'flex-1 flex items-center justify-center py-1.5 rounded-full transition-colors relative z-10',
     'focus:outline-none',
-    mode.value === value
-      ? 'text-gray-900 dark:text-white'
-      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+    mode.value === value ? 'text-fg' : 'text-fg-muted hover:text-fg'
   ].join(' ');
 </script>
 
 <template>
-  <div ref="menuRef" class="fixed top-2/3 right-0 z-50">
+  <div ref="menuRef" class="fixed top-[90%] right-0 z-50">
     <!-- Panel (展开时的面板) -->
     <Transition
       enter-active-class="transition-all duration-300 ease-out"
@@ -81,24 +79,23 @@ const buttonClass = (value: 'system' | 'light' | 'dark') =>
     >
       <div
         v-show="isOpen"
-        class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-l-2xl shadow-[-4px_0_24px_rgba(0,0,0,0.1)] p-4 w-48 mr-2"
+        class="absolute right-0 top-1/2 -translate-y-1/2 bg-glass backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-l-2xl shadow-[-4px_0_24px_rgba(0,0,0,0.1)] p-4 w-48 mr-2"
       >
         <div class="flex flex-col gap-4">
           <!-- Theme Switcher -->
           <div class="space-y-2">
             <div
-              class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1 flex justify-between items-center"
+              class="text-xs font-medium text-fg-muted uppercase tracking-wider px-1 flex justify-between items-center"
             >
               <span>外观</span>
-              <button
-                class="hover:text-gray-800 dark:hover:text-white transition-colors"
-                @click="isOpen = false"
-              >
+              <button class="hover:text-fg" @click="isOpen = false">
                 <span class="i-carbon-close text-sm"></span>
               </button>
             </div>
             <div
-              class="flex items-center rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/5 p-1 relative"
+              role="group"
+              aria-label="切换主题"
+              class="flex items-center rounded-full bg-surface-muted border border-line p-1 relative"
               :style="{ '--theme-index': String(modeIndex) }"
             >
               <!-- Indicator -->
@@ -123,7 +120,7 @@ const buttonClass = (value: 'system' | 'light' | 'dark') =>
           <!-- Back to Top -->
           <button
             v-show="showBackToTop"
-            class="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 rounded-xl transition-colors text-sm font-medium"
+            class="flex items-center justify-center gap-2 w-full py-2.5 bg-surface-muted hover:bg-elevated text-fg rounded-xl transition-colors text-sm font-medium"
             @click="backToTop"
           >
             <div class="i-carbon-arrow-up" />
@@ -135,7 +132,7 @@ const buttonClass = (value: 'system' | 'light' | 'dark') =>
 
     <!-- Trigger Button (吸附在右侧边缘的半圆) -->
     <button
-      class="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-12 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm border border-r-0 border-gray-200 dark:border-white/10 rounded-l-full shadow-[-2px_0_8px_rgba(0,0,0,0.05)] flex items-center justify-center text-gray-600 dark:text-gray-300 hover:w-10 hover:bg-white dark:hover:bg-zinc-800 transition-all duration-300 cursor-pointer group"
+      class="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-12 bg-glass backdrop-blur-sm border border-r-0 border-line rounded-l-full shadow-[-2px_0_8px_rgba(0,0,0,0.05)] flex items-center justify-center text-fg-muted hover:w-10 hover:bg-elevated transition-all duration-300 cursor-pointer group"
       :class="isOpen ? 'translate-x-0 opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'"
       @click="toggleMenu"
     >

@@ -12,7 +12,7 @@ const activeImageIndex = ref(0);
         :key="idx"
         class="w-20 h-20 border-2 rounded-lg overflow-hidden flex-shrink-0 transition"
         :class="
-          activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-gray-200'
+          activeImageIndex === idx ? 'border-primary' : 'border-transparent hover:border-line'
         "
         @click="activeImageIndex = idx"
       >
@@ -28,7 +28,7 @@ const activeImageIndex = ref(0);
 
     <!-- Main Image -->
     <div
-      class="flex-1 bg-gray-50 rounded-xl overflow-hidden relative group aspect-square md:aspect-auto"
+      class="flex-1 bg-surface-muted rounded-xl overflow-hidden relative group aspect-square md:aspect-auto"
     >
       <img
         :src="images[activeImageIndex]"

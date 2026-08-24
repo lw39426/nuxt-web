@@ -1,26 +1,24 @@
 <template>
-  <div class="bg-white dark:bg-black min-h-screen">
+  <div class="bg-canvas min-h-screen">
     <div v-if="isLoading" class="flex items-center justify-center min-h-[50vh]">
-      <div class="i-carbon-circle-dash text-3xl animate-spin text-gray-400" />
+      <div class="i-carbon-circle-dash text-3xl animate-spin text-fg-subtle" />
     </div>
     <div
       v-else-if="product"
       class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 sm:pb-8"
     >
       <!-- Breadcrumbs 面包屑部分 -->
-      <nav class="hidden sm:flex text-sm text-gray-500 mb-8">
+      <nav class="hidden sm:flex text-sm text-fg-muted mb-8">
         <ol class="flex items-center space-x-2">
           <li>
-            <NuxtLink to="/" class="hover:text-gray-900 dark:hover:text-white">首页</NuxtLink>
+            <NuxtLink to="/" class="hover:text-fg">首页</NuxtLink>
           </li>
           <li><span class="mx-2">/</span></li>
           <li>
-            <NuxtLink to="/products" class="hover:text-gray-900 dark:hover:text-white"
-              >商品</NuxtLink
-            >
+            <NuxtLink to="/products" class="hover:text-fg">商品</NuxtLink>
           </li>
           <li><span class="mx-2">/</span></li>
-          <li class="text-gray-900 dark:text-white font-medium truncate">
+          <li class="text-fg font-medium truncate">
             {{ product?.title }}
           </li>
         </ol>
@@ -30,14 +28,14 @@
         <!-- Gallery (Left, larger) 商品图片展示区域 -->
         <div class="lg:col-span-7 space-y-6">
           <div
-            class="aspect-[4/3] bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden flex items-center justify-center relative group"
+            class="aspect-[4/3] bg-surface-muted rounded-2xl overflow-hidden flex items-center justify-center relative group"
           >
             <img
               :src="activeImage"
               class="w-full h-full object-contain p-4 sm:p-8 lg:p-12 transition-transform duration-500 group-hover:scale-105"
             />
             <button
-              class="absolute top-4 right-4 p-3 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur hover:bg-white dark:hover:bg-black transition-colors"
+              class="absolute top-4 right-4 p-3 rounded-full bg-glass backdrop-blur hover:bg-elevated transition-colors"
             >
               <div class="i-carbon-maximize text-xl" />
             </button>
@@ -46,12 +44,8 @@
             <button
               v-for="img in product?.images"
               :key="img"
-              class="w-20 h-20 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0 rounded-xl border-2 overflow-hidden bg-gray-50 dark:bg-gray-900 transition-all"
-              :class="
-                activeImage === img
-                  ? 'border-black dark:border-white'
-                  : 'border-transparent hover:border-gray-200'
-              "
+              class="w-20 h-20 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0 rounded-xl border-2 overflow-hidden bg-surface-muted transition-all"
+              :class="activeImage === img ? 'border-fg' : 'border-transparent hover:border-line'"
               @click="activeImage = img"
             >
               <img :src="img" class="w-full h-full object-contain p-2" />
@@ -60,14 +54,14 @@
           <!-- 商品富文本展示 -->
           <section
             v-if="richTextContent"
-            class="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/60 p-6 sm:p-8"
+            class="rounded-3xl border border-line bg-surface-muted p-6 sm:p-8"
           >
             <div class="flex items-center justify-between gap-3 mb-6">
-              <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">图文详情</h2>
-              <span class="text-xs text-gray-500 dark:text-gray-400">商品卖点与详细说明</span>
+              <h2 class="text-lg sm:text-xl font-bold text-fg">图文详情</h2>
+              <span class="text-xs text-fg-muted">商品卖点与详细说明</span>
             </div>
             <article
-              class="prose prose-sm sm:prose-base dark:prose-invert max-w-none text-gray-700 dark:text-gray-300"
+              class="prose prose-sm sm:prose-base dark:prose-invert max-w-none text-fg-muted"
             >
               <div v-html="richTextContent"></div>
             </article>
@@ -78,9 +72,7 @@
         <div class="lg:col-span-5">
           <div class="space-y-6 sm:space-y-8 lg:sticky lg:top-24">
             <div>
-              <h1
-                class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 leading-tight"
-              >
+              <h1 class="text-2xl sm:text-3xl font-bold text-fg mb-2 leading-tight">
                 {{ product?.title }}
               </h1>
               <div class="flex items-center gap-4">
@@ -95,21 +87,21 @@
                     "
                   />
                 </div>
-                <span class="text-sm text-gray-500">{{ product?.reviewCount }} reviews</span>
+                <span class="text-sm text-fg-muted">{{ product?.reviewCount }} reviews</span>
               </div>
             </div>
 
             <!-- Price Section -->
-            <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg space-y-2">
+            <div class="bg-surface-muted p-4 rounded-lg space-y-2">
               <div class="flex items-baseline gap-3">
                 <span class="text-3xl sm:text-4xl font-bold text-red-600"
                   >¥{{ product?.price }}</span
                 >
-                <span v-if="product?.originalPrice" class="text-lg text-gray-500 line-through"
+                <span v-if="product?.originalPrice" class="text-lg text-fg-muted line-through"
                   >¥{{ product.originalPrice }}</span
                 >
               </div>
-              <p class="text-xs text-gray-600 dark:text-gray-400">到手价</p>
+              <p class="text-xs text-fg-muted">到手价</p>
             </div>
 
             <!-- Promotions -->
@@ -117,36 +109,29 @@
               <div
                 v-for="(promo, idx) in product.promotions"
                 :key="idx"
-                class="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
+                class="text-sm text-fg-muted flex items-start gap-2"
               >
                 <span class="text-red-500 font-bold mt-0.5">·</span>
                 <span>{{ promo }}</span>
               </div>
             </div>
 
-            <div class="h-px bg-gray-100 dark:bg-gray-800" />
+            <div class="h-px bg-line" />
 
             <!-- 颜色、版本、数量Options -->
             <div class="space-y-3">
               <!-- Quantity -->
               <div>
-                <label class="text-sm font-bold text-gray-900 dark:text-white block mb-1"
-                  >数量</label
-                >
-                <div
-                  class="flex items-center gap-2 border border-gray-200 dark:border-gray-700 rounded-lg w-fit"
-                >
+                <label class="text-sm font-bold text-fg block mb-1">数量</label>
+                <div class="flex items-center gap-2 border border-line rounded-lg w-fit">
                   <button
-                    class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    class="px-3 py-2 hover:bg-surface-muted"
                     @click="quantity = Math.max(1, quantity - 1)"
                   >
                     −
                   </button>
                   <span class="w-8 text-center font-medium">{{ quantity }}</span>
-                  <button
-                    class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    @click="quantity = quantity + 1"
-                  >
+                  <button class="px-3 py-2 hover:bg-surface-muted" @click="quantity = quantity + 1">
                     +
                   </button>
                 </div>
@@ -154,18 +139,15 @@
             </div>
 
             <!-- Specs and Description Section -->
-            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 space-y-6">
+            <div class="border-t border-line pt-6 space-y-6">
               <!-- Two Column Grid -->
               <div class="grid grid-cols-1 gap-6 sm:gap-8">
                 <!-- Description -->
                 <div class="space-y-4">
-                  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">商品描述</h3>
-                  <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed space-y-3">
+                  <h3 class="text-lg font-bold text-fg mb-4">商品描述</h3>
+                  <div class="text-sm text-fg-muted leading-relaxed space-y-3">
                     <p>{{ product?.description }}</p>
-                    <p
-                      v-if="product?.title?.includes('Reno')"
-                      class="text-gray-600 dark:text-gray-400"
-                    >
+                    <p v-if="product?.title?.includes('Reno')" class="text-fg-muted">
                       OPPO Reno
                       系列致力于为消费者提供最好的拍照体验和电池续航能力。该产品集合了最新的技术创新和精致的工业设计。
                     </p>
@@ -175,7 +157,7 @@
             </div>
             <div class="hidden sm:flex gap-3 pt-4">
               <button
-                class="flex-1 bg-black dark:bg-white text-white dark:text-black h-12 rounded-lg font-bold text-base hover:opacity-90 transition-opacity shadow-md"
+                class="flex-1 bg-fg text-canvas h-12 rounded-lg font-bold text-base hover:opacity-90 transition-opacity shadow-md"
               >
                 加入购物车
               </button>
@@ -188,11 +170,11 @@
 
             <!-- Guarantees -->
             <div class="pt-2 sm:pt-4 space-y-2">
-              <p class="text-xs font-bold text-gray-900 dark:text-white">服务保障</p>
+              <p class="text-xs font-bold text-fg">服务保障</p>
               <div
                 v-for="guarantee in guaranteeList"
                 :key="guarantee.name"
-                class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
+                class="flex items-center gap-2 text-xs text-fg-muted"
               >
                 <span class="text-green-600">✓</span>
                 <span>{{ guarantee.name }}</span>
@@ -200,12 +182,10 @@
             </div>
 
             <!-- Highlights Grid (Above Product Details) -->
-            <div
-              class="grid grid-cols-2 gap-3 sm:gap-4 py-4 sm:py-6 border-t border-b border-gray-200 dark:border-gray-800"
-            >
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 py-4 sm:py-6 border-t border-b border-line">
               <div v-for="(highlight, idx) in product.highlights" :key="idx" class="text-center">
                 <div class="mb-1 sm:mb-2 text-xl sm:text-2xl">✨</div>
-                <p class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                <p class="text-xs sm:text-sm font-medium text-fg">
                   {{ highlight.text }}
                 </p>
               </div>
@@ -215,11 +195,9 @@
       </div>
 
       <!-- Related Products 推荐相关商品 -->
-      <div
-        class="mt-14 sm:mt-20 lg:mt-32 border-t border-gray-100 dark:border-gray-800 pt-10 sm:pt-14 lg:pt-20"
-      >
+      <div class="mt-14 sm:mt-20 lg:mt-32 border-t border-line pt-10 sm:pt-14 lg:pt-20">
         <div class="flex items-center justify-between mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">你可能也喜欢</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-fg">你可能也喜欢</h2>
           <NuxtLink to="/products" class="text-sm font-medium hover:underline"
             >查看全部商品</NuxtLink
           >
@@ -237,12 +215,10 @@
 
       <!-- Mobile Bottom Action Bar -->
       <div
-        class="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-black/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 p-3"
+        class="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-glass backdrop-blur border-t border-line p-3"
       >
         <div class="grid grid-cols-2 gap-3">
-          <button
-            class="w-full bg-black dark:bg-white text-white dark:text-black h-11 rounded-lg font-bold text-sm"
-          >
+          <button class="w-full bg-fg text-canvas h-11 rounded-lg font-bold text-sm">
             加入购物车
           </button>
           <button class="w-full bg-red-600 text-white h-11 rounded-lg font-bold text-sm">

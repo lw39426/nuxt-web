@@ -34,15 +34,15 @@ const handleLogout = () => {
 <template>
   <div class="md:sticky md:top-24">
     <!-- 用户信息卡片 -->
-    <div class="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-900 mb-4">
+    <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-muted mb-4">
       <div
         class="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shrink-0"
       >
         {{ avatarLetter }}
       </div>
       <div class="min-w-0">
-        <p class="font-semibold text-gray-900 dark:text-white truncate">{{ displayName }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">普通会员</p>
+        <p class="font-semibold text-fg truncate">{{ displayName }}</p>
+        <p class="text-xs text-fg-muted">普通会员</p>
       </div>
     </div>
 
@@ -56,7 +56,7 @@ const handleLogout = () => {
         :class="
           isActive(item.path)
             ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+            : 'text-fg-muted hover:bg-surface-muted'
         "
       >
         <span :class="[item.icon, 'w-5 h-5']" />

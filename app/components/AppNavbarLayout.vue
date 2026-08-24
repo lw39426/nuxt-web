@@ -40,7 +40,7 @@ const menuItems = [
   { name: 'Home', href: '/', icon: 'i-carbon-home' },
   { name: 'Products', href: '/products', icon: 'i-carbon-cube' },
   { name: 'Blog', href: '/blog', icon: 'i-carbon-blog' },
-  { name: '元神', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
+  { name: 'genshin', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
   { name: 'About Us', href: '/about', icon: 'i-carbon-group' }
 ];
 
@@ -265,7 +265,7 @@ onUnmounted(() => {
                   />
                 </svg>
               </div>
-              <p class="font-bold font-display text-xl text-gray-900 dark:text-white">Mimo</p>
+              <p class="font-bold font-display text-xl text-fg">Mimo</p>
             </a>
           </div>
 
@@ -275,7 +275,7 @@ onUnmounted(() => {
               v-for="item in menuItems"
               :key="item.name"
               :href="item.href"
-              class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
+              class="px-3 py-1.5 text-sm font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-full transition-colors"
             >
               {{ item.name }}
             </a>
@@ -290,9 +290,7 @@ onUnmounted(() => {
               class="h-8 items-center justify-center relative mr-2 group hidden md:flex pl-4"
               @click="openAuthModal('login')"
             >
-              <div
-                class="flex gap-2 items-center relative z-20 text-sm font-medium text-black-900 dark:text-white"
-              >
+              <div class="flex gap-2 items-center relative z-20 text-sm font-medium text-fg">
                 <span class="mr-2">登 录</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -312,7 +310,7 @@ onUnmounted(() => {
               </div>
               <!-- 灰色圆形背景，Hover 时伸长 -->
               <span
-                class="h-8 pointer-events-none z-10 w-8 group-hover:w-[120%] transition-all duration-300 absolute top-0 -right-2 bg-neutral-200 dark:bg-white/10 rounded-full flex items-center justify-center"
+                class="h-8 pointer-events-none z-10 w-8 group-hover:w-[120%] transition-all duration-300 absolute top-0 -right-2 bg-surface-muted rounded-full flex items-center justify-center"
               ></span>
             </button>
 
@@ -349,52 +347,43 @@ onUnmounted(() => {
         class="absolute top-full left-0 right-0 mx-auto flex flex-col gap-2 overflow-hidden transition-all duration-300 origin-top md:hidden"
         :class="[
           isScrolled
-            ? 'w-[92%] max-w-3xl bg-white/95 dark:bg-neutral-900/95 rounded-3xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2'
-            : 'w-[96%] max-w-7xl bg-white/95 dark:bg-neutral-900/95 rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2'
+            ? 'w-[92%] max-w-3xl bg-glass rounded-3xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2'
+            : 'w-[96%] max-w-7xl bg-glass rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2'
         ]"
       >
         <a
           v-for="item in menuItems"
           :key="item.name"
           :href="item.href"
-          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
           @click="isMobileMenuOpen = false"
         >
-          <div
-            :class="[
-              item.icon,
-              'w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300'
-            ]"
-          ></div>
+          <div :class="[item.icon, 'w-5 h-5 text-fg-subtle group-hover:text-fg-muted']"></div>
           {{ item.name }}
         </a>
 
-        <div class="h-px bg-gray-100 dark:bg-white/5 my-1"></div>
+        <div class="h-px bg-line my-1"></div>
 
         <button
           type="button"
-          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
           @click="
             isMobileMenuOpen = false;
             openAuthModal('login');
           "
         >
-          <div
-            class="i-carbon-login w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300"
-          ></div>
+          <div class="i-carbon-login w-5 h-5 text-fg-subtle group-hover:text-fg-muted"></div>
           Sign In
         </button>
         <button
           type="button"
-          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
           @click="
             isMobileMenuOpen = false;
             openAuthModal('register');
           "
         >
-          <div
-            class="i-carbon-user-follow w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300"
-          ></div>
+          <div class="i-carbon-user-follow w-5 h-5 text-fg-subtle group-hover:text-fg-muted"></div>
           Create Account
         </button>
       </div>
@@ -413,17 +402,17 @@ onUnmounted(() => {
     >
       <div
         v-if="isDropdownOpen"
-        class="rounded-xl bg-white dark:bg-gray-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-[100]"
+        class="rounded-xl bg-elevated shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-[100]"
         :style="dropdownStyle"
       >
-        <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-800">
-          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+        <div class="px-4 py-2 border-b border-line">
+          <p class="text-sm font-medium text-fg truncate">
             {{ displayName }}
           </p>
         </div>
         <NuxtLink
           to="/profile/account"
-          class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          class="flex items-center gap-2 px-4 py-2 text-sm text-fg hover:bg-surface-muted"
           @click="isDropdownOpen = false"
         >
           <span class="i-carbon-user w-4 h-4" />
@@ -431,7 +420,7 @@ onUnmounted(() => {
         </NuxtLink>
         <NuxtLink
           to="/profile/orders"
-          class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          class="flex items-center gap-2 px-4 py-2 text-sm text-fg hover:bg-surface-muted"
           @click="isDropdownOpen = false"
         >
           <span class="i-carbon-package w-4 h-4" />

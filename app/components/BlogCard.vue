@@ -13,9 +13,7 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
 <template>
   <NuxtLink :to="`/blog/${blogPost.code}`" class="group flex flex-col h-full gap-4 cursor-pointer">
     <!-- Image Container 图片部分 -->
-    <div
-      class="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-card-light dark:bg-card-dark"
-    >
+    <div class="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-surface">
       <img
         :src="blogPost.image"
         :alt="blogPost.title"
@@ -32,13 +30,13 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
 
       <!-- Title -->
       <h3
-        class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+        class="text-xl font-bold text-fg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
       >
         {{ blogPost.title }}
       </h3>
 
       <!-- Excerpt -->
-      <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+      <p class="text-sm text-fg-muted line-clamp-2">
         {{ blogPost.excerpt }}
       </p>
 
@@ -51,20 +49,17 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
           :alt="authorName"
           class="h-8 w-8 rounded-full object-cover"
         />
-        <div
-          v-else
-          class="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
-        >
-          <span class="text-xs font-bold text-gray-600 dark:text-gray-300">
+        <div v-else class="h-8 w-8 rounded-full bg-surface-muted flex items-center justify-center">
+          <span class="text-xs font-bold text-fg-muted">
             {{ authorName.charAt(0) }}
           </span>
         </div>
         <div class="flex flex-col">
-          <span class="text-xs font-medium text-gray-900 dark:text-white">{{ authorName }}</span>
-          <span v-if="blogPost.author?.role" class="text-[10px] text-gray-500 dark:text-gray-400">{{
+          <span class="text-xs font-medium text-fg">{{ authorName }}</span>
+          <span v-if="blogPost.author?.role" class="text-[10px] text-fg-subtle">{{
             blogPost.author.role
           }}</span>
-          <span class="text-[10px] text-gray-500 dark:text-gray-400">{{ blogPost.date }}</span>
+          <span class="text-[10px] text-fg-subtle">{{ blogPost.date }}</span>
         </div>
       </div>
     </div>

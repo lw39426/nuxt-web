@@ -45,16 +45,14 @@ onMounted(loadFavorites);
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">我的收藏</h1>
+    <h1 class="text-2xl font-bold text-fg mb-6">我的收藏</h1>
 
     <!-- Tabs -->
     <div class="flex gap-1 mb-6">
       <button
         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         :class="
-          activeTab === 'product'
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+          activeTab === 'product' ? 'bg-blue-600 text-white' : 'bg-surface-muted text-fg-muted'
         "
         @click="activeTab = 'product'"
       >
@@ -63,9 +61,7 @@ onMounted(loadFavorites);
       <button
         class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         :class="
-          activeTab === 'article'
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+          activeTab === 'article' ? 'bg-blue-600 text-white' : 'bg-surface-muted text-fg-muted'
         "
         @click="activeTab = 'article'"
       >
@@ -75,15 +71,15 @@ onMounted(loadFavorites);
 
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-20">
-      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400" />
+      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-fg-subtle" />
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
       <div class="flex items-center justify-center gap-2 mb-4">
-        <div class="i-carbon-warning text-5xl text-gray-300 mb-4" />
+        <div class="i-carbon-warning text-5xl text-fg-subtle mb-4" />
       </div>
-      <p class="text-gray-500 mb-4">加载失败</p>
+      <p class="text-fg-muted mb-4">加载失败</p>
       <UButton color="neutral" variant="outline" @click="loadFavorites">重试</UButton>
     </div>
 
@@ -93,9 +89,9 @@ onMounted(loadFavorites);
       class="text-center py-20"
     >
       <div class="flex items-center justify-center gap-2 mb-4">
-        <div class="i-carbon-favorite text-5xl text-gray-300 mb-4" />
+        <div class="i-carbon-favorite text-5xl text-fg-subtle mb-4" />
       </div>
-      <p class="text-gray-500">暂无收藏</p>
+      <p class="text-fg-muted">暂无收藏</p>
     </div>
 
     <!-- Product Grid -->

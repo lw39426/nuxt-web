@@ -58,41 +58,41 @@ onMounted(loadLoginRecords);
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">账号安全</h1>
+    <h1 class="text-2xl font-bold text-fg mb-6">账号安全</h1>
 
     <div class="space-y-8">
       <!-- 修改密码 -->
-      <section class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">修改密码</h2>
+      <section class="bg-surface-muted rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-fg mb-4">修改密码</h2>
         <form class="space-y-4 max-w-md" @submit.prevent="handleChangePassword">
           <div>
-            <label class="text-sm text-gray-600 dark:text-gray-400 mb-1 block">当前密码</label>
+            <label class="text-sm text-fg-muted mb-1 block">当前密码</label>
             <input
               v-model="passwordForm.old_password"
               type="password"
               required
               placeholder="请输入当前密码"
-              class="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500"
+              class="w-full h-10 rounded-lg border border-line bg-surface px-3 text-sm text-fg outline-none focus:border-blue-500"
             />
           </div>
           <div>
-            <label class="text-sm text-gray-600 dark:text-gray-400 mb-1 block">新密码</label>
+            <label class="text-sm text-fg-muted mb-1 block">新密码</label>
             <input
               v-model="passwordForm.new_password"
               type="password"
               required
               placeholder="请输入新密码"
-              class="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500"
+              class="w-full h-10 rounded-lg border border-line bg-surface px-3 text-sm text-fg outline-none focus:border-blue-500"
             />
           </div>
           <div>
-            <label class="text-sm text-gray-600 dark:text-gray-400 mb-1 block">确认新密码</label>
+            <label class="text-sm text-fg-muted mb-1 block">确认新密码</label>
             <input
               v-model="passwordForm.confirm_password"
               type="password"
               required
               placeholder="请再次输入新密码"
-              class="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500"
+              class="w-full h-10 rounded-lg border border-line bg-surface px-3 text-sm text-fg outline-none focus:border-blue-500"
             />
           </div>
           <UButton color="primary" type="submit" :loading="isSaving"> 确认修改 </UButton>
@@ -100,19 +100,19 @@ onMounted(loadLoginRecords);
       </section>
 
       <!-- 登录记录 -->
-      <section class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">登录记录</h2>
+      <section class="bg-surface-muted rounded-2xl p-6">
+        <h2 class="text-lg font-semibold text-fg mb-4">登录记录</h2>
         <div v-if="isLoadingRecords" class="flex justify-center py-10">
-          <div class="i-carbon-circle-dash w-6 h-6 animate-spin text-gray-400" />
+          <div class="i-carbon-circle-dash w-6 h-6 animate-spin text-fg-subtle" />
         </div>
         <div v-else class="space-y-3">
           <div
             v-for="record in loginRecords"
             :key="record.id"
-            class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800 last:border-0"
+            class="flex items-center justify-between py-3 border-b border-line last:border-0"
           >
             <div>
-              <p class="text-sm text-gray-900 dark:text-white">
+              <p class="text-sm text-fg">
                 {{ record.device }} · {{ record.browser }}
                 <span
                   v-if="record.current"
@@ -121,9 +121,9 @@ onMounted(loadLoginRecords);
                   当前设备
                 </span>
               </p>
-              <p class="text-xs text-gray-500 mt-1">{{ record.location }} · {{ record.ip }}</p>
+              <p class="text-xs text-fg-muted mt-1">{{ record.location }} · {{ record.ip }}</p>
             </div>
-            <span class="text-xs text-gray-400 shrink-0">{{ record.loginAt }}</span>
+            <span class="text-xs text-fg-subtle shrink-0">{{ record.loginAt }}</span>
           </div>
         </div>
       </section>

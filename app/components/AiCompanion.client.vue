@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="h-screen w-full flex overflow-hidden bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 relative"
-  >
+  <div class="h-screen w-full flex overflow-hidden bg-canvas text-fg relative">
     <AiSidebar
       v-model:is-open="isSidebarOpen"
       :sessions="filteredSidebarSessions"
@@ -17,23 +15,21 @@
     <div class="flex-1 flex flex-col min-w-0 h-full transition-all duration-300">
       <div class="max-w-3xl w-full mx-auto p-4 flex flex-col flex-1 h-full overflow-hidden">
         <!-- 顶部信息 -->
-        <header
-          class="py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-2 md:px-0"
-        >
+        <header class="py-4 border-b border-line flex items-center justify-between px-2 md:px-0">
           <div class="flex items-center gap-3">
             <!-- 左侧：汉堡菜单（移动端显示，点击可切换侧边栏） -->
             <button
-              class="p-2 -ml-2 text-gray-600 dark:text-gray-400 md:hidden flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+              class="p-2 -ml-2 text-fg-muted md:hidden flex items-center justify-center hover:bg-surface-muted rounded-md transition-colors"
               aria-label="打开侧边栏"
               @click="isSidebarOpen = !isSidebarOpen"
             >
               <span class="i-lucide-menu text-xl"></span>
             </button>
-            <h1 class="text-xl font-bold flex items-center gap-2 text-gray-800 dark:text-gray-100">
+            <h1 class="text-xl font-bold flex items-center gap-2 text-fg">
               <span class="i-lucide-sparkles text-purple-500"></span> 专属心理陪伴
             </h1>
           </div>
-          <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+          <div class="text-sm text-fg-muted flex items-center gap-1">
             {{ isLoading ? '正在认真听你说...' : '在线倾听你的声音' }}
           </div>
         </header>
@@ -48,26 +44,24 @@
             v-if="messages.length === 0"
             class="flex flex-col items-center justify-center h-full gap-4"
           >
-            <h2
-              class="text-2xl md:text-3xl font-medium text-gray-800 dark:text-gray-100 tracking-wide"
-            >
+            <h2 class="text-2xl md:text-3xl font-medium text-fg tracking-wide">
               今天有什么想说的吗？
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 w-full max-w-xl">
               <button
-                class="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                class="px-3 py-2 rounded-xl border border-line text-sm hover:bg-surface-muted transition-colors"
                 @click="quickAsk('最近有点焦虑，我该怎么缓解？')"
               >
                 缓解焦虑
               </button>
               <button
-                class="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                class="px-3 py-2 rounded-xl border border-line text-sm hover:bg-surface-muted transition-colors"
                 @click="quickAsk('最近睡不太好，能陪我梳理一下吗？')"
               >
                 睡眠困扰
               </button>
               <button
-                class="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                class="px-3 py-2 rounded-xl border border-line text-sm hover:bg-surface-muted transition-colors"
                 @click="quickAsk('我最近压力很大，想找人聊聊')"
               >
                 压力倾诉
@@ -105,7 +99,7 @@
                 :class="
                   m.role === 'user'
                     ? 'bg-green-400 text-white rounded-tr-none'
-                    : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-tl-none shadow-sm text-gray-800 dark:text-gray-200'
+                    : 'bg-surface border border-line rounded-tl-none shadow-sm text-fg'
                 "
               >
                 <template v-if="getMessageText(m)">
@@ -114,15 +108,15 @@
                 <template v-else>
                   <div class="flex items-center gap-1.5 h-5 px-1">
                     <span
-                      class="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                      class="w-1.5 h-1.5 bg-fg-subtle rounded-full animate-bounce"
                       style="animation-delay: 0ms"
                     ></span>
                     <span
-                      class="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                      class="w-1.5 h-1.5 bg-fg-subtle rounded-full animate-bounce"
                       style="animation-delay: 150ms"
                     ></span>
                     <span
-                      class="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                      class="w-1.5 h-1.5 bg-fg-subtle rounded-full animate-bounce"
                       style="animation-delay: 300ms"
                     ></span>
                   </div>
@@ -132,7 +126,7 @@
               <div class="flex gap-2 opacity-90 transition-opacity px-1 mt-1">
                 <button
                   v-if="getMessageText(m)"
-                  class="p-1.5 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center cursor-pointer relative group/btn"
+                  class="p-1.5 rounded-md text-fg-subtle hover:text-fg hover:bg-surface-muted transition-colors flex items-center justify-center cursor-pointer relative group/btn"
                   aria-label="复制消息"
                   @click="copyText(getMessageText(m))"
                 >
@@ -149,7 +143,7 @@
                     m.role === 'assistant' &&
                     (getMessageText(m).includes('抱歉') || isErrorMessage(m.id))
                   "
-                  class="p-1.5 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center cursor-pointer relative group/btn"
+                  class="p-1.5 rounded-md text-fg-subtle hover:text-fg hover:bg-surface-muted transition-colors flex items-center justify-center cursor-pointer relative group/btn"
                   aria-label="重新生成回复"
                   @click="retryLastMessage"
                 >
@@ -176,19 +170,19 @@
               <span class="i-lucide-bot text-sm"></span>
             </div>
             <div
-              class="max-w-[80%] rounded-2xl px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-tl-none shadow-sm"
+              class="max-w-[80%] rounded-2xl px-4 py-2 text-sm bg-surface border border-line rounded-tl-none shadow-sm"
             >
               <div class="flex items-center gap-1.5 h-5 px-1">
                 <span
-                  class="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                  class="w-1.5 h-1.5 bg-fg-subtle rounded-full animate-bounce"
                   style="animation-delay: 0ms"
                 ></span>
                 <span
-                  class="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                  class="w-1.5 h-1.5 bg-fg-subtle rounded-full animate-bounce"
                   style="animation-delay: 150ms"
                 ></span>
                 <span
-                  class="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                  class="w-1.5 h-1.5 bg-fg-subtle rounded-full animate-bounce"
                   style="animation-delay: 300ms"
                 ></span>
               </div>
@@ -196,17 +190,17 @@
           </div>
         </main>
         <!-- AI输入框 -->
-        <footer class="py-2 pb-4 md:py-4 bg-white dark:bg-gray-900">
+        <footer class="py-2 pb-4 md:py-4 bg-canvas">
           <form
             :class="[
-              'relative flex gap-1 shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)] rounded-3xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 px-2 py-1 transition-all duration-200 focus-within:border-gray-300 dark:focus-within:border-gray-600',
+              'relative flex gap-1 shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:shadow-[0_0_15px_rgba(0,0,0,0.2)] rounded-3xl bg-surface-muted border border-line px-2 py-1 transition-all duration-200 focus-within:border-line-strong',
               isMultiline ? 'items-end' : 'items-center'
             ]"
             @submit="handleSubmit"
           >
             <button
               type="button"
-              class="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              class="flex-shrink-0 w-8 h-8 flex items-center justify-center text-fg-muted hover:text-fg transition-colors"
               aria-label="附件功能（即将上线）"
             >
               <span class="i-lucide-plus text-lg"></span>
@@ -216,7 +210,7 @@
               ref="textareaRef"
               v-model="input"
               rows="1"
-              class="flex-1 bg-transparent border-none py-1 px-2 outline-none ring-0 focus:outline-none focus:ring-0 text-gray-800 dark:text-gray-100 placeholder-gray-400 resize-none leading-6 transition-all duration-200"
+              class="flex-1 bg-transparent border-none py-1 px-2 outline-none ring-0 focus:outline-none focus:ring-0 text-fg placeholder:text-fg-subtle resize-none leading-6 transition-all duration-200"
               style="
                 max-height: 196px;
                 min-height: 2rem;
@@ -231,7 +225,7 @@
 
             <button
               type="button"
-              class="flex-shrink-0 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              class="flex-shrink-0 w-8 h-8 flex items-center justify-center text-fg-muted hover:text-fg transition-colors"
               aria-label="语音输入（即将上线）"
             >
               <span class="i-lucide-mic text-lg"></span>
@@ -242,8 +236,8 @@
               class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all"
               :class="
                 !input || !input.trim() || isLoading
-                  ? 'bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
-                  : 'bg-black text-white dark:bg-white dark:text-black hover:scale-105 shadow-sm'
+                  ? 'bg-surface-muted text-fg-subtle'
+                  : 'bg-fg text-canvas hover:scale-105 shadow-sm'
               "
               :disabled="!input || !input.trim() || isLoading"
               aria-label="发送消息"
@@ -254,7 +248,7 @@
 
             <button
               v-show="showScrollButton"
-              class="absolute -top-14 left-1/2 -translate-x-1/2 w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-md flex items-center justify-center text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-300 z-10"
+              class="absolute -top-14 left-1/2 -translate-x-1/2 w-8 h-8 bg-surface border border-line rounded-full shadow-md flex items-center justify-center text-fg-muted hover:text-fg transition-all duration-300 z-10"
               @click.prevent="scrollToBottom"
             >
               <span class="i-lucide-arrow-down text-sm"></span>

@@ -23,7 +23,7 @@ const statusMap: Record<OrderStatus, { label: string; color: string }> = {
   1: { label: '已支付', color: 'text-blue-500' },
   2: { label: '已发货', color: 'text-purple-500' },
   3: { label: '已完成', color: 'text-green-500' },
-  4: { label: '已取消', color: 'text-gray-400' }
+  4: { label: '已取消', color: 'text-fg-subtle' }
 };
 
 const filteredOrders = computed(() => {
@@ -57,7 +57,7 @@ onMounted(loadOrders);
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">我的订单</h1>
+    <h1 class="text-2xl font-bold text-fg mb-6">我的订单</h1>
 
     <!-- Tabs -->
     <div class="flex gap-1 mb-6 overflow-x-auto pb-2 no-scrollbar">
@@ -68,7 +68,7 @@ onMounted(loadOrders);
         :class="
           activeTab === tab.value
             ? 'bg-blue-600 text-white'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+            : 'bg-surface-muted text-fg-muted hover:bg-elevated'
         "
         @click="activeTab = tab.value"
       >
@@ -77,26 +77,26 @@ onMounted(loadOrders);
     </div>
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-20">
-      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-gray-400" />
+      <div class="i-carbon-circle-dash w-8 h-8 animate-spin text-fg-subtle" />
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="text-center py-20">
       <div class="flex items-center justify-center gap-2 mb-4">
         <div
-          class="i-carbon-warning flex items-center justify-center items-center justify-center gap-2 w-12 h-12 text-gray-300"
+          class="i-carbon-warning flex items-center justify-center items-center justify-center gap-2 w-12 h-12 text-fg-subtle"
         />
       </div>
-      <p class="text-gray-500 mb-4">加载失败</p>
+      <p class="text-fg-muted mb-4">加载失败</p>
       <UButton color="neutral" variant="outline" @click="loadOrders">重试</UButton>
     </div>
 
     <!-- Empty -->
     <div v-else-if="filteredOrders.length === 0" class="text-center py-20">
       <div class="flex items-center justify-center gap-2 mb-4">
-        <div class="i-carbon-package text-5xl text-gray-300 mb-4" />
+        <div class="i-carbon-package text-5xl text-fg-subtle mb-4" />
       </div>
-      <p class="text-gray-500">暂无订单</p>
+      <p class="text-fg-muted">暂无订单</p>
     </div>
 
     <!-- Order List -->
@@ -104,19 +104,17 @@ onMounted(loadOrders);
       <div
         v-for="order in filteredOrders"
         :key="order.id"
-        class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 sm:p-6"
+        class="bg-surface-muted rounded-2xl p-4 sm:p-6"
       >
         <div class="flex items-center justify-between mb-3">
-          <span class="text-sm text-gray-500 dark:text-gray-400">订单号：{{ order.order_no }}</span>
+          <span class="text-sm text-fg-muted">订单号：{{ order.order_no }}</span>
           <span :class="[statusMap[order.status].color, 'text-sm font-medium']">
             {{ statusMap[order.status].label }}
           </span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400">{{ formatDate(order.created_at) }}</span>
-          <span class="text-lg font-bold text-gray-900 dark:text-white">
-            ¥{{ order.total_amount.toFixed(2) }}
-          </span>
+          <span class="text-xs text-fg-subtle">{{ formatDate(order.created_at) }}</span>
+          <span class="text-lg font-bold text-fg"> ¥{{ order.total_amount.toFixed(2) }} </span>
         </div>
       </div>
     </div>
