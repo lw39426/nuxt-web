@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUiStore } from '~/stores/ui';
 import { useAuthStore } from '~/stores/auth';
@@ -48,164 +48,46 @@ const menuItems = [
 const isScrolled = ref(false);
 const isMobileMenuOpen = ref(false);
 const sentinelRef = ref<HTMLElement | null>(null);
-const navShellRef = ref<HTMLElement | null>(null);
-const navContentRef = ref<HTMLElement | null>(null);
 
 // IntersectionObserver 实例
 let observer: IntersectionObserver | null = null;
-let flipAnimation: { cancel: any } | null = null;
-let isAnimating = false;
-let pendingScrolled: boolean | null = null;
 
-// 导航栏滚动动画
-const runFlip = async (nextScrolled: boolean) => {
-  const shell = navShellRef.value;
-  const content = navContentRef.value;
-  if (!shell || !content) {
-    isScrolled.value = nextScrolled;
-    return;
-  }
-
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
-    isScrolled.value = nextScrolled;
-    return;
-  }
-
-  // 动画进行中时不打断，排队最后一次状态，避免“突然跳终态”
-  if (isAnimating) {
-    pendingScrolled = nextScrolled;
-    return;
-  }
-
-  isAnimating = true;
-  pendingScrolled = null;
-
-  if (flipAnimation) {
-    flipAnimation.cancel();
-    flipAnimation = null;
-  }
-
-  // First
-  const first = shell.getBoundingClientRect();
-
-  // Apply final layout
-  isScrolled.value = nextScrolled;
-  await nextTick();
-
-  // Last
-  const last = shell.getBoundingClientRect();
-
-  const dx = first.left - last.left;
-  const dy = first.top - last.top;
-  const sx = first.width / last.width;
-  const sy = first.height / last.height;
-
-  const duration = 280;
-  const easing = 'cubic-bezier(0.2, 0, 0, 1)';
-
-  const fromTransform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
-
-  // 先同步设置初始 transform，避免部分设备上一帧闪到终态
-  shell.style.transformOrigin = 'top left';
-  shell.style.transform = fromTransform;
-
-  const invX = sx ? 1 / sx : 1;
-  const invY = sy ? 1 / sy : 1;
-  const fromContentTransform = `scale(${invX}, ${invY})`;
-  content.style.transformOrigin = 'top left';
-  content.style.transform = fromContentTransform;
-
-  // 强制一次 reflow，确保上面的 transform 生效后再开启动画
-  void shell.getBoundingClientRect();
-
-  // Shell: FLIP transform
-  const shellAnim = shell.animate(
-    [
-      {
-        transformOrigin: 'top left',
-        transform: fromTransform
-      },
-      {
-        transformOrigin: 'top left',
-        transform: 'translate3d(0, 0, 0) scale(1, 1)'
-      }
-    ],
-    { duration, easing, fill: 'forwards' }
-  );
-
-  // Content: inverse scale to avoid visual deformation during FLIP
-  const contentAnim = content.animate(
-    [
-      { transformOrigin: 'top left', transform: fromContentTransform },
-      { transformOrigin: 'top left', transform: 'scale(1, 1)' }
-    ],
-    { duration, easing, fill: 'forwards' }
-  );
-
-  // 用一个“门面”保存取消能力
-  flipAnimation = {
-    cancel() {
-      shellAnim.cancel();
-      contentAnim.cancel();
-    }
-  };
-
-  const finalize = () => {
-    flipAnimation = null;
-    isAnimating = false;
-    // 清理内联 transform，避免累计误差
-    shell.style.transform = '';
-    content.style.transform = '';
-
-    // 如果动画期间有新的目标状态，接着跑一次
-    if (pendingScrolled !== null && pendingScrolled !== isScrolled.value) {
-      const next = pendingScrolled;
-      pendingScrolled = null;
-      void runFlip(next);
-    } else {
-      pendingScrolled = null;
-    }
-  };
-
-  shellAnim.onfinish = finalize;
-  shellAnim.oncancel = finalize;
-};
-
-// 滚动状态切换 - 交给 FLIP 做 transform 动画
+/**
+ * 哨兵元素可见性变化回调，驱动导航栏形态切换。
+ * 仅切换 isScrolled 状态，视觉过渡完全交给 CSS transition：
+ * 外层为 fixed 定位已脱离文档流，因此 max-width / padding 的过渡
+ * 只重排导航栏自身子树，不会牵动整页 reflow，天然流畅且可中断。
+ */
 const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-  if (route.meta.forceCapsule) {
-    if (!isScrolled.value) void runFlip(true);
-    return;
-  }
   const entry = entries[0];
-
   if (!entry) return;
-  // 检查元素是否进入视口
-  const nextScrolled = !entry.isIntersecting;
-  if (nextScrolled === isScrolled.value) return;
-  void runFlip(nextScrolled);
+
+  // 强制胶囊态页面忽略滚动状态，恒定为胶囊
+  isScrolled.value = route.meta.forceCapsule ? true : !entry.isIntersecting;
 };
 
+// 监听强制胶囊态的路由 meta 变化（同一组件在软导航间复用时）
 watch(
   () => route.meta.forceCapsule,
   (newVal) => {
     if (newVal) {
-      void runFlip(true);
+      isScrolled.value = true;
     } else {
-      // 重新检查 observer 状态
-      isScrolled.value = false;
+      // 退出强制胶囊：依据哨兵当前是否已滚出视口决定形态，避免停留在错误状态
+      const el = sentinelRef.value;
+      isScrolled.value = el ? el.getBoundingClientRect().bottom <= 0 : false;
     }
   }
 );
 
-onMounted(async () => {
-  await nextTick();
-
+onMounted(() => {
+  // 强制胶囊态页面初始直接落位为胶囊
   if (route.meta.forceCapsule) {
     isScrolled.value = true;
   }
 
-  // 创建 IntersectionObserver - 超性能优化
+  // IntersectionObserver 监听哨兵，替代高频 scroll 事件，降低滚动开销。
+  // observe 后会立即触发一次回调，天然完成初始状态落位（刷新时恢复滚动位置也不会抖动）
   observer = new IntersectionObserver(handleIntersection, {
     root: null,
     threshold: 0,
@@ -219,40 +101,33 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (observer) observer.disconnect();
-  if (flipAnimation) {
-    flipAnimation.cancel();
-    flipAnimation = null;
-  }
 });
 </script>
 
 <template>
-  <!-- 哨兵元素 -->
+  <!-- 占位元素：外层导航改为 fixed 后脱离文档流，此处在正常流中占据等高空间，
+       将页面内容顶到导航下方（等效原 sticky 的占位行为）。强制胶囊态的沉浸式页面不占位。 -->
+  <div v-if="!route.meta.forceCapsule" class="h-[72px] md:h-[80px]" aria-hidden="true"></div>
+
+  <!-- 哨兵元素：位于文档流顶部，滚出视口即视为「已滚动」，由 IntersectionObserver 监听 -->
   <div
     ref="sentinelRef"
     class="absolute top-0 left-0 h-1 w-full pointer-events-none bg-transparent z-0"
   ></div>
 
-  <!-- 外层容器 -->
-  <div :class="[route.meta.forceCapsule ? 'fixed' : 'sticky', 'top-0 z-50 w-full']">
-    <nav class="relative flex justify-center py-2">
-      <!-- 导航壳：真实布局收缩（胶囊完整），动画用 FLIP 保持丝滑 -->
+  <!-- 外层容器：始终 fixed 悬浮。脱离文档流后，导航壳的宽度/内边距过渡只重排自身，
+       不触发整页 reflow —— 这是流畅切换的关键（参考 LongCat 的实现思路）。 -->
+  <div class="fixed top-0 left-0 right-0 z-50 w-full">
+    <nav class="relative flex justify-center px-4 py-2">
+      <!-- 导航壳：胶囊态 ⇄ 全宽态，纯 CSS transition 平滑过渡，天然可中断。
+           形态样式统一由 scoped CSS 的 .nav-shell / .is-capsule 声明，
+           避免 UnoCSS 同优先级工具类（如 max-w-3xl / max-w-7xl）互相覆盖导致状态错乱。 -->
       <div
-        ref="navShellRef"
-        class="nav-shell relative flex items-center justify-between duration-300 ease-out"
-        :class="[
-          isScrolled
-            ? `w-[92%] max-w-3xl bg-white/90 dark:bg-neutral-900/80 rounded-full shadow-lg ring-1 ring-black/5 dark:ring-white/10 px-6 py-3 md:px-8 md:py-4`
-            : 'w-full max-w-7xl bg-transparent px-6 py-3 md:px-8 md:py-4'
-        ]"
-        style="will-change: transform"
+        class="nav-shell w-full flex items-center justify-between px-6 py-3 md:px-8 md:py-4"
+        :class="{ 'is-capsule': isScrolled }"
       >
-        <!-- 内容层：反向缩放抵消 FLIP，避免文字/图标变形 -->
-        <div
-          ref="navContentRef"
-          class="flex items-center justify-between w-full"
-          style="will-change: transform"
-        >
+        <!-- 内容层 -->
+        <div class="flex items-center justify-between w-full">
           <!-- 左侧 Logo -->
           <div class="shrink-0">
             <a href="/" class="flex items-center gap-2">
@@ -318,7 +193,7 @@ onUnmounted(() => {
             <div v-else ref="dropdownWrapperRef" class="relative hidden md:block">
               <button
                 type="button"
-                class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm hover:ring-2 hover:ring-blue-300 transition-all"
+                class="h-8 w-8 rounded-full bg-brand flex items-center justify-center text-on-brand font-bold text-sm hover:ring-2 hover:ring-brand-hover transition-all"
                 @click="toggleDropdown"
               >
                 {{ avatarLetter }}
@@ -344,12 +219,8 @@ onUnmounted(() => {
       <!-- 移动端菜单面板 -->
       <div
         v-show="isMobileMenuOpen"
-        class="absolute top-full left-0 right-0 mx-auto flex flex-col gap-2 overflow-hidden transition-all duration-300 origin-top md:hidden"
-        :class="[
-          isScrolled
-            ? 'w-[92%] max-w-3xl bg-glass rounded-3xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2'
-            : 'w-[96%] max-w-7xl bg-glass rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2'
-        ]"
+        class="mobile-panel absolute top-full left-4 right-4 mx-auto w-auto flex flex-col gap-2 overflow-hidden bg-glass rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2 origin-top md:hidden"
+        :class="{ 'is-capsule': isScrolled }"
       >
         <a
           v-for="item in menuItems"
@@ -390,7 +261,7 @@ onUnmounted(() => {
     </nav>
   </div>
 
-  <!-- 下拉菜单：使用 Teleport 渲染到 body，避免被 nav-shell 的 contain: paint 裁剪 -->
+  <!-- 下拉菜单：使用 Teleport 渲染到 body，避免受导航栏层叠上下文与溢出裁剪影响 -->
   <Teleport to="body">
     <Transition
       enter-active-class="transition duration-100 ease-out"
@@ -442,26 +313,82 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 超轻量级 60 FPS 优化 */
 nav {
-  /* GPU 硬件加速 */
+  /* 提升为独立合成层，滚动时不参与父层重绘 */
   transform: translateZ(0);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 将绘制影响尽量限制在导航内部，降低滚动时重绘范围 */
+/**
+ * 导航壳形态过渡：全宽态（默认）⇄ 悬浮胶囊态（.is-capsule）。
+ * 因外层为 fixed，max-width 过渡只重排导航壳自身，不牵动整页 reflow，
+ * 故流畅且天然可中断。缓动参考 LongCat（Material 标准 cubic-bezier）。
+ */
 .nav-shell {
-  contain: paint;
+  position: relative;
+  max-width: 80rem; /* 全宽态：max-w-7xl */
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-bg {
-  transform-origin: center;
+/**
+ * 胶囊外观（背景 / 圆角 / 阴影）全部承载在伪元素上，仅过渡 opacity。
+ * opacity 由合成器直接处理，不触发重绘；相比过渡 background-color + box-shadow
+ * （两者每帧都需重新绘制阴影模糊区域）显著降低滚动时的主线程与光栅化开销。
+ * 圆角恒为 9999px —— 全宽态时该层 opacity 为 0，不可见，故无需过渡圆角。
+ */
+.nav-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-color: var(--glass-bg);
+  /* 外阴影 + 一道内环，还原原 ring-1 ring-black/5 的描边细节 */
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1),
+    inset 0 0 0 1px rgb(0 0 0 / 0.05);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 确保合成层优化 */
-[style*='will-change'] {
-  will-change: transform;
+/* 内容层置于装饰伪元素之上，避免被背景遮挡 */
+.nav-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.nav-shell.is-capsule {
+  max-width: 48rem; /* 胶囊态：max-w-3xl */
+}
+
+.nav-shell.is-capsule::before {
+  opacity: 1;
+}
+
+.dark .nav-shell::before {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.3),
+    0 4px 6px -4px rgb(0 0 0 / 0.3),
+    inset 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+
+/* 移动端菜单面板：宽度跟随导航壳形态同步收缩 */
+.mobile-panel {
+  max-width: 80rem;
+  transition: max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-panel.is-capsule {
+  max-width: 48rem;
+}
+
+/* 尊重系统「减少动态效果」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .nav-shell,
+  .mobile-panel {
+    transition: none;
+  }
 }
 
 /* 暗黑模式支持 */
