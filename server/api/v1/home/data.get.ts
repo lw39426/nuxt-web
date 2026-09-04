@@ -1,5 +1,6 @@
 import { getMockStoreCategories, getMockStoreSeries } from '../../../utils/mockStoreData'
 import { getMockArticles } from '../../../utils/mockArticles'
+import { normalizeProductList } from '../../../utils/product'
 
 /**
  * 构造首页聚合数据的 Mock 结果
@@ -45,5 +46,20 @@ function buildHomeMock() {
  * 首页聚合数据接口
  * GET /api/v1/home/data
  * 优先代理 Flask，失败时降级为本地 Mock
+ *
+ * Flask 聚合接口的商品为 snake_case 原始形状（无 code / main_image / salePrice），
+ * 统一经 normalizeProductList 适配为前端 Product 契约后再下发
  */
-export default defineEventHandler((event) => withMockFallback(event, '/home/data', buildHomeMock))
+export default defineEventHandler(async (event) => {
+  const res = await withMockFallback(event, '/home/data', buildHomeMock)
+
+  if (res?.data) {
+    res.data.hot_products = normalizeProductList(res.data.hot_products)
+    res.data.new_products = normalizeProductList(res.data.new_products)
+    if (res.data.featured) {
+      res.data.featured.products = normalizeProductList(res.data.featured.products)
+    }
+  }
+
+  return res
+})
