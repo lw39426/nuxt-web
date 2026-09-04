@@ -124,6 +124,10 @@ watch(currentRegionSlug, async (newSlug) => {
   // 获取当前新地区的角色数据
   await loadRegionCharacters(newSlug);
 
+  // 等新地区角色渲染后，让头像条定位到当前高亮角色
+  await nextTick();
+  followActiveCharacter('auto');
+
   // 切换地区时预加载该地区所有角色的立绘和头像
   preloadImages(regions.value[newSlug]);
 
@@ -131,50 +135,46 @@ watch(currentRegionSlug, async (newSlug) => {
   idlePreloadNextRegion(Object.values(regions.value), newSlug);
 });
 
-const charIndex = computed(() => parseInt((route.query.char as string) || '0'));
+const charCount = computed(() => regions.value[currentRegionSlug.value]?.characters.length ?? 0);
 
-// --- 轮播图逻辑 ---
-const carouselOffset = ref(0);
-const CAROUSEL_VISIBLE_COUNT = 6;
-const CAROUSEL_ITEM_WIDTH = 110;
-const CAROUSEL_GAP = 32; // gap-8 = 32px
-const _CAROUSEL_STEP = CAROUSEL_ITEM_WIDTH + CAROUSEL_GAP;
+// URL 中的 char 参数兜底：非法或越界时钳制到有效区间，避免页面进入"暂无角色"死状态
+const charIndex = computed(() => {
+  const raw = Number((route.query.char as string) ?? 0);
+  const idx = Number.isFinite(raw) ? Math.trunc(raw) : 0;
+  const count = charCount.value;
+  if (count <= 0) return 0;
+  return Math.min(Math.max(idx, 0), count - 1);
+});
 
-// 移动端轮播设置
+// 移动端设置
 const isMobile = ref(false);
-const MOBILE_CAROUSEL_ITEM_WIDTH = 96; // w-24 = 96px
-const MOBILE_CAROUSEL_GAP = 16; // gap-4 = 16px
-const MOBILE_CAROUSEL_STEP = MOBILE_CAROUSEL_ITEM_WIDTH + MOBILE_CAROUSEL_GAP;
 const MOBILE_PRELOAD_LOOKAHEAD = 2;
+
+// 将指定角色头像滚动到头像条可视区居中
+const scrollItemIntoCenter = (index: number, behavior: ScrollBehavior) => {
+  const container = carouselContainer.value;
+  const item = container?.querySelector<HTMLElement>(`[data-char-index="${index}"]`);
+  if (!container || !item) return;
+  const maxScroll = container.scrollWidth - container.clientWidth;
+  if (maxScroll <= 0) return;
+  const containerRect = container.getBoundingClientRect();
+  const itemRect = item.getBoundingClientRect();
+  const delta = itemRect.left + itemRect.width / 2 - (containerRect.left + containerRect.width / 2);
+  container.scrollTo({
+    left: Math.min(Math.max(container.scrollLeft + delta, 0), maxScroll),
+    behavior
+  });
+};
+
+const followActiveCharacter = (behavior: ScrollBehavior = 'smooth') => {
+  scrollItemIntoCenter(charIndex.value, behavior);
+};
 
 // 处理窗口大小改变
 const handleResize = () => {
   isMobile.value = window.innerWidth < 640;
+  followActiveCharacter('auto');
 };
-
-// 获取当前轮播步长
-const carouselStep = computed(() => {
-  return isMobile.value ? MOBILE_CAROUSEL_STEP : _CAROUSEL_STEP;
-});
-
-const maxCarouselOffset = computed(() => {
-  const charCount = currentRegion.value.characters.length;
-  if (charCount <= CAROUSEL_VISIBLE_COUNT) return 0;
-  return charCount - CAROUSEL_VISIBLE_COUNT;
-});
-
-const slideCarousel = (direction: 'left' | 'right') => {
-  if (direction === 'left' && carouselOffset.value > 0) {
-    carouselOffset.value--;
-  } else if (direction === 'right' && carouselOffset.value < maxCarouselOffset.value) {
-    carouselOffset.value++;
-  }
-};
-
-// 监听地区切换，重置轮播图位置
-watch(currentRegionSlug, () => {
-  carouselOffset.value = 0;
-});
 
 const currentRegion = computed(
   () =>
@@ -280,6 +280,131 @@ const switchCharacter = (index: number) => {
   // Prevent animation if clicking the same character
   if (index === charIndex.value) return;
   router.push({ query: { ...route.query, char: index } });
+};
+
+// --- 循环切换：末尾再前进回到第一个，开头再后退到最后一个 ---
+const selectNextCharacter = () => {
+  const count = charCount.value;
+  if (!count) return;
+  switchCharacter((charIndex.value + 1) % count);
+};
+
+const selectPrevCharacter = () => {
+  const count = charCount.value;
+  if (!count) return;
+  switchCharacter((charIndex.value - 1 + count) % count);
+};
+
+// 高亮角色变化（箭头/点击头像/滑动）时，头像条平滑跟随；flush post 确保新卡片已渲染
+watch(charIndex, () => followActiveCharacter('smooth'), { flush: 'post' });
+
+// --- 头像条鼠标拖拽（触摸端保留原生滚动） ---
+const stripDragState = {
+  pointerId: -1,
+  startX: 0,
+  startScrollLeft: 0,
+  moved: false
+};
+const isStripDragging = ref(false);
+
+const onStripPointerDown = (event: PointerEvent) => {
+  if (event.pointerType !== 'mouse' || event.button !== 0) return;
+  if (stripDragState.pointerId !== -1) return;
+  const container = carouselContainer.value;
+  if (!container) return;
+  stripDragState.pointerId = event.pointerId;
+  stripDragState.startX = event.clientX;
+  stripDragState.startScrollLeft = container.scrollLeft;
+  stripDragState.moved = false;
+  // 捕获在按下目标上：拖出容器后仍能收到 move/up，且 click 仍命中头像本身
+  (event.target as Element | null)?.setPointerCapture?.(event.pointerId);
+};
+
+const onStripPointerMove = (event: PointerEvent) => {
+  if (event.pointerId !== stripDragState.pointerId) return;
+  const container = carouselContainer.value;
+  if (!container) return;
+  const dx = event.clientX - stripDragState.startX;
+  if (!stripDragState.moved && Math.abs(dx) <= 5) return;
+  if (!stripDragState.moved) {
+    stripDragState.moved = true;
+    isStripDragging.value = true;
+  }
+  container.scrollLeft = stripDragState.startScrollLeft - dx;
+};
+
+const onStripPointerUp = (event: PointerEvent) => {
+  if (event.pointerId !== stripDragState.pointerId) return;
+  stripDragState.pointerId = -1;
+  isStripDragging.value = false;
+  // moved 留给 click 捕获阶段消费，避免拖拽松手后误触发角色切换
+  if (!stripDragState.moved) return;
+  const count = charCount.value;
+  if (!count) return;
+  // 等 Vue 恢复 snap 类后再吸附，避免与浏览器滚动状态竞态
+  nextTick(() => {
+    const container = carouselContainer.value;
+    if (!container) return;
+    // 找中心最接近容器中心的卡片（与 snap-center 对齐）
+    const containerCenter = container.getBoundingClientRect().left + container.clientWidth / 2;
+    let nearest = 0;
+    let bestDist = Infinity;
+    container.querySelectorAll<HTMLElement>('[data-char-index]').forEach((el, index) => {
+      const rect = el.getBoundingClientRect();
+      const dist = Math.abs(rect.left + rect.width / 2 - containerCenter);
+      if (dist < bestDist) {
+        bestDist = dist;
+        nearest = index;
+      }
+    });
+    scrollItemIntoCenter(nearest, 'smooth');
+  });
+};
+
+const onStripClickCapture = (event: MouseEvent) => {
+  if (!stripDragState.moved) return;
+  stripDragState.moved = false;
+  event.preventDefault();
+  event.stopPropagation();
+};
+
+// --- 主区域滑动切换角色（移动端，左右滑同样循环） ---
+const SWIPE_MIN_DISTANCE = 56;
+const mainTouchState = {
+  startX: 0,
+  startY: 0,
+  valid: false
+};
+
+const onMainTouchStart = (event: TouchEvent) => {
+  if (event.touches.length !== 1) {
+    mainTouchState.valid = false;
+    return;
+  }
+  // 头像条、侧边栏、地区下拉内的手势不参与切换角色
+  const target = event.target as Element | null;
+  if (target?.closest('[data-swipe-exclude]')) {
+    mainTouchState.valid = false;
+    return;
+  }
+  mainTouchState.startX = event.touches[0].clientX;
+  mainTouchState.startY = event.touches[0].clientY;
+  mainTouchState.valid = true;
+};
+
+const onMainTouchEnd = (event: TouchEvent) => {
+  if (!mainTouchState.valid) return;
+  mainTouchState.valid = false;
+  const touch = event.changedTouches[0];
+  if (!touch) return;
+  const dx = touch.clientX - mainTouchState.startX;
+  const dy = touch.clientY - mainTouchState.startY;
+  if (Math.abs(dx) < SWIPE_MIN_DISTANCE || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  if (dx < 0) {
+    selectNextCharacter();
+  } else {
+    selectPrevCharacter();
+  }
 };
 
 // --- GSAP Transition Hooks ---
@@ -558,7 +683,7 @@ watch(
 const preloadImages = (region: Region | undefined) => {
   if (!region?.characters) return;
   const chars = region.characters;
-  const active = Number.isNaN(charIndex.value) ? 0 : Math.max(0, charIndex.value);
+  const active = charIndex.value;
 
   void cacheImage(region.bgDay, { decode: !isMobile.value });
 
@@ -639,6 +764,8 @@ onMounted(async () => {
   if (initialChar) {
     await Promise.all([cacheImage(initialChar.coverImg), cacheImage(initialChar.avatar)]);
     displayCharacter.value = initialChar;
+    await nextTick();
+    followActiveCharacter('auto');
   }
 
   // 5. 利用浏览器空闲时间，全量预加载所有地区的基础背景图，并预加载下一个地区的角色
@@ -655,7 +782,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="relative w-full h-screen overflow-hidden bg-black text-white font-sans">
+  <div
+    class="relative w-full h-screen overflow-hidden bg-black text-white font-sans"
+    @touchstart.passive="onMainTouchStart"
+    @touchend.passive="onMainTouchEnd"
+  >
     <!-- 1. 背景层 Background Layer -->
     <div class="absolute inset-0 z-0">
       <Transition
@@ -691,7 +822,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- 2. 侧边栏 Sidebar (Region Selector) -->
-    <ul class="character__sidebar hidden sm:block">
+    <ul class="character__sidebar hidden sm:block" data-swipe-exclude>
       <li
         v-for="city in sidebarCities"
         :key="city.slug"
@@ -711,6 +842,7 @@ onBeforeUnmount(() => {
     <!-- 移动端地区选择 (Region Selector) -->
     <BaseSelect
       class="sm:hidden absolute top-24 left-4 z-20"
+      data-swipe-exclude
       :fluid="false"
       variant="overlay"
       size="sm"
@@ -726,7 +858,7 @@ onBeforeUnmount(() => {
     >
       <!-- Left: 文字信息 Text Info (Absolute Positioning) -->
       <div
-        class="sm:absolute sm:left-[18%] sm:top-[18vh] sm:w-[35%] sm:min-w-[460px] sm:max-w-[640px] sm:pointer-events-auto absolute left-4 top-[35vh] w-[52vw] pt-0 px-0 sm:z-20 z-30 pointer-events-auto"
+        class="sm:absolute sm:left-[18%] sm:top-[18vh] sm:w-[35%] sm:min-w-[460px] sm:max-w-[640px] sm:pointer-events-auto absolute left-4 top-[34vh] w-[57vw] pt-0 px-0 sm:z-20 z-30 pointer-events-auto"
       >
         <Transition
           appear
@@ -784,7 +916,7 @@ onBeforeUnmount(() => {
 
             <!-- Quote -->
             <div
-              class="info-item info-item-4 italic text-white/60 text-sm sm:text-lg border-l-2 border-white/20 pl-4 pb-2 sm:pb-0 w-[50vw] sm:max-w-none leading-snug"
+              class="info-item info-item-4 italic text-white/90 text-sm sm:text-lg border-l-2 border-white/40 bg-black/45 backdrop-blur-md rounded-lg pl-4 pr-4 py-2.5 sm:py-3 w-[50vw] sm:w-fit sm:max-w-none leading-snug"
             >
               "{{ currentCharacter.quote }}"
             </div>
@@ -845,13 +977,15 @@ onBeforeUnmount(() => {
     <!-- 4. 角色选择器 Bottom Carousel (Character Selector) -->
     <div
       class="absolute bottom-0 left-0 w-full h-auto sm:h-[190px] z-30 flex justify-center items-end pointer-events-auto pb-6 sm:pb-4 px-2 sm:px-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent"
+      data-swipe-exclude
     >
       <div class="relative flex items-center w-full sm:w-auto">
         <!-- Left Arrow -->
         <button
-          :disabled="carouselOffset === 0"
-          class="hidden sm:flex absolute -left-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-40"
-          @click="slideCarousel('left')"
+          type="button"
+          aria-label="上一个角色"
+          class="hidden sm:flex absolute -left-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all z-40"
+          @click="selectPrevCharacter"
         >
           <span class="i-carbon-chevron-left text-2xl"></span>
         </button>
@@ -861,16 +995,21 @@ onBeforeUnmount(() => {
         <!-- Mobile: responsive width -->
         <div
           ref="carouselContainer"
-          class="w-full sm:w-[820px] overflow-x-auto pt-6 sm:pt-6 -mt-6 pb-4 -mb-4 snap-x snap-mandatory sm:overflow-hidden"
+          class="w-full sm:w-[820px] overflow-x-auto pt-6 sm:pt-6 -mt-6 pb-4 -mb-4 no-scrollbar select-none"
+          :class="isStripDragging ? 'cursor-grabbing' : 'snap-x snap-mandatory cursor-grab'"
+          data-swipe-exclude
+          @pointerdown="onStripPointerDown"
+          @pointermove="onStripPointerMove"
+          @pointerup="onStripPointerUp"
+          @pointercancel="onStripPointerUp"
+          @click.capture="onStripClickCapture"
         >
-          <div
-            class="flex items-center gap-4 sm:gap-8 no-scrollbar transition-transform duration-500 ease-out px-2 sm:px-0"
-            :style="{ transform: `translateX(-${carouselOffset * carouselStep}px)` }"
-          >
+          <div class="flex items-center gap-4 sm:gap-8 px-2 sm:px-0">
             <div
               v-for="(char, index) in currentRegion.characters"
               :key="char.id"
               class="relative cursor-pointer transition-all duration-300 group flex-shrink-0 snap-center"
+              :data-char-index="index"
               @click="switchCharacter(index)"
               @mouseenter="onAvatarEnter"
               @mouseleave="onAvatarLeave"
@@ -886,7 +1025,12 @@ onBeforeUnmount(() => {
               >
                 <!-- Avatar Image -->
                 <div class="relative w-full aspect-square bg-gray-900">
-                  <img :src="char.avatar" class="w-full h-full object-cover" loading="lazy" />
+                  <UiImage
+                    :src="char.avatar"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    draggable="false"
+                  />
                 </div>
 
                 <!-- Name Tag -->
@@ -903,9 +1047,10 @@ onBeforeUnmount(() => {
 
         <!-- Right Arrow -->
         <button
-          :disabled="carouselOffset >= maxCarouselOffset"
-          class="hidden sm:flex absolute -right-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed z-40"
-          @click="slideCarousel('right')"
+          type="button"
+          aria-label="下一个角色"
+          class="hidden sm:flex absolute -right-16 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/80 hover:text-white transition-all z-40"
+          @click="selectNextCharacter"
         >
           <span class="i-carbon-chevron-right text-2xl"></span>
         </button>
@@ -962,6 +1107,8 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 187px 0 0;
   list-style: none;
+  /* 空白区域放行点击，否则会遮住左下角的“上一个角色”箭头 */
+  pointer-events: none;
 }
 .character__sidebar::before {
   position: absolute;
@@ -984,6 +1131,7 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
   padding-left: 56px;
   background: 18px center no-repeat;
+  pointer-events: auto;
   /* background-image: url(''); */
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQyIDc5LjE2MDkyNCwgMjAxNy8wNy8xMy0wMTowNjozOSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpERTgyOUEzQkFBMDQxMUU5QjQ2REMwOUFGODE3Qzc5MiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpERTgyOUEzQ0FBMDQxMUU5QjQ2REMwOUFGODE3Qzc5MiI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkRFODI5QTM5QUEwNDExRTlCNDZEQzA5QUY4MTdDNzkyIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkRFODI5QTNBQUEwNDExRTlCNDZEQzA5QUY4MTdDNzkyIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+8pIp1gAAAHhJREFUeNrs18EKgCAQRVGNftsJ6sNHW0QuXNUzBroPZiUMB0ZFs7unyFlS8AAECBAgQIAAAQLsY62KtOP5YBXV5neKqu8MnBQ5C3fF3vZX7EF/uPbpHrTIIx4hZYdkFV4IezfWQ9U08y8GCBAgQIAAAQL8NbAKMAD/HXfdYwQY6gAAAABJRU5ErkJggg==);
   background-size: 40px;
