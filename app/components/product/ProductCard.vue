@@ -5,8 +5,8 @@
       class="relative w-full h-[160px] sm:h-[256px] aspect-[4/5] overflow-hidden bg-surface-muted rounded-xl"
     >
       <NuxtLink :to="productDetailPath" class="block w-full h-full mx-auto">
-        <img
-          :src="product?.main_image || ''"
+        <UiImage
+          :src="product?.main_image"
           :alt="product?.name || ''"
           loading="lazy"
           decoding="async"
@@ -20,7 +20,8 @@
       >
         <!-- Favorite Button -->
         <button
-          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface shadow-md flex items-center justify-center text-fg-subtle hover:text-red-500 hover:bg-elevated transition-colors"
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface dark:bg-white/20 shadow-md flex items-center justify-center text-fg-muted dark:text-fg hover:text-red-500 hover:bg-elevated transition-colors disabled:opacity-60"
+          :disabled="favoritePending"
           @click.stop="toggleFavorite"
         >
           <div
@@ -40,7 +41,7 @@
           product.brand || 'Brand'
         }}</span>
         <span
-          v-for="tag in product.tags"
+          v-for="tag in product.tags || []"
           :key="tag.id"
           class="text-[10px] px-1.5 py-0.5 rounded text-white"
           :style="{ backgroundColor: tag.color || '#3b82f6' }"
@@ -78,10 +79,11 @@
 
         <!-- Add to Bag Button -->
         <button
-          class="w-full py-2 border border-fg rounded-lg text-xs sm:text-sm font-medium hover:bg-fg hover:text-canvas transition-colors"
+          class="w-full py-2 border border-fg rounded-lg text-xs sm:text-sm font-medium hover:bg-fg hover:text-canvas transition-colors disabled:opacity-60"
+          :disabled="cartPending"
           @click.stop="addToCart"
         >
-          Add to bag
+          {{ cartPending ? '加入中…' : 'Add to bag' }}
         </button>
       </div>
     </div>
@@ -90,12 +92,29 @@
 
 <script setup lang="ts">
 import type { Product } from '~/types/product';
+import { useCartApi } from '~/composables/api/cart';
+import { useAuthStore } from '~/stores/auth';
+import { useUiStore } from '~/stores/ui';
+import { useFavoriteStore } from '~/stores/favorite';
 
 const props = defineProps<{
   product: Product;
 }>();
-// console.log(props.product);
-const isFavorite = ref(false);
+
+const authStore = useAuthStore();
+const uiStore = useUiStore();
+// 收藏态统一走全局缓存 store：N 张卡片共享 1 次全量拉取，卡片自身 0 查询请求
+const favoriteStore = useFavoriteStore();
+const { add: addToCartApi } = useCartApi();
+// useToast 属客户端能力：SSR 的 setup 阶段调用会使 vite-node worker 直接崩溃
+// （曾导致全站 500），这里沿用 useApi 的写法仅在客户端实例化
+const toast = import.meta.client ? useToast() : null;
+const favoritePending = ref(false);
+const cartPending = ref(false);
+
+/** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
+const isFavorite = computed(() => favoriteStore.has('product', props.product.id));
+
 const productDetailPath = computed(() => `/products/${props.product.code || props.product.id}`);
 
 /** 价格格式化（假设接口返回单位为分） */
@@ -117,16 +136,46 @@ const originalPrice = computed(() => {
   return formatPrice(props.product.price);
 });
 
-/** 切换当前商品的收藏状态 */
-const toggleFavorite = () => {
-  isFavorite.value = !isFavorite.value;
+/** 预热收藏缓存：并发去重（N 张卡片共享 1 个 Promise），命中缓存则 0 请求 */
+onMounted(() => {
+  favoriteStore.ensureLoaded().catch(() => {
+    // 加载失败静默降级为"未收藏"展示，不阻塞商品卡片渲染；下次进入自动重试
+  });
+});
+
+/** 收藏 / 取消收藏：未登录唤起登录弹窗；乐观更新与失败回滚均在 store 内完成 */
+const toggleFavorite = async () => {
+  if (!authStore.isAuthenticated) {
+    uiStore.openAuthModal('login');
+    return;
+  }
+  if (favoritePending.value) return;
+  favoritePending.value = true;
+  try {
+    // store 内部：先改本地 Set（UI 立即反馈）→ 请求 → 成功按后端回正 / 失败回滚
+    await favoriteStore.toggle('product', props.product.id);
+  } catch {
+    // 失败提示由 useApi 全局 toast 兜底，本地状态已在 store 内回滚
+  } finally {
+    favoritePending.value = false;
+  }
 };
 
-/** 将当前商品加入购物车 */
-const addToCart = () => {
-  // Implement add to cart logic
-  if (import.meta.dev) {
-    console.log('Added to cart:', props.product?.name);
+/** 加入购物车（固定 1 件） */
+const addToCart = async () => {
+  if (!authStore.isAuthenticated) {
+    uiStore.openAuthModal('login');
+    return;
+  }
+  if (cartPending.value) return;
+  cartPending.value = true;
+  try {
+    await addToCartApi({ product_code: props.product.code, quantity: 1 });
+    toast?.add({ id: `cart-add-${props.product.id}`, title: '已加入购物车', color: 'success' });
+  } catch {
+    // 失败提示由 useApi 全局 toast 兜底
+  } finally {
+    cartPending.value = false;
   }
 };
 </script>

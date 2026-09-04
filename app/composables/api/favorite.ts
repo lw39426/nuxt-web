@@ -18,6 +18,7 @@ export interface FavoriteItem {
   item_image: string
   item_description: string
   created_at: string
+  price?: number
 }
 
 /** 收藏列表查询参数 */
@@ -54,11 +55,13 @@ export function useFavoriteApi() {
   /**
    * 获取收藏列表
    * GET /favorite/list
+   * options.suppressErrorToast: 后台静默同步场景传 true，失败不弹全局错误提示
    */
-  async function list(params?: FavoriteListParams) {
+  async function list(params?: FavoriteListParams, options?: { suppressErrorToast?: boolean }) {
     return await get<{ favorites: FavoriteItem[]; pagination: Pagination }>(
       '/favorite/list',
-      params
+      params,
+      options
     )
   }
 

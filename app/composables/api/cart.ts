@@ -33,8 +33,9 @@ export function useCartApi() {
   /**
    * 加入购物车
    * POST /cart/add
+   * 后端以 product_code 定位商品（文档中的 product_id 与实际后端不符）
    */
-  async function add(payload: { product_id: number; quantity: number }) {
+  async function add(payload: { product_code: string; quantity: number }) {
     return await post<CartItem>('/cart/add', payload)
   }
 
