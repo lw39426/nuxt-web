@@ -61,16 +61,16 @@ const askAI = () => {
     />
 
     <div class="section-container relative z-10">
-      <div class="text-center max-w-3xl mx-auto mb-16 md:mb-24">
-        <p
-          class="section-header-label text-purple-600 dark:text-purple-400 flex items-center justify-center gap-2"
-        >
-          <span>AI 赋能</span>
-          <span class="i-lucide-sparkles text-sm animate-bounce" />
-        </p>
-        <h2 class="section-header-title">你的专属 AI 助手</h2>
-        <p class="section-header-desc mx-auto">不只是聊天机器人，更是懂你的购物顾问</p>
-      </div>
+      <UiSectionHeader
+        class="max-w-3xl mx-auto mb-16 md:mb-24"
+        align="center"
+        tone="accent"
+        label="AI 赋能"
+        icon="i-lucide-sparkles"
+        title="你的专属 AI 助手"
+        highlight="AI 助手"
+        description="不只是聊天机器人，更是懂你的购物顾问"
+      />
 
       <!-- 能力卡片 + 对话演示 -->
       <div class="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">

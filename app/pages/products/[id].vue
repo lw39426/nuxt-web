@@ -30,7 +30,7 @@
           <div
             class="aspect-[4/3] bg-surface-muted rounded-2xl overflow-hidden flex items-center justify-center relative group"
           >
-            <img
+            <UiImage
               :src="activeImage"
               class="w-full h-full object-contain p-4 sm:p-8 lg:p-12 transition-transform duration-500 group-hover:scale-105"
             />
@@ -44,11 +44,11 @@
             <button
               v-for="img in product?.images"
               :key="img"
-              class="w-20 h-20 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0 rounded-xl border-2 overflow-hidden bg-surface-muted transition-all"
+              class="w-20 h-20 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0 rounded-xl border-1 overflow-hidden bg-surface-muted transition-all"
               :class="activeImage === img ? 'border-fg' : 'border-transparent hover:border-line'"
               @click="activeImage = img"
             >
-              <img :src="img" class="w-full h-full object-contain p-2" />
+              <UiImage :src="img" class="w-full h-full object-contain p-2" />
             </button>
           </div>
           <!-- 商品富文本展示 -->

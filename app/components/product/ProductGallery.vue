@@ -16,7 +16,7 @@ const activeImageIndex = ref(0);
         "
         @click="activeImageIndex = idx"
       >
-        <img
+        <UiImage
           :src="img"
           class="w-full h-full object-cover"
           loading="lazy"
@@ -30,7 +30,7 @@ const activeImageIndex = ref(0);
     <div
       class="flex-1 bg-surface-muted rounded-xl overflow-hidden relative group aspect-square md:aspect-auto"
     >
-      <img
+      <UiImage
         :src="images[activeImageIndex]"
         class="w-full h-full object-cover object-center transition duration-500 group-hover:scale-105"
         alt="Product Image"

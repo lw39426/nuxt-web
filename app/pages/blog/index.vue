@@ -5,25 +5,6 @@ import { useIntersectionObserver } from '@vueuse/core';
 
 const { list, categories: fetchCategories } = useArticleApi();
 
-// Hero Post 暂时使用 Mock 数据
-const heroPost: BlogPost = {
-  id: 1,
-  code: '1',
-  title: 'Introducing the Mintlify Agent to write documentation with AI',
-  excerpt: 'Automatically update documentation with context from PRs, Slack threads, or links.',
-  category: 'Announcements',
-  image:
-    'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=2070&auto=format&fit=crop',
-  date: 'September 29, 2025 • 2 min read',
-  author: {
-    name: 'Han Wang',
-    role: '创始人',
-    avatar:
-      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=60'
-  },
-  isHero: true
-};
-
 /** 安全格式化日期（无效/缺失时返回空串） */
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '';
@@ -81,6 +62,12 @@ const loadMoreTrigger = ref<HTMLElement | null>(null);
 
 /** 空数据状态：非加载中且无文章 */
 const isEmpty = computed(() => !isLoading.value && displayedPosts.value.length === 0);
+
+/** Hero 文章：与列表同源取第一条；列表渲染时跳过它避免重复 */
+const heroPost = computed(() => displayedPosts.value[0] ?? null);
+const listPosts = computed(() =>
+  heroPost.value ? displayedPosts.value.slice(1) : displayedPosts.value
+);
 
 /** 加载文章列表 */
 const loadArticles = async (reset = false) => {
@@ -152,13 +139,14 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-canvas pb-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <!-- 头部宣传区域Hero Post -->
+      <!-- 头部宣传区域Hero Post：取文章列表第一条 -->
       <NuxtLink
-        :to="`/blog/${heroPost.id}`"
+        v-if="heroPost"
+        :to="`/blog/${heroPost.code}`"
         class="group relative block w-full aspect-[2/1] md:aspect-[2.5/1] rounded-3xl overflow-hidden mb-12 isolate transform-gpu"
       >
         <!-- 底层背景图 -->
-        <img
+        <UiImage
           :src="heroPost.image"
           :alt="heroPost.title"
           class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -180,14 +168,15 @@ onMounted(() => {
           </p>
 
           <div class="flex items-center gap-3">
-            <img
-              :src="heroPost.author.avatar"
-              :alt="heroPost.author.name"
-              class="h-10 w-10 rounded-full border-2 border-white/20"
+            <UiImage
+              :src="heroPost.author?.avatar"
+              :alt="heroPost.author?.name || ''"
+              class="h-10 w-10 rounded-full border-2 border-white/20 object-cover"
+              variant="avatar"
             />
             <div class="flex flex-col">
-              <span class="text-sm font-bold text-white">{{ heroPost.author.name }}</span>
-              <span class="text-xs text-gray-400">{{ heroPost.author.role }}</span>
+              <span class="text-sm font-bold text-white">{{ heroPost.author?.name || '' }}</span>
+              <span class="text-xs text-gray-400">{{ heroPost.author?.role }}</span>
             </div>
           </div>
         </div>
@@ -241,7 +230,7 @@ onMounted(() => {
 
       <!-- 文章内容布局Blog Grid -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20">
-        <BlogCard v-for="blogPost in displayedPosts" :key="blogPost.id" :blog-post="blogPost" />
+        <BlogCard v-for="blogPost in listPosts" :key="blogPost.id" :blog-post="blogPost" />
       </div>
 
       <!-- 加载更多触发器 / 底部状态 -->

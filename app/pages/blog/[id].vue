@@ -170,21 +170,21 @@ const readTime = computed(() => {
           <span class="text-fg-muted">{{ readTime }}</span>
         </div>
         <div class="flex items-center justify-center gap-3 mb-12">
-          <!-- 有头像时显示头像，否则降级显示姓名首字母 -->
-          <img
-            v-if="authorAvatar"
+          <!-- 头像缺失或加载失败时降级显示姓名首字母 -->
+          <UiImage
             :src="authorAvatar"
             :alt="authorName"
             class="h-12 w-12 rounded-full object-cover"
-          />
-          <div
-            v-else
-            class="h-12 w-12 rounded-full bg-surface-muted flex items-center justify-center"
+            variant="avatar"
           >
-            <span class="text-lg font-bold text-fg-muted">
-              {{ authorName.charAt(0) }}
-            </span>
-          </div>
+            <template #fallback>
+              <div class="h-12 w-12 rounded-full bg-surface-muted flex items-center justify-center">
+                <span class="text-lg font-bold text-fg-muted">
+                  {{ authorName.charAt(0) }}
+                </span>
+              </div>
+            </template>
+          </UiImage>
           <div class="text-left">
             <div class="font-bold text-fg">{{ authorName }}</div>
             <div class="text-sm text-fg-muted">
@@ -197,7 +197,7 @@ const readTime = computed(() => {
       <!-- Featured Image -->
       <div v-if="post.image" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div class="aspect-[2/1] rounded-3xl overflow-hidden shadow-2xl">
-          <img :src="post.image" :alt="post.title" class="w-full h-full object-cover" />
+          <UiImage :src="post.image" :alt="post.title" class="w-full h-full object-cover" />
         </div>
       </div>
 

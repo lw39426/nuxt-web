@@ -29,7 +29,7 @@
               href="#"
               class="text-fg-muted text-sm flex items-center gap-1 font-medium hover:text-fg md:justify-end"
             >
-              查找 Apple Store 零售店
+              线下门店查询
               <div class="i-carbon-chevron-right text-xs" />
             </a>
           </div>
@@ -56,7 +56,7 @@
               <div
                 class="h-[78px] p-2 w-auto flex items-end justify-center group-hover/item:-translate-y-1 transition-transform duration-300 ease-out"
               >
-                <img
+                <UiImage
                   :src="category.image"
                   :alt="category.name"
                   class="h-full w-auto object-contain"
@@ -98,7 +98,7 @@
                   class="col-span-2 md:col-span-3 lg:col-span-3 group relative rounded-2xl overflow-hidden cursor-pointer isolate transform-gpu min-h-[320px] md:min-h-[280px] lg:min-h-[420px]"
                 >
                   <!-- 底层背景图 -->
-                  <img
+                  <UiImage
                     v-if="series.categoryImage"
                     :src="series.categoryImage"
                     :alt="series.category"

@@ -45,30 +45,32 @@ const activeTag = ref(0);
 
     <div class="section-container relative z-10">
       <!-- 标题区 -->
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-6 gap-8">
-        <div class="max-w-xl">
-          <p class="section-header-label text-accent">智能购物</p>
-          <h2 class="section-header-title">智能购物体验</h2>
-          <p class="section-header-desc">AI驱动的个性化推荐，让每一次浏览都精准触达你的心意</p>
-        </div>
-
+      <UiSectionHeader
+        class="mb-6"
+        tone="accent"
+        label="智能购物"
+        title="智能购物体验"
+        description="AI驱动的个性化推荐，让每一次浏览都精准触达你的心意"
+      >
         <!-- 标签 -->
-        <div class="flex flex-wrap gap-3">
-          <button
-            v-for="(tag, idx) in smartTags"
-            :key="tag"
-            class="px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-300 border"
-            :class="
-              activeTag === idx
-                ? 'bg-fg text-canvas border-fg shadow-lg shadow-black/10 dark:shadow-white/5'
-                : 'bg-surface text-fg-muted border-line hover:border-line-strong'
-            "
-            @click="activeTag = idx"
-          >
-            {{ tag }}
-          </button>
-        </div>
-      </div>
+        <template #actions>
+          <div class="flex flex-wrap gap-3">
+            <button
+              v-for="(tag, idx) in smartTags"
+              :key="tag"
+              class="px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-300 border"
+              :class="
+                activeTag === idx
+                  ? 'bg-fg text-canvas border-fg shadow-lg shadow-black/10 dark:shadow-white/5'
+                  : 'bg-surface text-fg-muted border-line hover:border-line-strong'
+              "
+              @click="activeTag = idx"
+            >
+              {{ tag }}
+            </button>
+          </div>
+        </template>
+      </UiSectionHeader>
 
       <!-- 商品网格 -->
       <div

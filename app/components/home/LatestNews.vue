@@ -91,20 +91,23 @@ const finalArticles = computed(() => {
   <section class="py-8 md:py-16 bg-canvas content-visibility-auto">
     <div class="section-container">
       <!-- 标题区 -->
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-14 gap-6">
-        <div class="max-w-xl">
-          <p class="section-header-label text-fg-subtle">资讯中心</p>
-          <h2 class="section-header-title mb-5">最新资讯</h2>
-          <p class="section-header-desc">掌握科技前沿动态，获取专业选购建议</p>
-        </div>
-        <NuxtLink
-          to="/blog"
-          class="inline-flex items-center gap-1.5 text-sm font-medium text-fg hover:opacity-60 transition-opacity shrink-0"
-        >
-          查看全部
-          <div class="i-carbon-arrow-right" />
-        </NuxtLink>
-      </div>
+      <UiSectionHeader
+        class="mb-14"
+        tone="muted"
+        label="资讯中心"
+        title="最新资讯"
+        description="掌握科技前沿动态，获取专业选购建议"
+      >
+        <template #actions>
+          <NuxtLink
+            to="/blog"
+            class="inline-flex items-center gap-1.5 text-sm font-medium text-fg hover:opacity-60 transition-opacity shrink-0"
+          >
+            查看全部
+            <div class="i-carbon-arrow-right" />
+          </NuxtLink>
+        </template>
+      </UiSectionHeader>
 
       <!-- 左右布局：左大卡片 + 右3小卡片 -->
       <div class="grid lg:grid-cols-2 gap-5">
@@ -116,7 +119,7 @@ const finalArticles = computed(() => {
           <div
             class="relative h-full min-h-[420px] md:min-h-[500px] rounded-3xl overflow-hidden bg-surface-muted border-1 border-line"
           >
-            <img
+            <UiImage
               :src="finalArticles[0]?.image"
               :alt="finalArticles[0]?.title"
               class="w-full h-full object-cover"
@@ -164,7 +167,7 @@ const finalArticles = computed(() => {
           >
             <!-- 缩略图 -->
             <div class="shrink-0 w-32 h-28 md:w-40 md:h-32 rounded-xl overflow-hidden">
-              <img
+              <UiImage
                 :src="article.image"
                 :alt="article.title"
                 class="w-full h-full object-cover"

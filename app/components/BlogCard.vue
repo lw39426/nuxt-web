@@ -14,7 +14,7 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
   <NuxtLink :to="`/blog/${blogPost.code}`" class="group flex flex-col h-full gap-4 cursor-pointer">
     <!-- Image Container 图片部分 -->
     <div class="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-surface">
-      <img
+      <UiImage
         :src="blogPost.image"
         :alt="blogPost.title"
         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -40,20 +40,22 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
         {{ blogPost.excerpt }}
       </p>
 
-      <!-- Author -->
+      <!-- Author：头像缺失或加载失败时降级显示姓名首字母 -->
       <div class="mt-auto pt-2 flex items-center gap-3">
-        <!-- 有头像时显示头像，否则降级显示姓名首字母 -->
-        <img
-          v-if="authorAvatar"
+        <UiImage
           :src="authorAvatar"
           :alt="authorName"
           class="h-8 w-8 rounded-full object-cover"
-        />
-        <div v-else class="h-8 w-8 rounded-full bg-surface-muted flex items-center justify-center">
-          <span class="text-xs font-bold text-fg-muted">
-            {{ authorName.charAt(0) }}
-          </span>
-        </div>
+          variant="avatar"
+        >
+          <template #fallback>
+            <div class="h-8 w-8 rounded-full bg-surface-muted flex items-center justify-center">
+              <span class="text-xs font-bold text-fg-muted">
+                {{ authorName.charAt(0) }}
+              </span>
+            </div>
+          </template>
+        </UiImage>
         <div class="flex flex-col">
           <span class="text-xs font-medium text-fg">{{ authorName }}</span>
           <span v-if="blogPost.author?.role" class="text-[10px] text-fg-subtle">{{
