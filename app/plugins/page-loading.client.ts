@@ -21,8 +21,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (!from.name) return false
     if (to.matched.length !== from.matched.length) return false
 
-    // Same matched records means only params/query/hash changed on the same page component.
-    return to.matched.every((record, index) => record.path === from.matched[index]?.path)
+    // 父级布局记录一致即视为软导航，嵌套路由内切换子页（如 /profile/account ↔ /profile/orders）
+    // 不会弹全屏遮罩；跨布局的导航仍按硬导航处理
+    return to.matched[0]?.path === from.matched[0]?.path
   }
 
   const clearTimers = () => {

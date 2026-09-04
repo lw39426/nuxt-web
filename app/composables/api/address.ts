@@ -28,7 +28,7 @@ export function useAddressApi() {
    * GET /user/addresses
    */
   async function list() {
-    return await get<Address[]>('/user/addresses')
+    return await get<{ addresses: Address[]; total: number }>('/user/addresses')
   }
 
   /**
