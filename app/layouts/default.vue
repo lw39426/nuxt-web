@@ -30,9 +30,15 @@
         小星AI专属陪伴
       </span>
     </NuxtLink>
+
+    <!-- FPS 实时显示（仅开发环境） -->
+    <AppFpsMeter v-if="isDev" />
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+// 仅在开发环境挂载 FPS 面板，生产构建会被 tree-shake 掉
+const isDev = import.meta.dev;
+</script>
 <style scoped>
 .no-scrollbar::-webkit-scrollbar {
   display: none;

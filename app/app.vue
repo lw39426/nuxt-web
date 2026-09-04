@@ -1,5 +1,8 @@
 <template>
   <UApp>
+    <NuxtLoadingIndicator
+      color="repeating-linear-gradient(to right, rgba(167, 139, 250, 0.7) 0%, var(--brand-hover) 50%, var(--brand) 100%)"
+    />
     <NuxtLayout>
       <NuxtRouteAnnouncer />
       <NuxtPage />
