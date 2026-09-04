@@ -1,88 +1,197 @@
-﻿<template>
-  <!-- 根节点：绑定 dark 类以激活 UnoCSS 的暗黑模式，并加入全局渐变过渡 -->
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import { useParticleCanvas } from '~/composables/useParticleCanvas';
+import { useScrollAnimations } from '~/composables/useScrollAnimations';
+import { stats, skills, timeline, works } from '~/constants/about';
+import AboutSection from '~/components/about/AboutSection.vue';
+import TimelineSection from '~/components/about/TimelineSection.vue';
+import WorksSection from '~/components/about/WorksSection.vue';
+
+definePageMeta({ hideFooter: true });
+
+// 主题
+const colorMode = useColorMode();
+const isDark = computed({
+  get: () => colorMode.value === 'dark',
+  set: (v: boolean) => {
+    colorMode.preference = v ? 'dark' : 'light';
+  }
+});
+const toggleTheme = () => {
+  isDark.value = !isDark.value;
+};
+
+// Refs
+const rootEl = ref<HTMLElement | null>(null);
+const particleCanvas = ref<HTMLCanvasElement | null>(null);
+
+// 动画 Refs（传递给 composable）
+const heroScene = ref<HTMLElement | null>(null);
+const heroContent = ref<HTMLElement | null>(null);
+const heroVisual = ref<HTMLElement | null>(null);
+const chapterLabel = ref<HTMLElement | null>(null);
+const titleLine1 = ref<HTMLElement | null>(null);
+const titleLine2 = ref<HTMLElement | null>(null);
+const heroSub = ref<HTMLElement | null>(null);
+const scrollIndicator = ref<HTMLElement | null>(null);
+const avatarCore = ref<HTMLElement | null>(null);
+const transitionScene = ref<HTMLElement | null>(null);
+const barTop = ref<HTMLElement | null>(null);
+const barBottom = ref<HTMLElement | null>(null);
+const aboutScene = ref<HTMLElement | null>(null);
+const aboutLeft = ref<HTMLElement | null>(null);
+const aboutRight = ref<HTMLElement | null>(null);
+const statRow = ref<HTMLElement | null>(null);
+const timelineScene = ref<HTMLElement | null>(null);
+const timelineHeader = ref<HTMLElement | null>(null);
+const timelineTrack = ref<HTMLElement | null>(null);
+const timelineLine = ref<HTMLElement | null>(null);
+const timelineEvents = ref<(HTMLElement | null)[]>([]);
+const worksScene = ref<HTMLElement | null>(null);
+const worksHeader = ref<HTMLElement | null>(null);
+const worksGrid = ref<HTMLElement | null>(null);
+const workCards = ref<(HTMLElement | null)[]>([]);
+const contactScene = ref<HTMLElement | null>(null);
+const contactTitle = ref<HTMLElement | null>(null);
+const contactSub = ref<HTMLElement | null>(null);
+
+// 粒子系统
+const particle = useParticleCanvas(particleCanvas);
+
+// 滚动动画
+const animations = useScrollAnimations();
+
+onMounted(() => {
+  if (particleCanvas.value) {
+    particle.init(particleCanvas.value, () => isDark.value);
+  }
+
+  if (rootEl.value) {
+    animations.init(rootEl.value, {
+      heroScene,
+      heroContent,
+      heroVisual,
+      chapterLabel,
+      titleLine1,
+      titleLine2,
+      heroSub,
+      scrollIndicator,
+      avatarCore,
+      transitionScene,
+      barTop,
+      barBottom,
+      aboutScene,
+      aboutLeft,
+      aboutRight,
+      statRow,
+      timelineScene,
+      timelineHeader,
+      timelineTrack,
+      timelineLine,
+      timelineEvents,
+      worksScene,
+      worksHeader,
+      worksGrid,
+      workCards,
+      contactScene,
+      contactTitle,
+      contactSub
+    });
+  }
+});
+
+onUnmounted(() => {
+  particle.destroy();
+  animations.revert();
+});
+</script>
+
+<template>
   <div
     ref="rootEl"
     class="relative overflow-x-hidden transition-colors duration-800 ease-out font-sans bg-[#f4f4f6] text-[#111] dark:bg-[#050508] dark:text-[#f8f9fa]"
     :class="{ dark: isDark }"
   >
     <!-- 粒子背景 -->
-    <canvas ref="particleCanvas" class="fixed inset-0 pointer-events-none z-0" />
-    <!-- 噪点胶片质感 (保留在style中因为SVG过长) -->
-    <div class="film-grain" />
+    <canvas ref="particleCanvas" class="fixed inset-0 pointer-events-none z-0" aria-hidden="true" />
+
+    <!-- 噪点胶片质感 -->
+    <div class="film-grain" aria-hidden="true" />
 
     <!-- 主题切换按钮 -->
     <button
-      class="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 shadow-lg bg-white/70 dark:bg-white/10 backdrop-blur-md border border-black/5 dark:border-white/10"
+      class="theme-toggle fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 shadow-lg bg-white/70 dark:bg-white/10 backdrop-blur-md border border-black/5 dark:border-white/10"
+      :aria-label="isDark ? '切换到亮色模式' : '切换到暗色模式'"
       @click="toggleTheme"
     >
       <div
-        class="w-5 h-5 rounded-full bg-transparent transition-all duration-500 ease-out shadow-[inset_-6px_-4px_0_0_#111] dark:shadow-[inset_-6px_-4px_0_0_#fff]"
+        class="theme-icon w-5 h-5 rounded-full bg-transparent transition-all duration-500 ease-out shadow-[inset_-6px_-4px_0_0_#111] dark:shadow-[inset_-6px_-4px_0_0_#fff]"
         :class="{ 'scale-80 shadow-[inset_-20px_-20px_0_0_#111]': !isDark }"
-      ></div>
+      />
     </button>
 
     <!-- 第一章：全屏英雄区 -->
     <section
       ref="heroScene"
-      class="relative z-10 h-screen flex flex-col md:flex-row items-center justify-center px-8 gap-12 md:gap-[6vw] box-border overflow-hidden bg-[linear-gradient(180deg,rgba(244,244,246,0.96)_0%,rgba(244,244,246,0.84)_100%)] dark:bg-[linear-gradient(180deg,#050508_0%,#08080e_55%,#050508_100%)]"
+      class="hero relative z-10 h-screen flex flex-col md:flex-row items-center justify-center px-8 gap-12 md:gap-[6vw] box-border overflow-hidden"
     >
+      <!-- 背景渐变 -->
+      <div class="hero-bg absolute inset-0 pointer-events-none" aria-hidden="true" />
+
       <div
-        class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_20%,rgba(168,85,247,0.10),transparent_38%),radial-gradient(circle_at_80%_30%,rgba(236,72,153,0.08),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.46),rgba(255,255,255,0))] dark:bg-[radial-gradient(circle_at_20%_20%,rgba(168,85,247,0.16),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(236,72,153,0.10),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0))]"
-      ></div>
-      <div ref="heroContent" class="flex-1 max-w-[600px] z-10 text-center md:text-left">
-        <div
-          ref="chapterLabel"
-          class="font-['Space_Mono',monospace] text-xs tracking-[0.2em] text-purple-600 dark:text-purple-400 mb-8 uppercase flex items-center justify-center md:justify-start gap-4"
-        >
-          第一章 <span class="block w-12 h-px bg-purple-600 dark:bg-purple-400"></span>
+        ref="heroContent"
+        class="hero-content flex-1 max-w-[600px] z-10 text-center md:text-left"
+      >
+        <div ref="chapterLabel" class="chapter-label">
+          第一章 <span class="chapter-line block w-12 h-px bg-purple-600 dark:bg-purple-400" />
         </div>
+
         <h1
-          ref="heroTitle"
-          class="font-['Noto_Serif_SC',serif] text-[clamp(3.5rem,7vw,6.5rem)] font-black leading-[1.1] tracking-tight mb-6 flex flex-col"
+          class="hero-title font-['Noto_Serif_SC',serif] text-[clamp(3.5rem,7vw,6.5rem)] font-black leading-[1.1] tracking-tight mb-6 flex flex-col"
         >
           <span ref="titleLine1" class="block text-black/80 dark:text-gray-200">故事从这里</span>
           <span
             ref="titleLine2"
             class="block bg-gradient-to-br from-purple-600 to-pink-600 dark:from-purple-400 dark:to-fuchsia-400 bg-clip-text text-transparent"
-            >开始</span
           >
+            开始
+          </span>
         </h1>
+
         <p
           ref="heroSub"
-          class="text-[1.1rem] text-black/60 dark:text-white/60 tracking-[0.05em] mb-12 font-light"
+          class="hero-sub text-[1.1rem] text-black/60 dark:text-white/60 tracking-[0.05em] mb-12 font-light"
         >
           向下滑动，进入我的世界
         </p>
+
         <div
           ref="scrollIndicator"
-          class="flex items-center justify-center md:justify-start gap-4 font-['Space_Mono',monospace] text-xs tracking-[0.15em] text-black/40 dark:text-white/40"
+          class="scroll-hint flex items-center justify-center md:justify-start gap-4 font-['Space_Mono',monospace] text-xs tracking-[0.15em] text-black/40 dark:text-white/40"
         >
           Scroll
-          <div class="w-12 h-px bg-black/10 dark:bg-white/10 relative overflow-hidden">
+          <div
+            class="scroll-line-container w-12 h-px bg-black/10 dark:bg-white/10 relative overflow-hidden"
+          >
             <div
               class="scroll-line absolute top-0 left-[-100%] w-full h-full bg-purple-600 dark:bg-purple-400"
-            ></div>
+            />
           </div>
         </div>
       </div>
 
+      <!-- 视觉元素 -->
       <div
         ref="heroVisual"
-        class="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] flex items-center justify-center"
+        class="hero-visual relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] flex items-center justify-center"
       >
-        <div
-          class="orbit-ring absolute rounded-full border border-purple-500/20 dark:border-purple-400/30 w-[220px] h-[220px] border-t-purple-600 dark:border-t-purple-400 animate-spin-slow"
-        ></div>
-        <div
-          class="orbit-ring absolute rounded-full border border-pink-500/20 dark:border-fuchsia-400/30 w-[320px] h-[320px] border-l-pink-600 dark:border-l-fuchsia-400 animate-spin-reverse"
-        ></div>
-        <div
-          class="orbit-ring absolute rounded-full border border-purple-500/10 dark:border-purple-400/10 w-[420px] h-[420px] animate-spin-slower"
-        ></div>
+        <div class="orbit-ring animate-spin-slow absolute w-[220px] h-[220px]" />
+        <div class="orbit-ring animate-spin-reverse absolute w-[320px] h-[320px]" />
+        <div class="orbit-ring animate-spin-slower absolute w-[420px] h-[420px]" />
 
         <div
           ref="avatarCore"
-          class="w-[120px] h-[120px] rounded-full flex items-center justify-center font-['Noto_Serif_SC',serif] text-4xl font-bold text-gray-900 dark:text-gray-50 shadow-[0_0_60px_rgba(168,85,247,0.16)] bg-white/75 dark:bg-[#0f0f14]/90 backdrop-blur-md border border-black/5 dark:border-white/10 transition-colors duration-400"
+          class="avatar-core w-[120px] h-[120px] rounded-full flex items-center justify-center font-['Noto_Serif_SC',serif] text-4xl font-bold text-gray-900 dark:text-gray-50"
         >
           入梦
         </div>
@@ -92,28 +201,27 @@
     <!-- 过渡：电影字幕 -->
     <section
       ref="transitionScene"
-      class="relative z-10 flex flex-col items-center justify-center h-screen bg-[linear-gradient(180deg,rgba(244,244,246,0.94)_0%,rgba(235,238,243,0.96)_48%,rgba(244,244,246,0.92)_100%)] dark:bg-[linear-gradient(180deg,#050508_0%,#090a10_48%,#050508_100%)] transition-colors duration-800"
+      class="transition-section relative z-10 flex flex-col items-center justify-center h-screen"
     >
-      <div
-        class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.75),rgba(255,255,255,0)_58%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02),rgba(255,255,255,0)_60%)]"
-      ></div>
-      <div
-        ref="barTop"
-        class="absolute top-0 left-0 right-0 h-[110px] bg-gradient-to-b from-white/90 via-white/70 to-transparent dark:from-[#050508] dark:via-[#050508] dark:to-transparent transition-colors duration-800"
-      ></div>
+      <div class="transition-bg absolute inset-0 pointer-events-none" aria-hidden="true" />
+
+      <div ref="barTop" class="transition-bar-top absolute top-0 left-0 right-0 h-[110px]" />
       <div
         ref="barBottom"
-        class="absolute bottom-0 left-0 right-0 h-[110px] bg-gradient-to-t from-white/90 via-white/70 to-transparent dark:from-[#050508] dark:via-[#050508] dark:to-transparent transition-colors duration-800"
-      ></div>
-      <div ref="transitionText" class="text-center flex flex-col gap-3 z-10">
+        class="transition-bar-bottom absolute bottom-0 left-0 right-0 h-[110px]"
+      />
+
+      <div class="transition-text text-center flex flex-col gap-3 z-10">
         <span
           class="quote block font-['Noto_Serif_SC',serif] text-[clamp(1.4rem,2.8vw,2.35rem)] leading-[1.35] text-gray-900 dark:text-gray-100 tracking-[0.05em]"
-          >"代码是诗，设计是画"</span
         >
+          "代码是诗，设计是画"
+        </span>
         <span
           class="quote font-['Noto_Serif_SC',serif] text-[clamp(1.5rem,3vw,2.5rem)] text-gray-900 dark:text-gray-100 tracking-[0.05em]"
-          >我用技术讲述每一个故事</span
         >
+          我用技术讲述每一个故事
+        </span>
       </div>
     </section>
 
@@ -123,79 +231,23 @@
       class="relative z-10 min-h-screen flex items-center justify-center px-8 py-24 box-border bg-white dark:bg-[#08080c] transition-colors duration-800 overflow-hidden"
     >
       <div
-        class="absolute font-['Space_Mono',monospace] text-[clamp(5rem,15vw,15rem)] font-bold text-black/[0.03] dark:text-white/[0.02] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none tracking-wider transition-colors duration-800"
+        class="about-watermark absolute font-['Space_Mono',monospace] text-[clamp(5rem,15vw,15rem)] font-bold text-black/[0.03] dark:text-white/[0.02] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none tracking-wider"
+        aria-hidden="true"
       >
         ABOUT
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-[6vw] max-w-[1200px] w-full z-10">
-        <div ref="aboutLeft">
-          <div
-            class="font-['Space_Mono',monospace] text-xs tracking-[0.2em] text-purple-600 dark:text-purple-400 mb-6 uppercase"
-          >
-            02 / 关于我
-          </div>
-          <h2
-            ref="aboutName"
-            class="font-['Noto_Serif_SC',serif] text-[clamp(3rem,5vw,5rem)] font-black mb-2 bg-gradient-to-br from-purple-600 to-pink-600 dark:from-purple-400 dark:to-fuchsia-400 bg-clip-text text-transparent"
-          >
-            入梦
-          </h2>
-          <p
-            ref="aboutRole"
-            class="font-['Space_Mono',monospace] text-sm text-purple-600 dark:text-purple-400 tracking-[0.1em] mb-8"
-          >
-            全栈开发者 · 创意工程师
-          </p>
-          <div
-            ref="aboutDesc"
-            class="text-black/60 dark:text-white/60 leading-[2] text-[1.1rem] font-light"
-          >
-            <p>
-              热爱将复杂问题简化为优雅方案。在代码与设计的交汇处寻找平衡，相信技术应当服务于人，而非相反。
-            </p>
-          </div>
-          <div ref="statRow" class="flex gap-8 md:gap-16 mt-16">
-            <div v-for="(stat, index) in stats" :key="index" class="flex flex-col">
-              <div class="flex items-baseline">
-                <span
-                  class="stat-num font-['Space_Mono',monospace] text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 leading-none"
-                  :data-count="stat.num"
-                  >0</span
-                >
-                <span
-                  class="font-['Space_Mono',monospace] text-lg text-purple-600 dark:text-purple-400 ml-1"
-                  >{{ stat.unit }}</span
-                >
-              </div>
-              <span
-                class="text-xs text-black/50 dark:text-white/50 tracking-[0.1em] mt-2 uppercase"
-                >{{ stat.label }}</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <div ref="aboutRight" class="relative h-[400px]">
-          <div
-            v-for="skill in skills"
-            :key="skill.name"
-            class="skill-tag absolute px-4 py-2 rounded-full text-sm text-gray-800 dark:text-gray-200 cursor-default bg-white/70 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-sm transition-all duration-300 hover:border-purple-500 dark:hover:border-purple-400 hover:-translate-y-1 hover:scale-105"
-            :style="skill.style"
-          >
-            {{ skill.name }}
-          </div>
-        </div>
-      </div>
+      <AboutSection :stats="stats" :skills="skills" />
     </section>
 
     <!-- 第三章：时间线经历 -->
     <section
       ref="timelineScene"
-      class="relative z-10 min-h-screen flex flex-col items-center py-24 md:py-32 px-4 box-border overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,244,246,0.94)_18%,rgba(238,240,245,0.98)_100%)] dark:bg-[linear-gradient(180deg,#050508_0%,#070710_35%,#050508_100%)]"
+      class="relative z-10 min-h-screen flex flex-col items-center py-24 md:py-32 px-4 box-border overflow-hidden"
     >
       <div
-        class="absolute font-['Space_Mono',monospace] text-[clamp(5rem,15vw,15rem)] font-bold text-black/[0.03] dark:text-white/[0.02] top-[30%] left-1/2 -translate-x-1/2 pointer-events-none tracking-wider transition-colors duration-800"
+        class="timeline-watermark absolute font-['Space_Mono',monospace] text-[clamp(5rem,15vw,15rem)] font-bold text-black/[0.03] dark:text-white/[0.02] top-[30%] left-1/2 -translate-x-1/2 pointer-events-none tracking-wider"
+        aria-hidden="true"
       >
         STORY
       </div>
@@ -213,54 +265,7 @@
         </h2>
       </div>
 
-      <div ref="timelineTrack" class="relative w-full max-w-[1000px] pl-8 md:pl-0 ml-0 md:ml-0">
-        <!-- 中心线 -->
-        <div
-          ref="timelineLine"
-          class="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500/50 dark:via-purple-500/80 to-transparent md:-translate-x-1/2 origin-top"
-        ></div>
-
-        <div
-          v-for="(event, i) in timeline"
-          :key="i"
-          :ref="(el) => (timelineEvents[i] = el)"
-          class="relative flex w-full md:w-1/2 mb-16 md:mb-24 timeline-event"
-          :class="
-            i % 2 === 0
-              ? 'md:justify-end md:pr-16 pl-12 pr-2 md:pl-0'
-              : 'md:ml-[50%] md:pl-16 pl-12 pr-2'
-          "
-        >
-          <!-- 节点圆圈 -->
-          <div
-            class="absolute w-4 h-4 rounded-full bg-[#f4f4f6] dark:bg-[#050508] border-4 border-purple-500 dark:border-purple-400 top-8 z-10 transition-all duration-300"
-            :class="i % 2 === 0 ? 'left-[10px] md:left-auto md:right-[-8px]' : 'left-[10px]'"
-          ></div>
-
-          <!-- 卡片 -->
-          <div
-            class="w-full max-w-[400px] p-6 md:p-8 rounded-3xl cursor-default bg-white/78 dark:bg-white/5 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-sm transition-all duration-400 hover:border-purple-500 dark:hover:border-purple-400 hover:-translate-y-1"
-          >
-            <span
-              class="font-['Space_Mono',monospace] text-[0.85rem] text-purple-600 dark:text-purple-400 tracking-[0.15em]"
-              >{{ event.year }}</span
-            >
-            <h3
-              class="font-['Noto_Serif_SC',serif] text-xl font-bold my-3 text-gray-900 dark:text-gray-100"
-            >
-              {{ event.title }}
-            </h3>
-            <p class="text-black/60 dark:text-white/60 leading-[1.8] text-[1rem] font-light mb-6">
-              {{ event.desc }}
-            </p>
-            <span
-              class="inline-block px-4 py-1 rounded-full text-xs font-['Space_Mono',monospace] text-gray-700 dark:text-gray-300 tracking-[0.1em] border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5"
-            >
-              {{ event.tag }}
-            </span>
-          </div>
-        </div>
-      </div>
+      <TimelineSection :events="timeline" />
     </section>
 
     <!-- 第四章：作品展示 -->
@@ -269,7 +274,8 @@
       class="relative z-10 min-h-screen flex flex-col items-center py-32 px-8 box-border bg-white dark:bg-[#08080c] transition-colors duration-800 overflow-hidden"
     >
       <div
-        class="absolute font-['Space_Mono',monospace] text-[clamp(5rem,15vw,15rem)] font-bold text-black/[0.03] dark:text-white/[0.02] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none tracking-wider transition-colors duration-800"
+        class="works-watermark absolute font-['Space_Mono',monospace] text-[clamp(5rem,15vw,15rem)] font-bold text-black/[0.03] dark:text-white/[0.02] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none tracking-wider"
+        aria-hidden="true"
       >
         WORKS
       </div>
@@ -287,64 +293,28 @@
         </h2>
       </div>
 
-      <div ref="worksGrid" class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-[1000px] z-10">
-        <div
-          v-for="(work, i) in works"
-          :key="i"
-          :ref="(el) => (workCards[i] = el)"
-          class="group relative p-8 md:p-12 rounded-3xl overflow-hidden cursor-pointer bg-white/70 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-sm transition-all duration-400 hover:-translate-y-2 hover:shadow-xl"
-          :style="{ '--card-accent': work.color }"
-        >
-          <div
-            class="font-['Space_Mono',monospace] text-xs text-black/40 dark:text-white/40 tracking-[0.2em] mb-6"
-          >
-            0{{ i + 1 }}
-          </div>
-          <div class="text-4xl mb-6 text-[var(--card-accent)]">{{ work.icon }}</div>
-          <h3
-            class="font-['Noto_Serif_SC',serif] text-2xl font-bold mb-4 text-gray-900 dark:text-white"
-          >
-            {{ work.title }}
-          </h3>
-          <p class="text-[0.95rem] text-black/60 dark:text-white/60 leading-[1.8] mb-8 font-light">
-            {{ work.desc }}
-          </p>
-          <div class="flex flex-wrap gap-3">
-            <span
-              v-for="tag in work.tags"
-              :key="tag"
-              class="px-3 py-1 rounded-lg text-xs font-['Space_Mono',monospace] text-black/60 dark:text-white/60 bg-white/50 dark:bg-white/5 border border-black/5 dark:border-white/10"
-            >
-              {{ tag }}
-            </span>
-          </div>
-          <!-- 底部高亮滑块 -->
-          <div
-            class="absolute bottom-0 left-0 right-0 h-[3px] bg-[var(--card-accent)] scale-x-0 origin-left transition-transform duration-500 ease-out group-hover:scale-x-100"
-          ></div>
-        </div>
-      </div>
+      <WorksSection ref="worksGrid" :works="works" />
     </section>
 
     <!-- 第五章：联系结尾 -->
     <section
       ref="contactScene"
-      class="relative z-10 h-screen flex flex-col items-center justify-center overflow-hidden border-black/5 dark:border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,244,246,0.95)_45%,rgba(236,239,244,0.98)_100%)] dark:bg-[linear-gradient(180deg,#050508_0%,#090910_55%,#050508_100%)]"
+      class="relative z-10 h-screen flex flex-col items-center justify-center overflow-hidden"
     >
-      <!-- 背景神秘光晕 -->
       <div
-        class="absolute w-[700px] h-[700px] rounded-full pointer-events-none z-0 bg-radial-gradient from-purple-500/20 dark:from-purple-500/30 to-transparent"
-      ></div>
+        class="contact-glow absolute w-[700px] h-[700px] rounded-full pointer-events-none z-0 bg-radial-gradient from-purple-500/20 dark:from-purple-500/30 to-transparent"
+        aria-hidden="true"
+      />
 
       <div
-        ref="contactInner"
-        class="relative z-10 flex flex-col items-center text-center px-6 py-12 md:px-10 md:py-16 max-w-[min(900px,calc(100%-2rem))]"
+        class="contact-inner relative z-10 flex flex-col items-center text-center px-6 py-12 md:px-10 md:py-16 max-w-[min(900px,calc(100%-2rem))]"
       >
-        <div
+        <!-- <div
           class="font-['Space_Mono',monospace] text-xs tracking-[0.2em] text-purple-600 dark:text-purple-400 mb-6 uppercase"
         >
           05 / 联系我
-        </div>
+        </div> -->
+
         <h2
           ref="contactTitle"
           class="font-['Noto_Serif_SC',serif] text-[clamp(3.5rem,6vw,6rem)] font-black leading-[1.2] mb-8 text-gray-900 dark:text-white"
@@ -352,370 +322,206 @@
           让我们一起<br />
           <span
             class="bg-gradient-to-br from-purple-600 to-pink-600 dark:from-purple-400 dark:to-fuchsia-400 bg-clip-text text-transparent"
-            >创造故事</span
           >
+            创造故事
+          </span>
         </h2>
+
         <p
           ref="contactSub"
           class="text-[1.1rem] text-black/60 dark:text-white/60 max-w-[500px] leading-[1.8] font-light mb-16"
         >
-          无论是合作项目还是一次简单的对话，我都期待听到你的声音。
+          期待听到来自你的声音
         </p>
       </div>
 
-      <div
-        ref="footerText"
+      <footer
         class="absolute bottom-8 flex items-center gap-4 font-['Space_Mono',monospace] text-xs text-black/40 dark:text-white/40 tracking-[0.1em] z-10"
       >
         <span>© 2025 入梦</span>
         <span class="text-purple-600 dark:text-purple-400">·</span>
-        <span>Crafted with Nuxt & GSAP</span>
-      </div>
+        <span></span>
+      </footer>
     </section>
   </div>
 </template>
 
-<script setup>
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-definePageMeta({ hideFooter: true });
-
-// 主题状态 — 使用 @nuxtjs/color-mode（由 @nuxt/ui 自动安装）
-const colorMode = useColorMode();
-const isDark = computed({
-  get: () => colorMode.value === 'dark',
-  set: (v) => {
-    colorMode.preference = v ? 'dark' : 'light';
-  }
-});
-const toggleTheme = () => {
-  isDark.value = !isDark.value;
-};
-
-// 引用
-const rootEl = ref(null);
-const particleCanvas = ref(null);
-const heroScene = ref(null),
-  heroContent = ref(null),
-  heroVisual = ref(null);
-const heroTitle = ref(null),
-  heroSub = ref(null),
-  chapterLabel = ref(null);
-const titleLine1 = ref(null),
-  titleLine2 = ref(null),
-  scrollIndicator = ref(null);
-const avatarCore = ref(null),
-  transitionScene = ref(null),
-  transitionText = ref(null);
-const barTop = ref(null),
-  barBottom = ref(null),
-  aboutScene = ref(null);
-const aboutLeft = ref(null),
-  aboutRight = ref(null),
-  aboutName = ref(null);
-const aboutRole = ref(null),
-  aboutDesc = ref(null),
-  statRow = ref(null);
-const timelineScene = ref(null),
-  timelineHeader = ref(null),
-  timelineTrack = ref(null);
-const timelineLine = ref(null),
-  timelineEvents = ref([]);
-const worksScene = ref(null),
-  worksHeader = ref(null),
-  worksGrid = ref(null),
-  workCards = ref([]);
-const contactScene = ref(null),
-  contactInner = ref(null),
-  contactTitle = ref(null);
-const contactSub = ref(null),
-  // contactCircle = ref(null),
-  footerText = ref(null);
-
-// 数据
-const stats = [
-  { num: 2, unit: '年', label: '经验' },
-  { num: 42, unit: '+', label: '项目' },
-  { num: 12, unit: 'k', label: '提交' }
-];
-
-const skills = [
-  { name: 'Vue / Nuxt', style: { top: '10%', left: '20%', fontSize: '1.1rem' } },
-  { name: 'TypeScript', style: { top: '25%', left: '60%', fontSize: '0.9rem' } },
-  { name: 'Node.js', style: { top: '50%', left: '15%', fontSize: '1rem' } },
-  { name: 'Python', style: { top: '55%', left: '65%', fontSize: '1.2rem' } },
-  { name: 'GSAP', style: { top: '65%', left: '55%', fontSize: '1.2rem' } },
-  { name: 'Three.js', style: { top: '85%', left: '65%', fontSize: '1rem' } }
-];
-
-const timeline = [
-  {
-    year: '2019',
-    title: '踏入代码世界',
-    desc: '第一次接触 Vue.js，写下人生第一个 Hello World。',
-    tag: '起点'
-  },
-  {
-    year: '2021',
-    title: '全栈转型',
-    desc: '深入 Node.js 与数据库设计，开始承担完整的产品周期。',
-    tag: '蜕变'
-  },
-  {
-    year: '2023',
-    title: '独立开发者',
-    desc: '发布首款独立产品，一周内登上 Product Hunt 日榜前十。',
-    tag: '里程碑'
-  }
-];
-
-const works = [
-  {
-    title: 'NarrativeOS',
-    desc: '基于 AI 的故事创作平台',
-    tags: ['Nuxt', 'AI'],
-    icon: '◈',
-    color: '#c084fc'
-  },
-  {
-    title: 'FlowBoard',
-    desc: '可视化任务管理工具',
-    tags: ['Vue', 'GSAP'],
-    icon: '◉',
-    color: '#38bdf8'
-  },
-  {
-    title: 'EchoMetrics',
-    desc: '实时数据分析面板',
-    tags: ['Node', 'WS'],
-    icon: '◎',
-    color: '#4ade80'
-  },
-  {
-    title: 'PixelForge',
-    desc: '浏览器内图像处理引擎',
-    tags: ['WASM', 'Canvas'],
-    icon: '◆',
-    color: '#fb923c'
-  }
-];
-
-// 粒子系统逻辑
-let animFrame;
-function initParticles(canvas) {
-  const ctx = canvas.getContext('2d');
-  const particles = Array.from({ length: 50 }, () => ({
-    x: Math.random() * window.innerWidth,
-    y: Math.random() * window.innerHeight,
-    r: Math.random() * 1.5 + 0.5,
-    dx: (Math.random() - 0.5) * 0.5,
-    dy: (Math.random() - 0.5) * 0.5
-  }));
-
-  const resize = () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  };
-  resize();
-  window.addEventListener('resize', resize);
-
-  const draw = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // 颜色随主题变化
-    ctx.fillStyle = isDark.value ? 'rgba(167, 139, 250, 0.4)' : 'rgba(100, 116, 139, 0.3)';
-    particles.forEach((p) => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      p.x += p.dx;
-      p.y += p.dy;
-      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
-      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
-    });
-    animFrame = requestAnimationFrame(draw);
-  };
-  draw();
+<style scoped>
+/* Hero 区域 */
+.hero {
+  background: linear-gradient(180deg, rgba(244, 244, 246, 0.96) 0%, rgba(244, 244, 246, 0.84) 100%);
+}
+.dark .hero {
+  background: linear-gradient(180deg, #050508 0%, #08080e 55%, #050508 100%);
 }
 
-let ctx; // GSAP Context
+.hero-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.1), transparent 38%),
+    radial-gradient(circle at 80% 30%, rgba(236, 72, 153, 0.08), transparent 35%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0));
+}
+.dark .hero-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.16), transparent 35%),
+    radial-gradient(circle at 80% 30%, rgba(236, 72, 153, 0.1), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+}
 
-onMounted(() => {
-  // 仅在客户端注册 GSAP 插件（避免 SSR/水合不匹配）
-  gsap.registerPlugin(ScrollTrigger);
+.chapter-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: rgb(147 51 234);
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (min-width: 768px) {
+  .chapter-label {
+    justify-content: flex-start;
+  }
+}
+.dark .chapter-label {
+  color: rgb(192 132 252);
+}
 
-  initParticles(particleCanvas.value);
+.hero-sub {
+  font-size: 1.1rem;
+  color: rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.05em;
+  margin-bottom: 3rem;
+  font-weight: 300;
+}
+.dark .hero-sub {
+  color: rgba(255, 255, 255, 0.6);
+}
 
-  // 使用 GSAP Context 管理内存
-  ctx = gsap.context(() => {
-    const heroTl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    heroTl
-      .from(chapterLabel.value, { y: 30, opacity: 0, duration: 1 })
-      .from(titleLine1.value, { y: 80, opacity: 0, duration: 1.2 }, '-=0.6')
-      .from(titleLine2.value, { y: 80, opacity: 0, duration: 1.2 }, '-=1')
-      .from(heroSub.value, { y: 20, opacity: 0, duration: 1 }, '-=0.8')
-      .from(scrollIndicator.value, { opacity: 0, duration: 1 }, '-=0.5')
-      .from(
-        '.orbit-ring',
-        { scale: 0, opacity: 0, stagger: 0.15, duration: 1.5, ease: 'back.out(1.2)' },
-        '-=1.5'
-      )
-      .from(avatarCore.value, { scale: 0, opacity: 0, duration: 1, ease: 'back.out(1.5)' }, '-=1');
+/* 轨道环 */
+.orbit-ring {
+  border-radius: 9999px;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.dark .orbit-ring {
+  border-color: rgba(192, 132, 252, 0.3);
+}
+.orbit-ring:first-child {
+  border-top-color: rgb(147 51 234);
+}
+.dark .orbit-ring:first-child {
+  border-top-color: rgb(192 132 252);
+}
+.orbit-ring:nth-child(2) {
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  border-left-color: rgb(219 39 119);
+}
+.dark .orbit-ring:nth-child(2) {
+  border-color: rgba(244 114 182, 0.3);
+  border-left-color: rgb(244 114 182);
+}
+.orbit-ring:nth-child(3) {
+  border-color: rgba(168, 85, 247, 0.1);
+}
+.dark .orbit-ring:nth-child(3) {
+  border-color: rgba(192, 132, 252, 0.1);
+}
 
-    gsap.to(heroContent.value, {
-      y: -100,
-      opacity: 0,
-      ease: 'none',
-      scrollTrigger: { trigger: heroScene.value, start: 'top top', end: 'bottom top', scrub: true }
-    });
-    gsap.to(heroVisual.value, {
-      y: -50,
-      rotate: 15,
-      opacity: 0,
-      ease: 'none',
-      scrollTrigger: { trigger: heroScene.value, start: 'top top', end: 'bottom top', scrub: true }
-    });
+.avatar-core {
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 60px rgba(168, 85, 247, 0.16);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: color 400ms;
+}
+.dark .avatar-core {
+  background: rgba(15, 15, 20, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
 
-    const transTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: transitionScene.value,
-        start: 'top 80%',
-        end: 'bottom 20%',
-        scrub: 1
-      }
-    });
-    transTl
-      .from(barTop.value, { y: '-70%', duration: 1 })
-      .from(barBottom.value, { y: '100%', duration: 1 }, '<')
-      .from('.quote', { y: 40, opacity: 0, stagger: 0.3, duration: 0.8 }, '<');
+/* 过渡区域 */
+.transition-section {
+  background: linear-gradient(
+    180deg,
+    rgba(244, 244, 246, 0.94) 0%,
+    rgba(235, 238, 243, 0.96) 48%,
+    rgba(244, 244, 246, 0.92) 100%
+  );
+  transition: color 800ms;
+}
+.dark .transition-section {
+  background: linear-gradient(180deg, #050508 0%, #090a10 48%, #050508 100%);
+}
 
-    gsap.from(aboutLeft.value, {
-      x: -50,
-      opacity: 0,
-      duration: 1.2,
-      ease: 'expo.out',
-      scrollTrigger: { trigger: aboutScene.value, start: 'top 60%' }
-    });
-    gsap.from(aboutRight.value, {
-      x: 50,
-      opacity: 0,
-      duration: 1.2,
-      ease: 'expo.out',
-      scrollTrigger: { trigger: aboutScene.value, start: 'top 60%' }
-    });
-    gsap.from('.skill-tag', {
-      y: 30,
-      opacity: 0,
-      stagger: 0.1,
-      duration: 0.8,
-      ease: 'back.out(1.5)',
-      scrollTrigger: { trigger: aboutScene.value, start: 'top 50%' }
-    });
+.transition-bg {
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.75),
+    rgba(255, 255, 255, 0) 58%
+  );
+}
+.dark .transition-bg {
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0) 60%
+  );
+}
 
-    ScrollTrigger.create({
-      trigger: statRow.value,
-      start: 'top 80%',
-      once: true,
-      onEnter: () => {
-        document.querySelectorAll('.stat-num').forEach((el) => {
-          gsap.to(
-            { val: 0 },
-            {
-              val: +el.dataset.count,
-              duration: 2.5,
-              ease: 'expo.out',
-              onUpdate: function () {
-                el.textContent = Math.round(this.targets()[0].val);
-              }
-            }
-          );
-        });
-      }
-    });
+.transition-bar-top {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  transition: color 800ms;
+}
+.dark .transition-bar-top {
+  background: linear-gradient(to bottom, #050508, #050508, transparent);
+}
 
-    gsap.from(timelineHeader.value, {
-      y: 50,
-      opacity: 0,
-      duration: 1,
-      scrollTrigger: { trigger: timelineScene.value, start: 'top 70%' }
-    });
-    gsap.from(timelineLine.value, {
-      scaleY: 0,
-      transformOrigin: 'top center',
-      duration: 1.5,
-      ease: 'expo.inOut',
-      scrollTrigger: { trigger: timelineTrack.value, start: 'top 60%', end: 'bottom 40%', scrub: 1 }
-    });
-    timelineEvents.value.forEach((el, i) => {
-      gsap.from(el, {
-        x: i % 2 === 0 ? -50 : 50,
-        opacity: 0,
-        duration: 1,
-        ease: 'expo.out',
-        scrollTrigger: { trigger: el, start: 'top 80%' }
-      });
-    });
+.transition-bar-bottom {
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  transition: color 800ms;
+}
+.dark .transition-bar-bottom {
+  background: linear-gradient(to top, #050508, #050508, transparent);
+}
 
-    gsap.from(worksHeader.value, {
-      y: 40,
-      opacity: 0,
-      duration: 1,
-      scrollTrigger: { trigger: worksScene.value, start: 'top 70%' }
-    });
-    workCards.value.forEach((el, i) => {
-      gsap.from(el, {
-        y: 60,
-        opacity: 0,
-        duration: 1,
-        delay: i * 0.1,
-        ease: 'expo.out',
-        scrollTrigger: { trigger: worksGrid.value, start: 'top 65%' }
-      });
-    });
+/* Timeline 区域 */
+.timeline-section-bg {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(244, 244, 246, 0.94) 18%,
+    rgba(238, 240, 245, 0.98) 100%
+  );
+}
+.dark .timeline-section-bg {
+  background: linear-gradient(180deg, #050508 0%, #070710 35%, #050508 100%);
+}
 
-    // gsap.from(contactCircle.value, {
-    //   scale: 0,
-    //   opacity: 0,
-    //   duration: 2,
-    //   ease: 'expo.out',
-    //   scrollTrigger: { trigger: contactScene.value, start: 'top 70%' }
-    // });
-    gsap.from(contactTitle.value, {
-      y: 60,
-      opacity: 0,
-      duration: 1,
-      scrollTrigger: { trigger: contactScene.value, start: 'top 65%' }
-    });
-    gsap.from(contactSub.value, {
-      y: 30,
-      opacity: 0,
-      duration: 1,
-      delay: 0.2,
-      scrollTrigger: { trigger: contactScene.value, start: 'top 65%' }
-    });
-    gsap.from('.contact-btn', {
-      y: 20,
-      opacity: 0,
-      stagger: 0.15,
-      duration: 0.8,
-      delay: 0.4,
-      scrollTrigger: { trigger: contactScene.value, start: 'top 65%' }
-    });
-  }, rootEl.value);
-});
+/* 联系区域 */
+.contact-section-bg {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(244, 244, 246, 0.95) 45%,
+    rgba(236, 239, 244, 0.98) 100%
+  );
+}
+.dark .contact-section-bg {
+  background: linear-gradient(180deg, #050508 0%, #090910 55%, #050508 100%);
+}
 
-onUnmounted(() => {
-  if (ctx) ctx.revert(); // 极其重要：清理动画防止内存泄漏
-  cancelAnimationFrame(animFrame);
-});
-</script>
-
-<!-- CSS 精简到了极致，只保留 UnoCSS 难以直接复现的复杂动画和特殊 SVG 滤镜 -->
-<style scoped>
-/* 引入必需的高级字体 */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
-
-/* 噪点特效，使用混合模式 */
+/* 噪点特效 */
 .film-grain {
   position: fixed;
   inset: 0;
@@ -727,7 +533,7 @@ onUnmounted(() => {
   animation: grain 0.5s steps(1) infinite;
 }
 
-/* UnoCSS 支持 animate-spin，但我们需要自定义速度和方向 */
+/* 动画 */
 .animate-spin-slow {
   animation: spin 25s linear infinite;
 }
@@ -738,14 +544,15 @@ onUnmounted(() => {
   animation: spin 50s linear infinite;
 }
 
-/* Timeline 节点 Hover 穿透控制 */
-.timeline-event:hover > div:first-child {
-  transform: scale(1.3);
-  background: rgb(168 85 247);
-  box-shadow: 0 0 20px rgb(168 85 247);
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* 简单的滚动提示线与噪点关键帧 */
 @keyframes scan {
   to {
     left: 100%;
@@ -754,6 +561,7 @@ onUnmounted(() => {
 .scroll-line {
   animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
+
 @keyframes grain {
   0%,
   100% {
@@ -776,8 +584,19 @@ onUnmounted(() => {
   }
 }
 
-/* 自定义径向渐变工具类补充 */
+/* 径向渐变工具类 */
 .bg-radial-gradient {
   background-image: radial-gradient(circle, var(--tw-gradient-from), var(--tw-gradient-to) 70%);
+}
+
+/* 无障碍：尊重用户的减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow,
+  .animate-spin-reverse,
+  .animate-spin-slower,
+  .scroll-line,
+  .film-grain {
+    animation: none;
+  }
 }
 </style>
