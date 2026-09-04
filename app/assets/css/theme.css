@@ -35,6 +35,27 @@
   --brand-700: #087e5c;
 }
 
+/* ---------- 1.5 Nuxt UI 品牌色阶 ----------
+ * 直接覆盖 Nuxt UI 的 primary 色阶（--ui-color-primary-50..950），
+ * 使 UButton/UInput 等组件的 primary 与全站品牌绿统一。
+ * 本文件是未分层 CSS，稳定压过 @nuxt/ui 颜色插件注入的 @layer theme 定义，
+ * 不依赖其 app.config 自定义色链路（v4.2.1 的 @theme inline 桥接存在断链）。
+ * 中间档为品牌绿的明暗插值，供组件 hover/soft/bordered 变体使用。
+ */
+:root {
+  --ui-color-primary-50: #e6faf3;
+  --ui-color-primary-100: #c2f4e1;
+  --ui-color-primary-200: var(--brand-200);
+  --ui-color-primary-300: var(--brand-300);
+  --ui-color-primary-400: var(--brand-400);
+  --ui-color-primary-500: var(--brand-500);
+  --ui-color-primary-600: var(--brand-600);
+  --ui-color-primary-700: var(--brand-700);
+  --ui-color-primary-800: #096348;
+  --ui-color-primary-900: #0a4f3b;
+  --ui-color-primary-950: #042e22;
+}
+
 /* ---------- 2. 语义 token —— 浅色主题（默认） ---------- */
 :root,
 .light {
@@ -42,7 +63,7 @@
   --canvas: #ffffff; /* 页面底色 */
   --canvas-elevated: #f4f4f5; /* 悬浮 / 弹层底色 */
   --surface: #ffffff; /* 卡片表面 */
-  --surface-muted: #f7f7f8; /* 次级表面（卡片 hover / 输入框底） */
+  --surface-muted: #f1f2f4; /* 次级表面（页面底 / 卡片 hover / 输入框底）：需比 surface 深一档，否则卡片与背景融合 */
   --glass-bg: rgba(255, 255, 255, 0.9); /* 毛玻璃容器 */
 
   /* 文字层级 */
@@ -57,7 +78,7 @@
   /* 品牌 */
   --brand: var(--brand-500);
   --brand-soft: rgba(15, 186, 129, 0.12); /* 品牌色悬浮/选中底色 */
-  --brand-hover: var(--brand-600); /* 品牌实底 hover（浅色主题下加深） */
+  --brand-hover: var(--brand-300); /* 品牌实底 hover（浅色主题下加深） */
   --brand-active: var(--brand-700); /* 品牌实底 active/pressed */
   --on-brand: #ffffff;
 
@@ -74,15 +95,15 @@
 .dark {
   --canvas: #08070f; /* 原 main.css body 写死的深底 */
   --canvas-elevated: #1f1f23;
-  --surface: #18181b;
+  --surface: #1c1c21; /* 卡片表面：比 canvas 亮一档，让卡片在深底上浮起 */
   --surface-muted: #121417; /* 次级表面（卡片 hover / 输入框底） */
   --glass-bg: #232327e6; /* 毛玻璃容器 rgb(24 24 27 / 0.9) */
 
   --fg: #fafafa;
   --fg-muted: #ceced3;
-  --fg-subtle: #11182780; /* 弱文字#6b6b72 / 占位 */
+  --fg-subtle: #71717a; /* 弱文字/占位：需在暗底上可读（原 #11182780 几乎不可见） */
 
-  --line: #333338;
+  --line: #36363c;
   --line-strong: #3a3a41;
 
   --brand: var(--brand-400);
@@ -138,40 +159,8 @@
     background-color: #1f2937;
   }
 
-  /* 模块标题规范（标题/描述走 fg 语义 token，.dark 自动翻转） */
-  .section-header-label {
-    font-size: 0.875rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3em;
-    margin-bottom: 1.25rem;
-    transition: color 0.3s;
-  }
-  .section-header-title {
-    margin-bottom: 1.5rem;
-    font-size: 2rem;
-    line-height: 1.15;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    color: var(--fg);
-    transition: color 0.3s;
-  }
-  @media (min-width: 768px) {
-    .section-header-title {
-      font-size: 2.75rem;
-    }
-  }
-  .section-header-desc {
-    font-size: 1rem;
-    line-height: 1.625;
-    color: var(--fg-muted);
-    max-width: 48rem;
-  }
-  @media (min-width: 768px) {
-    .section-header-desc {
-      font-size: 1.125rem;
-    }
-  }
+  /* 模块（楼层）标题已组件化：app/components/ui/SectionHeader.vue，
+     样式随组件走 UnoCSS 工具类 + 语义 token，此处不再保留全局类 */
 
   /* footer 通用字体样式（统一在 footer-title/footer-link/footer-desc/footer-copy 中调整字号） */
   .footer-title {
@@ -199,6 +188,27 @@
   .footer-copy {
     font-size: 0.75rem;
     color: var(--fg-subtle);
+  }
+
+  /* 骨架屏 shimmer 动画：中性灰渐变（非业务色，light/dark 各写一份） */
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #f5f5f5 25%, #eeeeee 50%, #f5f5f5 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+  .dark .skeleton-shimmer {
+    background: linear-gradient(90deg, #1c1c21 25%, #2a2a31 50%, #1c1c21 75%);
+    background-size: 200% 100%;
+  }
+}
+
+/* keyframes 不能放进 @layer，否则会被 Tailwind preflight 层级压掉 */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 

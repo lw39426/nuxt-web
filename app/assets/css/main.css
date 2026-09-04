@@ -1,16 +1,17 @@
-@import '@unocss/reset/tailwind-v4.css';
+/* Tailwind v4 preflight（@layer base 内）已提供等价 reset；
+   不再引入 @unocss/reset/tailwind-v4.css——它是未分层 CSS，会无条件
+   压制 Nuxt UI（@layer utilities）里的 bg/text/rounded 等组件样式 */
 @import 'tailwindcss';
 @import '@nuxt/ui';
 /* 主题变量唯一事实源：定义配色 / 文字 / 线框等语义 token，并由 uno.config.ts 映射为类名 */
 @import './theme.css';
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* 通用 reset 一律交给 Tailwind v4 preflight（@layer base 内的 * 通配块，box-sizing 同样在内）。
+   禁止在此文件再写未分层的 * { margin/padding } 通配 reset：
+   未分层规则的优先级高于一切 @layer（base/components/utilities），且与优先级无关，
+   曾把 @layer components 里 section-header 等组件类的 margin-bottom 以及
+   Tailwind 层内所有 margin/padding 工具类全部压成 0（mb-* 能生效只是靠 UnoCSS
+   生成了同名未分层副本救场）。 */
 
 /* html {
   scroll-behavior: smooth;
