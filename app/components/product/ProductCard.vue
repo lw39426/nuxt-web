@@ -8,9 +8,10 @@
         <UiImage
           :src="product?.main_image"
           :alt="product?.name || ''"
+          fallback="/images/pro-loading.svg"
           loading="lazy"
           decoding="async"
-          class="w-full h-full object-contain p-4 sm:p-8"
+          class="w-full h-full object-contain p-8 sm:p-8"
         />
       </NuxtLink>
 
