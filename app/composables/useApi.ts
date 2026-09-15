@@ -36,8 +36,10 @@ export function useApi() {
   const refreshTokenCookie = useCookie<string | null>('refresh_token')
   const toast = import.meta.client ? useToast() : null
 
-  // 统一使用 Nuxt 自身的 API 路由,线上环境访问使用 /uapi 前缀，本地会代理 /api/v1
-  const baseURL = '/uapi'
+  // 前端统一直连 Nuxt server routes（server/api/v1/ 下的 BFF 路由），
+  // 请求自然进入 withMockFallback 链路（Mock 兜底 / 后端代理 / 错误透传）；
+  // 服务端到后端的地址由 NUXT_API_SECRET_BASE 按环境配置
+  const baseURL = '/api/v1'
 
   // if (import.meta.dev) {
   //   console.log(`[${import.meta.server ? 'SERVER' : 'CLIENT'}] 当前请求 baseURL:`, baseURL)

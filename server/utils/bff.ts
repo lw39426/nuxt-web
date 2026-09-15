@@ -85,7 +85,11 @@ export async function proxyToBackend<T>(
     body = await readBody(event).catch(() => undefined)
   }
 
-  return await $fetch<BffResponse<T>>(`/api/v1${path}`, {
+  // 拼接语义由 NUXT_API_SECRET_BASE 定义：
+  // - 本地: http://127.0.0.1:5050/api/v1
+  // - 线上: http://<服务器IP>/uapi（由 Nginx 的 /uapi location 转发到 Flask 的 /api/v1）
+  // 后端不可用时由此处抛错，由 withMockFallback 决定是否降级
+  return await $fetch<BffResponse<T>>(path, {
     baseURL: config.apiSecretBase,
     method,
     query: options.query ?? getQuery(event),

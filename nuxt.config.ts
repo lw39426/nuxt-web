@@ -47,8 +47,7 @@ export default defineNuxtConfig({
       link: [
         {
           rel: 'icon',
-          type: 'image/x-icon',
-          href: ''
+          href: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect fill="none" width="1" height="1"/></svg>'
         }
       ]
     }
@@ -67,8 +66,10 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
-    // 仅服务端可用：Flask 后端地址，BFF 层内网直连
-    apiSecretBase: process.env.NUXT_API_SECRET_BASE || 'http://127.0.0.1:5050',
+    // 仅服务端可用：后端地址（含路由前缀），BFF 层直连
+    // - 本地: http://127.0.0.1:5050/api/v1（直连 Flask）
+    // - 线上: http://<服务器IP>/uapi（由 Nginx 的 /uapi location 转发到 Flask 的 /api/v1）
+    apiSecretBase: process.env.NUXT_API_SECRET_BASE || 'http://127.0.0.1:5050/api/v1',
     // 仅服务端可用：BFF 请求 Flask 的超时时间（毫秒）
     apiTimeout: envNumber('NUXT_API_TIMEOUT', 8000),
     public: {
