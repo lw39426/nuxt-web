@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useHomeApi } from '~/composables/api/home';
-import SmartShopping from '~/components/home/SmartShopping.vue';
+import FeaturedCharacters from '~/components/home/FeaturedCharacters.vue';
 import AiAssistant from '~/components/home/AiAssistant.vue';
 import LatestNews from '~/components/home/LatestNews.vue';
 
@@ -17,9 +17,8 @@ const { getHomeData } = useHomeApi();
 const { data: homeData } = await useAsyncData('home-config', () => getHomeData());
 
 // 解构数据
-const hotProducts = computed(() => homeData.value?.hot_products || []);
-const newProducts = computed(() => homeData.value?.new_products || []);
-const featuredTagName = computed(() => homeData.value?.featured?.tag_name || '精选推荐');
+const featuredCharacters = computed(() => homeData.value?.hot_products || []);
+const featuredTagName = computed(() => homeData.value?.featured?.tag_name || '精选角色');
 const articles = computed(() => homeData.value?.articles || []);
 
 const bgImage = computed(() => '/futuristic-moon-background.webp');
@@ -50,16 +49,16 @@ const askAI = (question?: string) => {
           fetchpriority="high"
           decoding="async"
           :src="bgImage"
-          alt="新一代SU7"
+          alt="YouMi 角色百科"
         />
       </picture>
 
       <!-- 英雄标题板块 -->
       <div class="z-10 section-container text-center">
-        <h1
-          class="text-5xl pt-[3rem] md:pt-24 md:text-7xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
-          v-html="'Just Build It! <br /> Whatever You Want It To Be.'"
-        ></h1>
+        <h3
+          class="text-6xl pt-[3rem] md:pt-24 md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
+          v-html="'YouMi <br /> 每一个角色，都值得被认真看见。'"
+        ></h3>
         <p
           class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-6 md:mb-12 font-medium drop-shadow-sm"
         >
@@ -89,12 +88,8 @@ const askAI = (question?: string) => {
       </div>
     </section>
 
-    <!-- ========== 2. 智能购物体验 ========== -->
-    <SmartShopping
-      :hot-products="hotProducts"
-      :new-products="newProducts"
-      :featured-tag-name="featuredTagName"
-    />
+    <!-- ========== 2. 精选角色卡片墙 ========== -->
+    <FeaturedCharacters :characters="featuredCharacters" :featured-tag-name="featuredTagName" />
 
     <!-- ========== 3. 专属AI助手 ========== -->
     <AiAssistant />
