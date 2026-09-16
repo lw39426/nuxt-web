@@ -3,10 +3,7 @@
     <div v-if="isLoading" class="flex items-center justify-center min-h-[50vh]">
       <div class="i-carbon-circle-dash text-3xl animate-spin text-fg-subtle" />
     </div>
-    <div
-      v-else-if="product"
-      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 sm:pb-8"
-    >
+    <div v-else-if="product" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <!-- Breadcrumbs 面包屑部分 -->
       <nav class="hidden sm:flex text-sm text-fg-muted mb-8">
         <ol class="flex items-center space-x-2">
@@ -15,7 +12,7 @@
           </li>
           <li><span class="mx-2">/</span></li>
           <li>
-            <NuxtLink to="/products" class="hover:text-fg">商品</NuxtLink>
+            <NuxtLink to="/products" class="hover:text-fg">角色图鉴</NuxtLink>
           </li>
           <li><span class="mx-2">/</span></li>
           <li class="text-fg font-medium truncate">
@@ -25,53 +22,93 @@
       </nav>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-20">
-        <!-- Gallery (Left, larger) 商品图片展示区域 -->
+        <!-- Gallery (Left) 角色立绘 3D 翻转卡片区域 -->
         <div class="lg:col-span-7 space-y-6">
-          <div
-            class="aspect-[4/3] bg-surface-muted rounded-2xl overflow-hidden flex items-center justify-center relative group"
-          >
-            <UiImage
-              :src="activeImage"
-              class="w-full h-full object-contain p-4 sm:p-8 lg:p-12 transition-transform duration-500 group-hover:scale-105"
-            />
-            <button
-              class="absolute top-4 right-4 p-3 rounded-full bg-glass backdrop-blur hover:bg-elevated transition-colors"
+          <!-- 翻转入场动画容器 + 悬停/点击翻转卡片 -->
+          <div class="flip-entry">
+            <div
+              class="flip-card relative w-full cursor-pointer"
+              :class="{ 'is-flipped': cardFlipped }"
+              @mouseenter="cardFlipped = true"
+              @mouseleave="cardFlipped = false"
+              @click="cardFlipped = !cardFlipped"
             >
-              <div class="i-carbon-maximize text-xl" />
-            </button>
+              <!-- 正面：角色立绘 -->
+              <div
+                class="flip-face aspect-[4/3] rounded-2xl overflow-hidden bg-surface-muted flex items-center justify-center"
+              >
+                <UiImage
+                  :src="activeImage"
+                  :alt="product.title"
+                  fallback="/images/pro-loading.svg"
+                  class="w-full h-full object-contain p-4 sm:p-8 lg:p-12"
+                />
+              </div>
+              <!-- 背面：角色档案卡 -->
+              <div
+                class="flip-face flip-face-back aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8 sm:p-10 flex flex-col justify-between"
+              >
+                <div>
+                  <p class="text-xs text-white/50 mb-2 tracking-wide">
+                    {{ product.origin || product.brand }}
+                  </p>
+                  <h2 class="text-3xl sm:text-4xl font-bold leading-tight">
+                    {{ product.title }}
+                  </h2>
+                  <div class="mt-4 flex items-center gap-2 flex-wrap">
+                    <span
+                      v-if="product.characterType"
+                      class="text-xs px-2 py-1 rounded-full bg-white/10 text-white/90"
+                    >
+                      {{ product.characterType }}
+                    </span>
+                    <span v-if="product.era" class="text-xs text-white/50">
+                      {{ product.era }}
+                    </span>
+                  </div>
+                </div>
+                <!-- 背面四维评分速览 -->
+                <div v-if="ratingDims.length > 0" class="grid grid-cols-2 gap-x-6 gap-y-3">
+                  <div v-for="dim in ratingDims" :key="dim.key">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs text-white/60">{{ dim.label }}</span>
+                      <span class="text-sm font-bold">{{ dim.value.toFixed(1) }}</span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        class="h-full rounded-full transition-all duration-1000 ease-out"
+                        :class="dim.barColor"
+                        :style="{ width: barsMounted ? `${dim.value * 10}%` : '0%' }"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex gap-4 overflow-x-auto pb-2">
+          <p class="text-center text-xs text-fg-subtle">悬停 / 点击卡片，查看角色档案</p>
+
+          <!-- 多图缩略图（仅一张时隐藏） -->
+          <div v-if="product.images.length > 1" class="flex gap-4 overflow-x-auto pb-2">
             <button
               v-for="img in product?.images"
               :key="img"
-              class="w-20 h-20 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0 rounded-xl border-1 overflow-hidden bg-surface-muted transition-all"
+              class="w-20 h-20 flex-shrink-0 rounded-xl border-1 overflow-hidden bg-surface-muted transition-all"
               :class="activeImage === img ? 'border-fg' : 'border-transparent hover:border-line'"
               @click="activeImage = img"
             >
               <UiImage :src="img" class="w-full h-full object-contain p-2" />
             </button>
           </div>
-          <!-- 商品富文本展示 -->
-          <section
-            v-if="richTextContent"
-            class="rounded-3xl border border-line bg-surface-muted p-6 sm:p-8"
-          >
-            <div class="flex items-center justify-between gap-3 mb-6">
-              <h2 class="text-lg sm:text-xl font-bold text-fg">图文详情</h2>
-              <span class="text-xs text-fg-muted">商品卖点与详细说明</span>
-            </div>
-            <article
-              class="prose prose-sm sm:prose-base dark:prose-invert max-w-none text-fg-muted"
-            >
-              <div v-html="richTextContent"></div>
-            </article>
-          </section>
         </div>
 
-        <!-- Info (Right, Sticky) 商品详细信息区域 -->
+        <!-- Info (Right, Sticky) 角色详细信息区域 -->
         <div class="lg:col-span-5">
           <div class="space-y-6 sm:space-y-8 lg:sticky lg:top-24">
             <div>
+              <p v-if="product.origin" class="text-sm text-fg-muted mb-2">
+                {{ product.origin }}
+              </p>
               <h1 class="text-2xl sm:text-3xl font-bold text-fg mb-2 leading-tight">
                 {{ product?.title }}
               </h1>
@@ -81,125 +118,136 @@
                     v-for="i in 5"
                     :key="i"
                     :class="
-                      i <= Math.round(product?.rating || 0)
+                      i <= Math.round((product?.rating || 0) / 2)
                         ? 'i-carbon:star-filled'
                         : 'i-carbon:star'
                     "
                   />
                 </div>
-                <span class="text-sm text-fg-muted">{{ product?.reviewCount }} reviews</span>
+                <span class="text-sm text-fg-muted"
+                  >综合评分 {{ product?.rating || '-' }} / 10</span
+                >
               </div>
             </div>
 
-            <!-- Price Section -->
-            <div class="bg-surface-muted p-4 rounded-lg space-y-2">
-              <div class="flex items-baseline gap-3">
-                <span class="text-3xl sm:text-4xl font-bold text-red-600"
-                  >¥{{ product?.price }}</span
-                >
-                <span v-if="product?.originalPrice" class="text-lg text-fg-muted line-through"
-                  >¥{{ product.originalPrice }}</span
-                >
-              </div>
-              <p class="text-xs text-fg-muted">到手价</p>
-            </div>
-
-            <!-- Promotions -->
-            <div v-if="product?.promotions?.length" class="space-y-2">
-              <div
-                v-for="(promo, idx) in product.promotions"
-                :key="idx"
-                class="text-sm text-fg-muted flex items-start gap-2"
-              >
-                <span class="text-red-500 font-bold mt-0.5">·</span>
-                <span>{{ promo }}</span>
+            <!-- 四维人工评分 -->
+            <div v-if="ratingDims.length > 0" class="space-y-3">
+              <h3 class="text-sm font-bold text-fg">四维评分</h3>
+              <div v-for="dim in ratingDims" :key="dim.key" class="flex items-center gap-3">
+                <span class="w-10 shrink-0 text-xs text-fg-muted">{{ dim.label }}</span>
+                <div class="flex-1 h-2 rounded-full bg-surface-muted overflow-hidden">
+                  <div
+                    class="h-full rounded-full transition-all duration-1000 ease-out"
+                    :class="dim.barColor"
+                    :style="{ width: barsMounted ? `${dim.value * 10}%` : '0%' }"
+                  />
+                </div>
+                <span class="w-8 text-right text-xs font-semibold text-fg">
+                  {{ dim.value.toFixed(1) }}
+                </span>
               </div>
             </div>
 
             <div class="h-px bg-line" />
 
-            <!-- 颜色、版本、数量Options -->
-            <div class="space-y-3">
-              <!-- Quantity -->
-              <div>
-                <label class="text-sm font-bold text-fg block mb-1">数量</label>
-                <div class="flex items-center gap-2 border border-line rounded-lg w-fit">
-                  <button
-                    class="px-3 py-2 hover:bg-surface-muted"
-                    @click="quantity = Math.max(1, quantity - 1)"
-                  >
-                    −
-                  </button>
-                  <span class="w-8 text-center font-medium">{{ quantity }}</span>
-                  <button class="px-3 py-2 hover:bg-surface-muted" @click="quantity = quantity + 1">
-                    +
-                  </button>
-                </div>
-              </div>
+            <!-- 能力设定 -->
+            <div v-if="product.highlights?.length" class="space-y-3">
+              <h3 class="text-sm font-bold text-fg">能力设定</h3>
+              <ul class="space-y-2">
+                <li
+                  v-for="(highlight, idx) in product.highlights"
+                  :key="idx"
+                  class="flex items-start gap-2 text-sm text-fg-muted"
+                >
+                  <span class="text-accent mt-0.5">◆</span>
+                  <span>{{ highlight.text }}</span>
+                </li>
+              </ul>
             </div>
 
-            <!-- Specs and Description Section -->
-            <div class="border-t border-line pt-6 space-y-6">
-              <!-- Two Column Grid -->
-              <div class="grid grid-cols-1 gap-6 sm:gap-8">
-                <!-- Description -->
-                <div class="space-y-4">
-                  <h3 class="text-lg font-bold text-fg mb-4">商品描述</h3>
-                  <div class="text-sm text-fg-muted leading-relaxed space-y-3">
-                    <p>{{ product?.description }}</p>
-                    <p v-if="product?.title?.includes('Reno')" class="text-fg-muted">
-                      OPPO Reno
-                      系列致力于为消费者提供最好的拍照体验和电池续航能力。该产品集合了最新的技术创新和精致的工业设计。
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="hidden sm:flex gap-3 pt-4">
-              <button
-                class="flex-1 bg-fg text-canvas h-12 rounded-lg font-bold text-base hover:opacity-90 transition-opacity shadow-md"
+            <!-- 标签 -->
+            <div v-if="product.tags?.length" class="flex flex-wrap gap-2">
+              <span
+                v-for="tag in product.tags"
+                :key="tag.id"
+                class="text-xs px-2 py-1 rounded text-white"
+                :style="{ backgroundColor: tag.color || '#3b82f6' }"
               >
-                加入购物车
-              </button>
-              <button
-                class="flex-1 bg-red-600 text-white h-12 rounded-lg font-bold text-base hover:bg-red-700 transition-colors shadow-md"
-              >
-                立即购买
-              </button>
+                {{ tag.name }}
+              </span>
             </div>
 
-            <!-- Guarantees -->
-            <div class="pt-2 sm:pt-4 space-y-2">
-              <p class="text-xs font-bold text-fg">服务保障</p>
-              <div
-                v-for="guarantee in guaranteeList"
-                :key="guarantee.name"
-                class="flex items-center gap-2 text-xs text-fg-muted"
-              >
-                <span class="text-green-600">✓</span>
-                <span>{{ guarantee.name }}</span>
-              </div>
-            </div>
-
-            <!-- Highlights Grid (Above Product Details) -->
-            <div class="grid grid-cols-2 gap-3 sm:gap-4 py-4 sm:py-6 border-t border-b border-line">
-              <div v-for="(highlight, idx) in product.highlights" :key="idx" class="text-center">
-                <div class="mb-1 sm:mb-2 text-xl sm:text-2xl">✨</div>
-                <p class="text-xs sm:text-sm font-medium text-fg">
-                  {{ highlight.text }}
-                </p>
-              </div>
-            </div>
+            <!-- 收藏按钮 -->
+            <button
+              class="w-full py-3 rounded-xl font-bold text-base transition-colors border"
+              :class="
+                isFavorite
+                  ? 'bg-red-500 text-white border-red-500 hover:bg-red-600'
+                  : 'border-fg text-fg hover:bg-fg hover:text-canvas'
+              "
+              :disabled="favoritePending"
+              @click="toggleFavorite"
+            >
+              {{ isFavorite ? '♥ 已收藏' : '♡ 收藏角色' }}
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Related Products 推荐相关商品 -->
-      <div class="mt-14 sm:mt-20 lg:mt-32 border-t border-line pt-10 sm:pt-14 lg:pt-20">
+      <!-- 角色资料区块：背景故事 / 能力 / 关系 / 台词 -->
+      <div class="mt-14 sm:mt-20 lg:mt-24 border-t border-line pt-10 sm:pt-14">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12">
+          <!-- 背景故事 -->
+          <section v-if="product.background" class="lg:col-span-2">
+            <h2 class="text-lg sm:text-xl font-bold text-fg mb-4">背景故事</h2>
+            <p class="text-sm sm:text-base text-fg-muted leading-loose">
+              {{ product.background }}
+            </p>
+          </section>
+
+          <!-- 人物关系 -->
+          <section v-if="product.relationships?.length">
+            <h2 class="text-lg sm:text-xl font-bold text-fg mb-4">人物关系</h2>
+            <ul class="space-y-3">
+              <li
+                v-for="(rel, idx) in product.relationships"
+                :key="idx"
+                class="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-muted px-4 py-3"
+              >
+                <span class="text-sm font-medium text-fg">{{ rel.name }}</span>
+                <span class="text-xs text-fg-muted text-right">{{ rel.relation }}</span>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- 经典台词 -->
+        <section v-if="product.quotes?.length" class="mt-12">
+          <h2 class="text-lg sm:text-xl font-bold text-fg mb-6">经典台词</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <blockquote
+              v-for="(quote, idx) in product.quotes"
+              :key="idx"
+              class="relative rounded-2xl border border-line bg-surface-muted p-6 sm:p-8"
+            >
+              <div class="absolute -top-3 left-6 text-4xl text-accent/30 font-serif">"</div>
+              <p class="text-base sm:text-lg text-fg font-medium leading-relaxed">
+                {{ quote.text }}
+              </p>
+              <footer v-if="quote.scene" class="mt-3 text-xs text-fg-subtle">
+                —— {{ quote.scene }}
+              </footer>
+            </blockquote>
+          </div>
+        </section>
+      </div>
+
+      <!-- Related Characters 同作品角色推荐 -->
+      <div class="mt-14 sm:mt-20 lg:mt-24 border-t border-line pt-10 sm:pt-14">
         <div class="flex items-center justify-between mb-12">
-          <h2 class="text-xl sm:text-2xl font-bold text-fg">你可能也喜欢</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-fg">同作品角色</h2>
           <NuxtLink to="/products" class="text-sm font-medium hover:underline"
-            >查看全部商品</NuxtLink
+            >查看全部角色</NuxtLink
           >
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
@@ -212,27 +260,13 @@
           </div>
         </div>
       </div>
-
-      <!-- Mobile Bottom Action Bar -->
-      <div
-        class="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-glass backdrop-blur border-t border-line p-3"
-      >
-        <div class="grid grid-cols-2 gap-3">
-          <button class="w-full bg-fg text-canvas h-11 rounded-lg font-bold text-sm">
-            加入购物车
-          </button>
-          <button class="w-full bg-red-600 text-white h-11 rounded-lg font-bold text-sm">
-            立即购买
-          </button>
-        </div>
-      </div>
     </div>
-    <!-- Product Not Found 商品空状态 -->
+    <!-- Character Not Found 角色空状态 -->
     <div v-else class="flex items-center justify-center min-h-[50vh]">
       <div class="text-center">
-        <h1 class="text-2xl font-bold mb-4">商品未找到</h1>
+        <h1 class="text-2xl font-bold mb-4">角色未找到</h1>
         <NuxtLink to="/products">
-          <UButton color="neutral">返回商品列表</UButton>
+          <UButton color="neutral">返回角色图鉴</UButton>
         </NuxtLink>
       </div>
     </div>
@@ -243,27 +277,12 @@
 import type { Product } from '~/types/product';
 import { useProductApi } from '~/composables/api/product';
 import { useProducts } from '~/composables/useProducts';
-
-interface ProductColorOption {
-  name: string;
-  hex: string;
-}
+import { useAuthStore } from '~/stores/auth';
+import { useUiStore } from '~/stores/ui';
+import { useFavoriteStore } from '~/stores/favorite';
 
 interface ProductHighlight {
   text: string;
-}
-
-interface ProductGuarantee {
-  name: string;
-  description?: string;
-}
-
-interface ProductService {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  discount?: string;
 }
 
 interface ProductDetailViewModel {
@@ -271,22 +290,20 @@ interface ProductDetailViewModel {
   code?: string;
   title: string;
   description: string;
-  price: number;
-  originalPrice?: number;
   rating?: number;
   reviewCount?: number;
   images: string[];
-  promotions?: string[];
-  colorOptions?: ProductColorOption[];
-  memoryOptions?: string[];
-  services?: ProductService[];
-  guarantees?: ProductGuarantee[];
+  brand?: string;
   highlights?: ProductHighlight[];
-  screenSize?: string;
-  screenType?: string;
-  battery?: string;
-  protectionClass?: string;
-  detailHtml?: string;
+  tags?: Product['tags'];
+  // YouMi 角色档案扩展字段
+  era?: string;
+  characterType?: string;
+  origin?: string;
+  background?: string;
+  ratings?: Product['ratings'];
+  relationships?: Product['relationships'];
+  quotes?: Product['quotes'];
 }
 
 const route = useRoute();
@@ -294,14 +311,20 @@ const productIdentifier = computed(() => String(route.params.id ?? '').trim());
 const { getDetail, related } = useProductApi();
 const { getProductByIdentifier, loadProducts } = useProducts();
 
+const authStore = useAuthStore();
+const uiStore = useUiStore();
+// 收藏态统一走全局缓存 store，与列表卡片跨页同步
+const favoriteStore = useFavoriteStore();
+const favoritePending = ref(false);
+
 const activeImage = ref('');
-const selectedColor = ref('');
-const selectedMemory = ref('');
-const selectedServices = ref<string[]>([]);
-const quantity = ref(1);
+// 3D 翻转卡片状态：false 显示立绘正面，true 显示档案背面
+const cardFlipped = ref(false);
+// 四维评分条动画：挂载后延迟触发宽度过渡
+const barsMounted = ref(false);
 
 /**
- * SSR 预取商品详情：接口优先、本地 Mock 兜底
+ * SSR 预取角色详情：接口优先、本地 Mock 兜底
  * - 服务端直接渲染完整详情，客户端水合复用 payload，避免二次请求
  * - 兜底数据一并放入返回值，保证 SSR 与客户端渲染一致
  */
@@ -349,24 +372,7 @@ const { data: detailData, pending } = await useAsyncData(
 
 const isLoading = computed(() => pending.value);
 
-/** 转义文本内容，避免兜底富文本直接注入原始 HTML */
-function escapeHtml(value?: string): string {
-  if (!value) return '';
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-/** 将后端返回的分单位金额转换为页面展示的元金额 */
-function formatApiPrice(value?: number): number {
-  if (typeof value !== 'number' || Number.isNaN(value)) return 0;
-  return Number(value.toFixed(2));
-}
-
-/** 归一化商品图片列表，保证详情页始终有可用主图 */
+/** 归一化图片列表，保证详情页始终有可用主图 */
 function normalizeImages(images?: string[], fallbackImage?: string): string[] {
   const normalizedImages = Array.isArray(images)
     ? images.filter((item) => typeof item === 'string' && item.trim())
@@ -379,102 +385,58 @@ function normalizeImages(images?: string[], fallbackImage?: string): string[] {
   return fallbackImage ? [fallbackImage] : [];
 }
 
-/** 根据现有商品信息生成兜底富文本内容 */
-function buildFallbackDetailHtml(product: Partial<ProductDetailViewModel>): string {
-  const highlightHtml = (product.highlights || [])
-    .map((item) => `<li>${escapeHtml(item.text)}</li>`)
-    .join('');
-  const promotionHtml = (product.promotions || [])
-    .map((item) => `<li>${escapeHtml(item)}</li>`)
-    .join('');
-
-  return `
-    <section>
-      <h3>${escapeHtml(product.title || '商品介绍')}</h3>
-      <p>${escapeHtml(product.description || '暂无商品详情介绍')}</p>
-    </section>
-    ${highlightHtml ? `<section><h3>核心亮点</h3><ul>${highlightHtml}</ul></section>` : ''}
-    ${promotionHtml ? `<section><h3>优惠信息</h3><ul>${promotionHtml}</ul></section>` : ''}
-  `.trim();
-}
-
-/** 将后端商品详情映射为页面使用的展示模型 */
+/** 将后端角色详情映射为页面使用的展示模型 */
 function mapApiProductToViewModel(source: Product): ProductDetailViewModel {
-  const currentPrice = source.salePrice > 0 ? source.salePrice : source.price;
-  const originalPrice = source.salePrice > 0 && source.salePrice < source.price ? source.price : 0;
-  const images = normalizeImages(source.images, source.main_image);
-
-  const viewModel: ProductDetailViewModel = {
+  return {
     id: source.id,
     code: source.code,
     title: source.name,
     description: source.description,
-    price: formatApiPrice(currentPrice),
-    originalPrice: originalPrice ? formatApiPrice(originalPrice) : undefined,
+    rating: source.rating,
     reviewCount: source.favorite_count || 0,
-    rating: source.favorite_count ? 4.8 : 0,
-    images,
-    promotions: source.tags?.map((tag) => tag.name).filter(Boolean) || [],
-    memoryOptions: [],
-    colorOptions: [],
-    services: [],
-    guarantees: [],
-    highlights: source.tags?.map((tag) => ({ text: tag.name })) || [],
-    detailHtml: source.detail_html?.trim()
+    images: normalizeImages(source.images, source.main_image),
+    brand: source.brand,
+    highlights: source.highlights?.length
+      ? source.highlights
+      : source.tags?.map((tag) => ({ text: tag.name })) || [],
+    tags: source.tags,
+    era: source.era,
+    characterType: source.character_type,
+    origin: source.origin,
+    background: source.background,
+    ratings: source.ratings,
+    relationships: source.relationships,
+    quotes: source.quotes
   };
-
-  if (!viewModel.detailHtml) {
-    viewModel.detailHtml = buildFallbackDetailHtml(viewModel);
-  }
-
-  return viewModel;
 }
 
-/** 将本地 mock 商品映射为页面使用的展示模型 */
+/** 将本地 mock 角色数据映射为页面使用的展示模型 */
 function mapMockProductToViewModel(source: Record<string, any>): ProductDetailViewModel {
-  const viewModel: ProductDetailViewModel = {
+  return {
     id: Number(source.id),
     code: source.code,
-    title: source.title || source.name || '未命名商品',
+    title: source.title || source.name || '未命名角色',
     description: source.description || '',
-    price: Number(source.price || 0),
-    originalPrice: source.originalPrice,
-    reviewCount: source.reviewCount || 0,
     rating: source.rating || 0,
+    reviewCount: source.reviewCount || 0,
     images: normalizeImages(source.images, source.main_image),
-    promotions: Array.isArray(source.promotions) ? source.promotions : [],
-    memoryOptions: Array.isArray(source.memoryOptions) ? source.memoryOptions : [],
-    colorOptions: Array.isArray(source.colorOptions) ? source.colorOptions : [],
-    services: Array.isArray(source.services) ? source.services : [],
-    guarantees: Array.isArray(source.guarantees) ? source.guarantees : [],
+    brand: source.brand,
     highlights: Array.isArray(source.highlights) ? source.highlights : [],
-    screenSize: source.screenSize,
-    screenType: source.screenType,
-    battery: source.battery,
-    protectionClass: source.protectionClass,
-    detailHtml:
-      typeof source.detail_html === 'string' && source.detail_html.trim()
-        ? source.detail_html
-        : undefined
+    tags: Array.isArray(source.tags) ? source.tags : [],
+    era: source.era,
+    characterType: source.character_type,
+    origin: source.origin,
+    background: source.background,
+    ratings: source.ratings,
+    relationships: Array.isArray(source.relationships) ? source.relationships : undefined,
+    quotes: Array.isArray(source.quotes) ? source.quotes : undefined
   };
-
-  if (!viewModel.detailHtml) {
-    viewModel.detailHtml = buildFallbackDetailHtml(viewModel);
-  }
-
-  return viewModel;
 }
 
-/** 将后端商品转换为 ProductCard 可直接展示的数据 */
+/** 将后端角色转换为 ProductCard 可直接展示的数据 */
 function mapApiProductToCardProduct(source: Product): Product {
-  const currentPrice = source.salePrice > 0 ? source.salePrice : source.price;
-  const originalPrice =
-    source.salePrice > 0 && source.salePrice < source.price ? source.price : source.salePrice;
-
   return {
     ...source,
-    price: formatApiPrice(currentPrice),
-    salePrice: originalPrice > 0 ? formatApiPrice(originalPrice) : 0,
     main_image: source.main_image || source.images?.[0] || '',
     images: normalizeImages(source.images, source.main_image)
   };
@@ -488,28 +450,99 @@ const product = computed(() =>
     : fallbackProduct.value
 );
 
-const richTextContent = computed(() => product.value?.detailHtml || '');
-
-const guaranteeList = computed(() => {
-  if (product.value?.guarantees?.length) return product.value.guarantees;
+/** 四维评分展示配置（人气 / 战力 / 智商 / 颜值） */
+const ratingDims = computed(() => {
+  const r = product.value?.ratings;
+  if (!r) return [];
   return [
-    { name: '7天价保', description: '7天内降价可补差价' },
-    { name: '官方正品', description: '100%原厂正品' },
-    { name: '全国联保', description: '全国联保服务' },
-    { name: '官方发货&售后', description: '官方发货与售后支持' }
+    { key: 'popularity', label: '人气', value: r.popularity, barColor: 'bg-amber-400' },
+    { key: 'power', label: '战力', value: r.power, barColor: 'bg-red-500' },
+    { key: 'intelligence', label: '智商', value: r.intelligence, barColor: 'bg-blue-500' },
+    { key: 'charm', label: '颜值', value: r.charm, barColor: 'bg-pink-500' }
   ];
 });
 
-/** 商品切换后同步默认选中的图、颜色、版本和数量 */
+/** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
+const isFavorite = computed(() =>
+  product.value ? favoriteStore.has('product', product.value.id) : false
+);
+
+/** 挂载后触发评分条动画与收藏缓存预热 */
+onMounted(() => {
+  favoriteStore.ensureLoaded().catch(() => {
+    // 加载失败静默降级为"未收藏"展示，不阻塞详情页渲染
+  });
+  setTimeout(() => {
+    barsMounted.value = true;
+  }, 300);
+});
+
+/** 收藏 / 取消收藏：未登录唤起登录弹窗；乐观更新与失败回滚均在 store 内完成 */
+const toggleFavorite = async () => {
+  if (!authStore.isAuthenticated) {
+    uiStore.openAuthModal('login');
+    return;
+  }
+  if (!product.value || favoritePending.value) return;
+  favoritePending.value = true;
+  try {
+    // store 内部：先改本地 Set（UI 立即反馈）→ 请求 → 成功按后端回正 / 失败回滚
+    await favoriteStore.toggle('product', product.value.id);
+  } catch {
+    // 失败提示由 useApi 全局 toast 兜底，本地状态已在 store 内回滚
+  } finally {
+    favoritePending.value = false;
+  }
+};
+
+/** 角色切换后同步默认主图并复位翻转状态 */
 watchEffect(() => {
   if (product.value) {
     activeImage.value = product.value.images?.[0] || '';
-    selectedColor.value = product.value.colorOptions?.[0]?.name || '';
-    selectedMemory.value = product.value.memoryOptions?.[0] || '256GB';
-    quantity.value = 1;
-    selectedServices.value = [];
+    cardFlipped.value = false;
   }
 });
 
 const relatedProducts = computed(() => detailData.value?.relatedItems ?? []);
 </script>
+
+<style scoped>
+/* 翻转卡片入场动画：整卡以 3D 翻转方式进入视野 */
+.flip-entry {
+  perspective: 1200px;
+  animation: flip-entry 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes flip-entry {
+  from {
+    transform: rotateY(-180deg);
+    opacity: 0.3;
+  }
+  to {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+/* 翻转卡片本体：悬停 / 点击时正反面互换 */
+.flip-card {
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+/* 正反面：背面隐藏，避免镜像穿透 */
+.flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-face-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+</style>

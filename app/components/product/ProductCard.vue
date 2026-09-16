@@ -58,34 +58,44 @@
         </h3>
       </NuxtLink>
 
+      <!-- 角色一句话简介 -->
+      <p
+        v-if="product.description"
+        class="mb-1 sm:mb-2 text-xs sm:text-sm text-fg-muted line-clamp-2"
+      >
+        {{ product.description }}
+      </p>
+
       <div class="mt-auto">
-        <div class="flex items-end justify-between mb-3">
-          <div class="flex flex-col">
-            <div class="flex items-baseline gap-2">
-              <span class="text-base sm:text-lg font-bold text-fg">¥{{ currentPrice }}</span>
-              <span v-if="hasDiscount" class="text-xs text-fg-subtle line-through"
-                >¥{{ originalPrice }}</span
-              >
-            </div>
-            <div class="flex items-center gap-2 mt-0.5 sm:mt-1">
-              <span class="text-[10px] sm:text-xs text-fg-subtle"
-                >销量: {{ product.sales || 0 }}</span
-              >
-              <span class="text-[10px] sm:text-xs text-fg-subtle"
-                >库存: {{ product.stock || 0 }}</span
-              >
-            </div>
+        <!-- 角色信息：类型 / 年代 / 人气评分 -->
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span
+              v-if="product.character_type"
+              class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-accent/15 text-fg-subtle font-medium"
+            >
+              {{ product.character_type }}
+            </span>
+            <span v-if="product.era" class="text-[10px] sm:text-xs text-fg-subtle">
+              {{ product.era }}
+            </span>
           </div>
+          <span
+            v-if="product.ratings?.popularity"
+            class="text-[10px] sm:text-xs text-fg-muted flex items-center gap-0.5"
+          >
+            <div class="i-carbon-star-filled text-amber-400" />
+            {{ product.ratings.popularity }}
+          </span>
         </div>
 
-        <!-- Add to Bag Button -->
-        <button
-          class="w-full py-2 border border-fg rounded-lg text-xs sm:text-sm font-medium hover:bg-fg hover:text-canvas transition-colors disabled:opacity-60"
-          :disabled="cartPending"
-          @click.stop="addToCart"
+        <!-- 查看详情入口 -->
+        <NuxtLink
+          :to="productDetailPath"
+          class="block w-full py-2 border border-fg rounded-lg text-xs sm:text-sm font-medium hover:bg-fg hover:text-canvas transition-colors text-center"
         >
-          {{ cartPending ? '加入中…' : 'Add to bag' }}
-        </button>
+          查看图鉴
+        </NuxtLink>
       </div>
     </div>
   </div>
@@ -93,7 +103,6 @@
 
 <script setup lang="ts">
 import type { Product } from '~/types/product';
-import { useCartApi } from '~/composables/api/cart';
 import { useAuthStore } from '~/stores/auth';
 import { useUiStore } from '~/stores/ui';
 import { useFavoriteStore } from '~/stores/favorite';
@@ -106,36 +115,12 @@ const authStore = useAuthStore();
 const uiStore = useUiStore();
 // 收藏态统一走全局缓存 store：N 张卡片共享 1 次全量拉取，卡片自身 0 查询请求
 const favoriteStore = useFavoriteStore();
-const { add: addToCartApi } = useCartApi();
-// useToast 属客户端能力：SSR 的 setup 阶段调用会使 vite-node worker 直接崩溃
-// （曾导致全站 500），这里沿用 useApi 的写法仅在客户端实例化
-const toast = import.meta.client ? useToast() : null;
 const favoritePending = ref(false);
-const cartPending = ref(false);
 
 /** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
 const isFavorite = computed(() => favoriteStore.has('product', props.product.id));
 
 const productDetailPath = computed(() => `/products/${props.product.code || props.product.id}`);
-
-/** 价格格式化（假设接口返回单位为分） */
-const formatPrice = (price?: number) => {
-  if (!price) return '0.00';
-  return price.toFixed(2);
-};
-
-const hasDiscount = computed(() => {
-  return props.product.salePrice > 0 && props.product.salePrice < props.product.price;
-});
-
-const currentPrice = computed(() => {
-  const price = hasDiscount.value ? props.product.salePrice : props.product.price;
-  return formatPrice(price);
-});
-
-const originalPrice = computed(() => {
-  return formatPrice(props.product.price);
-});
 
 /** 预热收藏缓存：并发去重（N 张卡片共享 1 个 Promise），命中缓存则 0 请求 */
 onMounted(() => {
@@ -159,24 +144,6 @@ const toggleFavorite = async () => {
     // 失败提示由 useApi 全局 toast 兜底，本地状态已在 store 内回滚
   } finally {
     favoritePending.value = false;
-  }
-};
-
-/** 加入购物车（固定 1 件） */
-const addToCart = async () => {
-  if (!authStore.isAuthenticated) {
-    uiStore.openAuthModal('login');
-    return;
-  }
-  if (cartPending.value) return;
-  cartPending.value = true;
-  try {
-    await addToCartApi({ product_code: props.product.code, quantity: 1 });
-    toast?.add({ id: `cart-add-${props.product.id}`, title: '已加入购物车', color: 'success' });
-  } catch {
-    // 失败提示由 useApi 全局 toast 兜底
-  } finally {
-    cartPending.value = false;
   }
 };
 </script>

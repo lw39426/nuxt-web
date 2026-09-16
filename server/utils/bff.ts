@@ -17,6 +17,8 @@ export interface ProxyOptions {
   body?: any
   /** 是否透传浏览器 Cookie，默认 true */
   forwardCookie?: boolean
+  /** 后端响应适配器：代理成功后对 data 做结构归一化（Mock 路径不经过） */
+  transform?: (data: any) => any
 }
 
 /**
@@ -128,6 +130,10 @@ export async function withMockFallback<T>(
 
   try {
     const res = await proxyToBackend<T>(event, path, options)
+    // 后端响应结构归一化（如 data.data → products），仅代理路径生效
+    if (options.transform) {
+      res.data = options.transform(res.data)
+    }
     setResponseHeader(event, 'X-Data-Source', 'backend')
     return res
   } catch (error: any) {

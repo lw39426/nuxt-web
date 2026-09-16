@@ -2,38 +2,36 @@
 const aiCapabilities = [
   {
     icon: 'i-carbon-chat-bot',
-    title: '智能问答',
-    desc: '7x24小时在线，秒级响应你的任何产品疑问'
+    title: '角色问答',
+    desc: '随时解答你对动漫角色的各种疑问，从能力到背景故事'
   },
   {
     icon: 'i-carbon-recommend',
-    title: '个性推荐',
-    desc: '基于深度学习的用户画像，精准匹配你的喜好'
+    title: '智能推荐',
+    desc: '根据你的喜好和浏览历史，推荐你可能喜欢的角色'
   },
   {
     icon: 'i-carbon-visual-recognition',
-    title: '识图找物',
-    desc: '上传图片即可智能识别并推荐相似商品'
+    title: '角色识别',
+    desc: '上传图片即可识别角色信息，快速找到你想了解的角色'
   },
   {
     icon: 'i-carbon-chart-line',
-    title: '价格预测',
-    desc: 'AI分析市场趋势，帮你把握最佳购买时机'
+    title: '角色对比',
+    desc: '多维度对比不同角色的各项属性，帮你找出最强角色'
   }
 ];
 
 const demoMessages = [
-  { role: 'user', content: '我想买一台适合编程的笔记本电脑' },
+  { role: 'user', content: '推荐一些海贼王里的强力角色' },
   {
     role: 'ai',
-    content:
-      '推荐 MacBook Pro 16英寸 M3芯片，32GB内存，512GB SSD，适合高强度开发工作。当前优惠价 ¥18,999。',
+    content: '推荐蒙奇·D·路飞，四皇之一，橡胶果实能力者，人气评分 9.8。目前已觉醒尼卡形态。',
     hasProduct: true
   },
   {
     role: 'ai',
-    content:
-      '或者推荐 ThinkPad X1 Carbon Gen 12，仅重 0.99kg，14英寸2.8K OLED屏幕，同样适合编程。¥12,499起。',
+    content: '或者罗罗诺亚·索隆，草帽团剑士，三刀流高手，战力评分 9.2。正在修炼霸王色霸气。',
     hasProduct: true
   }
 ];
@@ -65,11 +63,11 @@ const askAI = () => {
         class="max-w-3xl mx-auto mb-16 md:mb-24"
         align="center"
         tone="accent"
-        label="AI 赋能"
+        label="AI 助手"
         icon="i-lucide-sparkles"
-        title="你的专属 AI 助手"
-        highlight="AI 助手"
-        description="不只是聊天机器人，更是懂你的购物顾问"
+        title="你的专属角色顾问"
+        highlight="角色顾问"
+        description="不只是聊天机器人，更是懂你的动漫角色百科全书"
       />
 
       <!-- 能力卡片 + 对话演示 -->
@@ -124,7 +122,7 @@ const askAI = () => {
                 />
               </div>
               <div>
-                <p class="text-base font-bold text-fg">小星 AI</p>
+                <p class="text-base font-bold text-fg">YouMi AI</p>
                 <p
                   class="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-widest"
                 >
@@ -156,10 +154,10 @@ const askAI = () => {
                   >
                     <div class="flex items-center gap-2">
                       <div
-                        class="i-carbon-shopping-cart text-xs text-purple-600 dark:text-purple-400"
+                        class="i-carbon-user-profile text-xs text-purple-600 dark:text-purple-400"
                       />
                       <span class="text-xs font-bold text-purple-600 dark:text-purple-400"
-                        >查看推荐商品</span
+                        >查看角色详情</span
                       >
                     </div>
                     <div
@@ -178,7 +176,7 @@ const askAI = () => {
                 <input
                   v-model="aiQuestion"
                   type="text"
-                  placeholder="试试问AI：推荐一款适合我的耳机..."
+                  placeholder="试试问AI：推荐一个海贼王里的强力角色..."
                   class="flex-1 bg-transparent text-sm text-fg placeholder:text-fg-subtle outline-none"
                   @keydown.enter.prevent="askAI"
                 />
@@ -207,7 +205,7 @@ const askAI = () => {
           class="inline-flex items-center gap-3 px-10 py-4 bg-fg text-canvas rounded-full text-sm font-bold hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1 transition-all duration-500 group"
         >
           <div class="i-lucide-sparkles text-lg group-hover:rotate-12 transition-transform" />
-          立即体验 AI 助手
+          开始探索角色
         </NuxtLink>
       </div>
     </div>

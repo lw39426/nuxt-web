@@ -1,11 +1,11 @@
 <template>
   <div class="bg-canvas min-h-screen pb-20">
     <!-- Store Header Section头部分类列表 -->
-    <!-- 
+    <!--
       Implemented based on Apple Store design
       Features: Gradient title, category navigation, responsive layout
     -->
-    <div class="bg-canvas-elevated pt-8 md:pt-16 md:pb-8 md:mb-8">
+    <div class="bg-canvas-elevated pt-8 md:pb-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Title and Subtitle Area 标题副标题区域 -->
         <div
@@ -16,11 +16,11 @@
               <span
                 class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500"
               >
-                商店
+                角色图鉴
               </span>
             </h1>
             <div class="mt-4 text-xl font-medium text-fg-muted">
-              <span class="text-fg font-bold">佳节到，别具好礼来欢庆。</span>
+              <span class="text-fg font-bold">每一个角色，都值得被认真看见。</span>
             </div>
           </div>
 
@@ -29,13 +29,13 @@
               href="#"
               class="text-fg-muted text-sm flex items-center gap-1 font-medium hover:text-fg md:justify-end"
             >
-              线下门店查询
+              共收录 {{ totalCharacters }} 位角色
               <div class="i-carbon-chevron-right text-xs" />
             </a>
           </div>
         </div>
 
-        <!-- Product Categories Navigation 产品分类导航 -->
+        <!-- Product Categories Navigation 作品分类导航（IP 系列） -->
         <div class="relative group">
           <!-- Scrollable container -->
           <div
@@ -73,13 +73,54 @@
       </div>
     </div>
 
+    <!-- 角色筛选栏：类型 / 年代 / 标签 -->
+    <div class="bg-canvas py-6 md:py-8 border-b border-line">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <!-- 单个筛选维度行（无候选项时隐藏，兼容后端旧数据） -->
+        <div
+          v-for="group in filterGroups.filter((g) => g.options.length > 0)"
+          :key="group.key"
+          class="flex items-start gap-3"
+        >
+          <span class="w-16 shrink-0 pt-1.5 text-sm font-medium text-fg-muted">
+            {{ group.label }}
+          </span>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="option in group.options"
+              :key="option"
+              :class="[
+                'px-3 py-1.5 rounded-full text-sm border transition-colors',
+                isSelected(group.key, option)
+                  ? 'bg-accent text-white border-accent'
+                  : 'text-fg border-line hover:border-accent hover:text-accent'
+              ]"
+              @click="toggleFilter(group.key, option)"
+            >
+              {{ option }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 已选筛选条件汇总 + 清空 -->
+        <div v-if="activeFilterCount > 0" class="flex items-center gap-3">
+          <span class="text-sm text-fg-muted">
+            已筛选 <span class="text-fg font-semibold">{{ filteredCharacterCount }}</span> 位角色
+          </span>
+          <button class="text-sm text-accent hover:underline" @click="clearFilters">
+            清空筛选
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 产品系列展示区域 -->
     <div class="bg-canvas py-12 md:py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- 每个系列的展示块 -->
-        <div v-if="groupedProducts.length > 0" class="space-y-16 md:space-y-24">
+        <div v-if="filteredGroupedProducts.length > 0" class="space-y-16 md:space-y-24">
           <div
-            v-for="series in groupedProducts"
+            v-for="series in filteredGroupedProducts"
             :id="`series-${series.categoryId}`"
             :key="series.categoryId"
             class="scroll-mt-20"
@@ -88,7 +129,7 @@
             <div class="mb-12">
               <!-- 系列名称标题 -->
               <h2 class="text-2xl md:text-3xl font-bold mb-8 text-fg">
-                {{ series.category }} 系列
+                {{ series.category }}
               </h2>
 
               <!-- 统一的网格布局：响应式适配所有端 -->
@@ -134,7 +175,7 @@
                     <div
                       class="mt-2 flex items-center text-blue-300 font-medium text-sm md:text-base opacity-90 group-hover:opacity-100 transition-opacity"
                     >
-                      探索系列产品
+                      探索系列角色
                       <div
                         class="i-carbon-arrow-right ml-1 transition-transform group-hover:translate-x-1"
                       />
@@ -153,7 +194,7 @@
 
             <!-- 分割线 -->
             <div
-              v-if="series !== groupedProducts[groupedProducts.length - 1]"
+              v-if="series !== filteredGroupedProducts[filteredGroupedProducts.length - 1]"
               class="mt-16 md:mt-24 border-t border-line"
             ></div>
           </div>
@@ -164,9 +205,16 @@
           v-else
           class="flex flex-col items-center justify-center py-20 text-gray-500 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800"
         >
-          <div class="i-carbon-package text-6xl mb-4 text-fg-subtle"></div>
-          <h3 class="text-lg font-semibold text-fg mb-2">暂无数据</h3>
-          <p class="text-sm text-fg-muted">敬请期待···</p>
+          <div class="i-carbon-search text-6xl mb-4 text-fg-subtle"></div>
+          <h3 class="text-lg font-semibold text-fg mb-2">没有找到匹配的角色</h3>
+          <p class="text-sm text-fg-muted">换个筛选条件试试吧</p>
+          <button
+            v-if="activeFilterCount > 0"
+            class="mt-4 px-4 py-2 rounded-full bg-accent text-white text-sm hover:opacity-90"
+            @click="clearFilters"
+          >
+            清空筛选
+          </button>
         </div>
       </div>
     </div>
@@ -189,8 +237,18 @@ interface SeriesGroup {
   products: Product[];
 }
 
+/** 筛选维度键类型 */
+type FilterKey = 'character_type' | 'era' | 'tag';
+
 // 当前选中的分类名称
 const selectedCategory = ref<string | null>(null);
+
+// 多维筛选状态：角色类型 / 年代 / 标签（多选）
+const selectedFilters = ref<Record<FilterKey, string[]>>({
+  character_type: [],
+  era: [],
+  tag: []
+});
 
 /**
  * 服务端预取分类列表与商品数据，避免 CSR 等待
@@ -237,6 +295,98 @@ const { data, error } = await useAsyncData(
 
 const categories = computed(() => data.value?.categories || []);
 const groupedProducts = computed(() => data.value?.groupedProducts || []);
+
+/** 全量角色列表（用于聚合筛选选项与统计总数） */
+const allProducts = computed(() => groupedProducts.value.flatMap((series) => series.products));
+
+/** 收录角色总数 */
+const totalCharacters = computed(() => allProducts.value.length);
+
+/**
+ * 从全量数据聚合各筛选维度的候选项（去重）
+ * 角色类型取 character_type，年代取 era，标签取 tags[].name
+ */
+const filterGroups = computed(() => {
+  const types = new Set<string>();
+  const eras = new Set<string>();
+  const tags = new Set<string>();
+
+  allProducts.value.forEach((product) => {
+    if (product.character_type) types.add(product.character_type);
+    if (product.era) eras.add(product.era);
+    product.tags?.forEach((tag) => tags.add(tag.name));
+  });
+
+  // 年代按时间顺序排列
+  const eraOrder = ['80年代', '90年代', '00年代', '10年代', '20年代'];
+  const sortedEras = eraOrder.filter((era) => eras.has(era));
+
+  return [
+    { key: 'character_type' as FilterKey, label: '类型', options: [...types] },
+    { key: 'era' as FilterKey, label: '年代', options: sortedEras },
+    { key: 'tag' as FilterKey, label: '标签', options: [...tags] }
+  ];
+});
+
+/** 判断某筛选维度下某选项是否已被选中 */
+const isSelected = (key: FilterKey, option: string) => selectedFilters.value[key].includes(option);
+
+/** 切换某筛选维度下某选项的选中状态（多选） */
+const toggleFilter = (key: FilterKey, option: string) => {
+  const list = selectedFilters.value[key];
+  const index = list.indexOf(option);
+  if (index >= 0) {
+    list.splice(index, 1);
+  } else {
+    list.push(option);
+  }
+};
+
+/** 当前生效的筛选项总数 */
+const activeFilterCount = computed(
+  () =>
+    selectedFilters.value.character_type.length +
+    selectedFilters.value.era.length +
+    selectedFilters.value.tag.length
+);
+
+/** 清空全部筛选条件 */
+const clearFilters = () => {
+  selectedFilters.value = {
+    character_type: [],
+    era: [],
+    tag: []
+  };
+};
+
+/**
+ * 按筛选条件过滤每个系列内的角色
+ * - 类型 / 年代命中任一选项即保留（组内多选为"或"关系）
+ * - 标签命中任一选项即保留
+ * - 无有效角色数据的系列整块隐藏
+ */
+const filteredGroupedProducts = computed(() => {
+  const { character_type: types, era: eras, tag: tags } = selectedFilters.value;
+  const hasFilter = types.length > 0 || eras.length > 0 || tags.length > 0;
+  if (!hasFilter) return groupedProducts.value;
+
+  return groupedProducts.value
+    .map((series) => ({
+      ...series,
+      products: series.products.filter((product) => {
+        if (types.length > 0 && !types.includes(product.character_type || '')) return false;
+        if (eras.length > 0 && !eras.includes(product.era || '')) return false;
+        if (tags.length > 0 && !product.tags?.some((tag) => tags.includes(tag.name))) return false;
+        return true;
+      })
+    }))
+    .filter((series) => series.products.length > 0);
+});
+
+/** 筛选后命中的角色总数 */
+const filteredCharacterCount = computed(() =>
+  filteredGroupedProducts.value.reduce((sum, series) => sum + series.products.length, 0)
+);
 
 // 默认选中第一个分类
 if (categories.value.length > 0 && categories.value[0]) {

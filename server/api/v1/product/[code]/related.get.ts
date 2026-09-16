@@ -9,11 +9,23 @@ export default defineEventHandler((event) => {
   const code = getRouterParam(event, 'code') || ''
   const limit = Number(getQuery(event).limit) || 8
 
-  /** 构造相关商品 Mock 数据：排除自身后截取 limit 条 */
+  /**
+   * 构造相关角色 Mock 数据：
+   * 优先推荐同作品（brand）角色，不足时补齐其他角色，排除自身后截取 limit 条
+   */
   const buildMock = () => {
-    const related = getMockProductList()
-      .filter((item) => String(item.id) !== code && item.code !== code)
-      .slice(0, limit)
+    const list = getMockProductList()
+    const self = list.find((item) => String(item.id) === code || item.code === code)
+    const excludeSelf = (item: (typeof list)[number]) =>
+      String(item.id) !== code && item.code !== code
+
+    // 同作品（IP）角色优先
+    const sameBrand = self
+      ? list.filter((item) => excludeSelf(item) && item.brand === self.brand)
+      : []
+    // 其他作品角色补齐
+    const others = list.filter((item) => excludeSelf(item) && item.brand !== self?.brand)
+    const related = [...sameBrand, ...others].slice(0, limit)
 
     return {
       product_code: code,

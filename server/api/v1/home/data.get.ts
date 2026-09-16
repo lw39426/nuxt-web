@@ -1,4 +1,4 @@
-import { getMockStoreCategories, getMockStoreSeries } from '../../../utils/mockStoreData'
+import { getMockStoreCategories, getMockProductList } from '../../../utils/mockStoreData'
 import { getMockArticles } from '../../../utils/mockArticles'
 import { normalizeProductList } from '../../../utils/product'
 
@@ -15,16 +15,15 @@ function buildHomeMock() {
     children: []
   }))
 
-  const seriesList = getMockStoreSeries()
+  const allCharacters = getMockProductList()
 
-  // 热销商品：取所有系列的前 8 个商品
-  const hotProducts = seriesList.flatMap((s) => s.otherProducts.slice(0, 2)).slice(0, 8)
+  // 精选角色：按人气评分排序取前 8（评分数据来自人工录入）
+  const featuredCharacters = [...allCharacters]
+    .sort((a, b) => (b.ratings?.popularity || 0) - (a.ratings?.popularity || 0))
+    .slice(0, 8)
 
-  // 新品推荐：取每个系列的第一个商品
-  const newProducts = seriesList
-    .map((s) => s.featured)
-    .filter(Boolean)
-    .slice(0, 6)
+  // 新收录角色：标记 isNew 的前 6 个
+  const newProducts = allCharacters.filter((item) => item.isNew).slice(0, 6)
 
   // 精选文章
   const { articles } = getMockArticles({ page: 1, pageSize: 4 })
@@ -33,10 +32,10 @@ function buildHomeMock() {
     banners: [],
     categories,
     featured: {
-      tag_name: '精选推荐',
-      products: hotProducts
+      tag_name: '精选角色',
+      products: featuredCharacters
     },
-    hot_products: hotProducts,
+    hot_products: featuredCharacters,
     new_products: newProducts,
     articles
   }

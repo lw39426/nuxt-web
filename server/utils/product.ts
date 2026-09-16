@@ -27,7 +27,18 @@ export function normalizeProduct(raw: Record<string, any>): Product {
     sales: Number(raw?.sales) || 0,
     sort: raw?.sort ?? 0,
     brand: raw?.brand || '',
-    tags: Array.isArray(raw?.tags) ? raw.tags : []
+    tags: Array.isArray(raw?.tags) ? raw.tags : [],
+    favorite_count: Number(raw?.favorite_count) || 0,
+    rating: raw?.rating != null ? Number(raw.rating) : undefined,
+    // YouMi 角色图鉴扩展字段透传（后端未返回时保持 undefined，不影响纯商品数据）
+    era: raw?.era,
+    character_type: raw?.character_type,
+    origin: raw?.origin,
+    background: raw?.background,
+    highlights: Array.isArray(raw?.highlights) ? raw.highlights : undefined,
+    ratings: raw?.ratings,
+    relationships: Array.isArray(raw?.relationships) ? raw.relationships : undefined,
+    quotes: Array.isArray(raw?.quotes) ? raw.quotes : undefined
   } as Product
 }
 

@@ -1,15 +1,23 @@
 import type { Product } from '~/types/product'
 import type { Pagination } from '~/types/api'
 
-/** 商品搜索请求参数 */
+/** 商品（角色）搜索请求参数 */
 export interface ProductSearchParams {
   page?: number
   pageSize?: number
   keyword?: string
   category_id?: number
+  /** 作品（IP），复用后端 brand 字段，支持多选（逗号分隔） */
+  brand?: string
+  /** 出品年代，如"90年代"，支持多选（逗号分隔） */
+  era?: string
+  /** 标签，如"草帽团"，支持多选（逗号分隔） */
+  tag?: string
+  /** 角色类型，如"主角"，支持多选（逗号分隔） */
+  character_type?: string
   min_price?: number
   max_price?: number
-  sort_by?: 'create_time' | 'price' | 'sales'
+  sort_by?: 'create_time' | 'price' | 'sales' | 'popularity' | 'power' | 'intelligence' | 'charm'
   sort_order?: 'asc' | 'desc'
 }
 
