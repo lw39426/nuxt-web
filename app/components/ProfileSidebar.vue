@@ -22,11 +22,19 @@ const menuItems: MenuItem[] = [
   { name: '账号安全', icon: 'i-carbon-security', path: '/profile/security' }
 ];
 
+/**
+ * 判断菜单项是否为当前激活路由
+ * @param path 菜单项路径
+ */
 const isActive = (path: string) => route.path === path;
 
-const displayName = computed(() => authStore.user?.username || '用户');
+// 展示名优先取昵称（第三方登录），其次用户名，最后兜底「用户」
+const displayName = computed(() => authStore.user?.nickname || authStore.user?.username || '用户');
 const avatarLetter = computed(() => displayName.value.charAt(0).toUpperCase());
 
+/**
+ * 退出登录：清空认证态并跳转首页
+ */
 const handleLogout = () => {
   authStore.clearAuth();
   navigateTo('/');
@@ -73,7 +81,6 @@ const handleLogout = () => {
     <!-- 底部帮助与退出 -->
     <div class="px-3 pb-4 mt-1 space-y-1">
       <NuxtLink
-        to="/help"
         class="flex items-center gap-3 px-4 h-11 rounded-xl text-xs text-fg-subtle hover:text-fg-muted transition-colors"
       >
         <span class="i-carbon-help w-4 h-4" />

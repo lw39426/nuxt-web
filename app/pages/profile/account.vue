@@ -332,7 +332,7 @@ onMounted(() => {
                        会导致 vnode 卸载崩溃（内容区被清空），故用 Popover + 日历选择 -->
                   <UPopover :content="{ align: 'start' }">
                     <UButton
-                      variant="none"
+                      :variant="undefined"
                       color="neutral"
                       trailing-icon="i-carbon-calendar"
                       class="w-full justify-between font-normal"

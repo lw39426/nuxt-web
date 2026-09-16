@@ -297,14 +297,6 @@ onUnmounted(() => {
           <span class="i-carbon-user w-4 h-4" />
           个人中心
         </NuxtLink>
-        <NuxtLink
-          to="/profile/orders"
-          class="flex items-center gap-2 px-4 py-2 text-sm text-fg hover:bg-surface-muted"
-          @click="isDropdownOpen = false"
-        >
-          <span class="i-carbon-package w-4 h-4" />
-          我的订单
-        </NuxtLink>
         <button
           class="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 w-full"
           @click="handleLogout"
