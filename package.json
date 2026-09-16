@@ -6,6 +6,7 @@
   "scripts": {
     "build": "set NODE_OPTIONS=--max-old-space-size=4096 && nuxt build",
     "dev": "nuxt dev",
+    "dev:mock": "set NUXT_PUBLIC_USE_MOCK=true&& nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare && npx simple-git-hooks",
