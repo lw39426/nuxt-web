@@ -12,9 +12,11 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: '个人资料', icon: 'i-carbon-user', path: '/profile/account' },
-  { name: '我的订单', icon: 'i-carbon-package', path: '/profile/orders' },
+  { name: '每日签到', icon: 'i-carbon-calendar', path: '/profile/checkin' },
+  // { name: '我的订单', icon: 'i-carbon-package', path: '/profile/orders' },
+  // { name: '地址管理', icon: 'i-carbon-location', path: '/profile/addresses' },
   { name: '我的收藏', icon: 'i-carbon-favorite', path: '/profile/favorites' },
-  { name: '地址管理', icon: 'i-carbon-location', path: '/profile/addresses' },
+  { name: '角色图鉴', icon: 'i-carbon-grid', path: '/profile/collection' },
   { name: '浏览历史', icon: 'i-carbon-time', path: '/profile/history' },
   { name: '我的评论', icon: 'i-carbon-chat', path: '/profile/comments' },
   { name: '账号安全', icon: 'i-carbon-security', path: '/profile/security' }

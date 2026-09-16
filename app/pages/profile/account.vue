@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useUserApi } from '~/composables/api/user';
+import { useCheckinApi } from '~/composables/api/checkin';
 import { getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date';
 
 const { getInfo, updateInfo } = useUserApi();
@@ -31,7 +32,7 @@ const form = ref({
 
 const originalForm = ref({ ...form.value });
 
-const memberPoints = ref(380);
+const memberPoints = ref(0);
 const nextLevelPoints = ref(600);
 
 const progressPercent = computed(() =>
@@ -90,6 +91,18 @@ const loadProfile = async () => {
   }
 };
 
+/** 加载签到积分（失败静默，积分区显示 0 不阻塞页面） */
+const loadPoints = async () => {
+  try {
+    const status = await useCheckinApi().getStatus();
+    if (status) {
+      memberPoints.value = status.total_points;
+    }
+  } catch {
+    // 静默降级
+  }
+};
+
 /** 进入编辑模式：保存原始数据，设置编辑标记 */
 const handleEnterEdit = () => {
   originalForm.value = { ...form.value };
@@ -137,7 +150,10 @@ const handleBindClick = (_target: string) => {
   toast.add({ title: '账号绑定功能即将开放', color: 'neutral' });
 };
 
-onMounted(loadProfile);
+onMounted(() => {
+  loadProfile();
+  loadPoints();
+});
 </script>
 
 <template>

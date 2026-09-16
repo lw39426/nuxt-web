@@ -54,6 +54,29 @@ onMounted(loadFavorites);
   <div>
     <PageHeader title="我的收藏" subtitle="管理您收藏的商品和文章" class="mt-2" />
 
+    <!-- 图鉴进度提示：跳转图鉴页 -->
+    <NuxtLink
+      to="/profile/collection"
+      class="flex items-center justify-between bg-skin-card rounded-2xl px-5 py-4 mb-4 transition-all group"
+      :style="{ boxShadow: 'var(--skin-shadow-sm)' }"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-skin-soft flex items-center justify-center">
+          <span class="i-carbon-grid w-5 h-5 text-skin" />
+        </div>
+        <div>
+          <p class="text-sm font-medium text-fg">角色图鉴</p>
+          <p class="text-xs text-fg-subtle mt-0.5">收藏的角色会自动点亮图鉴</p>
+        </div>
+      </div>
+      <span
+        class="text-fg-subtle group-hover:text-skin transition-colors flex items-center gap-1 text-sm"
+      >
+        查看进度
+        <span class="i-carbon-chevron-right w-4 h-4" />
+      </span>
+    </NuxtLink>
+
     <!-- Tabs -->
     <div class="bg-surface rounded-2xl shadow-sm mb-6 overflow-hidden">
       <div class="flex">
