@@ -1,0 +1,282 @@
+/*
+ * ============================================================
+ * profile-skins.css — 个人中心皮肤系统（可换肤）
+ * ------------------------------------------------------------
+ * 设计：
+ *   - 皮肤通过 <html data-profile-skin="mint|macaron"> 切换（useProfileSkin composable 维护）
+ *   - 每套皮肤定义一组 --skin-* 语义变量，页面样式只引用变量、不写死色值
+ *   - 亮/暗双色板：变量在 .dark 下自动翻转，页面无需写 dark: 分支
+ *
+ * 皮肤清单：
+ *   mint    薄荷洗色（参考色 #f3f9f1 / #e3f9fd / #c0ebd7），沉稳清爽
+ *   macaron 马卡龙弥散光（UI 规范 · 个人中心：薰衣草紫/桃粉/奶黄），柔和现代
+ *   未设置 / 未知值 → 回落 macaron（当前规范默认）
+ *
+ * 变量命名约定：
+ *   --skin-*            亮色值（默认 :root，即当前默认皮肤）
+ *   .dark [data-skin]   暗色值
+ *   渐变类变量存储完整 background 表达式，页面直接 var() 引用
+ * ============================================================
+ */
+
+/* ---------- 默认皮肤：macaron（马卡龙弥散光） ---------- */
+:root,
+[data-profile-skin='macaron'] {
+  /* 文字 */
+  --skin-ink: #5b4a8a; /* Hero 主文字：深薰衣草紫 */
+  --skin-ink-sub: #8f7fa8; /* Hero 次级文字 */
+  --skin-ink-strong: #6d4bb3; /* 强调文字（计数/已达态） */
+  --skin-ink-on: #ffffff; /* 实底元素上的文字 */
+
+  /* 实底主色（按钮/头像/节点/印记） */
+  --skin-solid: linear-gradient(135deg, #9d7ce0, #7c5cbf);
+  --skin-solid-shadow: 0 4px 12px rgba(124, 92, 191, 0.35);
+  --skin-accent: #7c5cbf; /* 按钮文字等实色主色 */
+  --skin-accent-rgb: 124, 92, 191;
+
+  /* 玻璃卡 / 胶囊 */
+  --skin-glass: rgba(255, 255, 255, 0.66);
+  --skin-chip-bg: #ece5f9; /* 淡薰衣草底（已签格/百分比胶囊） */
+  --skin-chip-hover: #e6ddf7;
+  --skin-chip-border: rgba(124, 92, 191, 0.55);
+
+  /* 渐变（Hero 背景 / 进度填充 / 光面卡） */
+  --skin-hero-bg:
+    radial-gradient(120% 90% at 8% 0%, rgba(203, 186, 240, 0.5) 0%, transparent 55%),
+    radial-gradient(100% 80% at 65% 25%, rgba(255, 213, 205, 0.45) 0%, transparent 60%),
+    radial-gradient(110% 90% at 100% 100%, rgba(255, 240, 202, 0.55) 0%, transparent 55%),
+    linear-gradient(180deg, #ffffff 0%, #faf8fc 100%);
+  --skin-fill-gradient: linear-gradient(90deg, #a78bdb, #f0a4b8); /* 进度条填充：紫→粉 */
+  --skin-fill-soft: linear-gradient(90deg, #b9a3e8, #8b6fdb); /* 分组微条填充 */
+  --skin-card-gradient: linear-gradient(
+    150deg,
+    #f3effc,
+    #fdeef1 55%,
+    #fdf6e3
+  ); /* 已收集卡/徽章卡 */
+  --skin-dot: #8b6fdb; /* 状态点 / 进度环 */
+
+  /* 弥散光球与点阵纹理 */
+  --skin-blob-a: radial-gradient(
+    circle,
+    rgba(255, 214, 207, 0.75),
+    rgba(255, 214, 207, 0)
+  ); /* 桃粉大球 */
+  --skin-blob-b: radial-gradient(
+    circle,
+    rgba(255, 243, 214, 0.8),
+    rgba(255, 243, 214, 0)
+  ); /* 奶黄小球 */
+  --skin-dots-color: rgba(123, 97, 173, 0.28); /* 薰衣草紫网点 */
+
+  /* 投影 */
+  --skin-shadow-sm: 0 4px 14px rgba(123, 97, 173, 0.12);
+  --skin-shadow-md: 0 4px 16px rgba(123, 97, 173, 0.12);
+  --skin-shadow-btn: 0 6px 18px rgba(123, 97, 173, 0.22);
+  --skin-ring-halo: rgba(203, 186, 240, 0.35); /* 分组圆点光晕环 */
+  --skin-card-border: rgba(139, 112, 219, 0.4);
+}
+
+/* macaron · 暗色 */
+.dark [data-profile-skin='macaron'],
+.dark[data-profile-skin='macaron'] {
+  --skin-ink: #c9b8ee;
+  --skin-ink-sub: #9d8fb8;
+  --skin-ink-strong: #c9b8ee;
+  --skin-ink-on: #ffffff;
+
+  --skin-solid: linear-gradient(135deg, #8b6fdb, #6d4bb3);
+  --skin-solid-shadow: 0 4px 12px rgba(124, 92, 191, 0.3);
+  --skin-accent: #c9b8ee;
+  --skin-accent-rgb: 201, 184, 238;
+
+  --skin-glass: rgba(28, 28, 33, 0.65);
+  --skin-chip-bg: rgba(139, 112, 219, 0.16);
+  --skin-chip-hover: rgba(139, 112, 219, 0.2);
+  --skin-chip-border: rgba(167, 139, 219, 0.5);
+
+  --skin-hero-bg:
+    radial-gradient(120% 90% at 8% 0%, rgba(139, 112, 219, 0.14) 0%, transparent 55%),
+    radial-gradient(100% 80% at 65% 25%, rgba(244, 132, 152, 0.09) 0%, transparent 60%),
+    radial-gradient(110% 90% at 100% 100%, rgba(255, 209, 102, 0.07) 0%, transparent 55%);
+  --skin-fill-gradient: linear-gradient(90deg, #8b6fdb, #b98ba6);
+  --skin-fill-soft: linear-gradient(90deg, #8b6fdb, #6d4bb3);
+  --skin-card-gradient: linear-gradient(
+    150deg,
+    rgba(139, 112, 219, 0.1),
+    rgba(244, 132, 152, 0.07) 55%,
+    rgba(255, 209, 102, 0.08)
+  );
+  --skin-dot: #a78bdb;
+
+  --skin-blob-a: radial-gradient(circle, rgba(244, 132, 152, 0.12), rgba(244, 132, 152, 0));
+  --skin-blob-b: radial-gradient(circle, rgba(255, 209, 102, 0.1), rgba(255, 209, 102, 0));
+  --skin-dots-color: rgba(167, 139, 219, 0.22);
+
+  --skin-shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.25);
+  --skin-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --skin-shadow-btn: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --skin-ring-halo: rgba(139, 112, 219, 0.25);
+  --skin-card-border: rgba(167, 139, 219, 0.35);
+}
+
+/* ---------- 皮肤：mint（薄荷洗色，上一版本色彩） ---------- */
+[data-profile-skin='mint'] {
+  /* 文字 */
+  --skin-ink: #0a5c44; /* Hero 主文字：深苔绿 */
+  --skin-ink-sub: #4d7d6c; /* Hero 次级文字 */
+  --skin-ink-strong: #087e5c; /* 强调文字 */
+  --skin-ink-on: #ffffff;
+
+  /* 实底主色 */
+  --skin-solid: linear-gradient(135deg, var(--brand-400), var(--brand-600));
+  --skin-solid-shadow: 0 4px 12px rgba(10, 163, 116, 0.35);
+  --skin-accent: #087e5c;
+  --skin-accent-rgb: 8, 126, 92;
+
+  /* 玻璃卡 / 胶囊 */
+  --skin-glass: rgba(255, 255, 255, 0.72);
+  --skin-chip-bg: #e3f5ec; /* 淡薄荷底 */
+  --skin-chip-hover: #c0ebd7;
+  --skin-chip-border: rgba(15, 186, 129, 0.55);
+
+  /* 渐变 */
+  --skin-hero-bg: linear-gradient(118deg, #f3f9f1 0%, #e3f9fd 46%, #c0ebd7 100%);
+  --skin-fill-gradient: linear-gradient(90deg, var(--brand-300), var(--brand-600));
+  --skin-fill-soft: linear-gradient(90deg, var(--brand-300), var(--brand-500));
+  --skin-card-gradient: linear-gradient(150deg, #f3f9f1, #e3f9fd 55%, #c0ebd7);
+  --skin-dot: var(--brand-500);
+
+  /* 光球与点阵（薄荷版回归白色柔光） */
+  --skin-blob-a: radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  --skin-blob-b: radial-gradient(circle, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  --skin-dots-color: rgba(10, 92, 68, 0.22);
+
+  /* 投影 */
+  --skin-shadow-sm: 0 4px 14px rgba(10, 92, 68, 0.1);
+  --skin-shadow-md: 0 4px 16px rgba(10, 92, 68, 0.1);
+  --skin-shadow-btn: 0 6px 18px rgba(10, 92, 68, 0.18);
+  --skin-ring-halo: var(--brand-soft);
+  --skin-card-border: rgba(15, 186, 129, 0.4);
+}
+
+/* mint · 暗色 */
+.dark [data-profile-skin='mint'],
+.dark[data-profile-skin='mint'] {
+  --skin-ink: var(--brand-300);
+  --skin-ink-sub: #8fb3a6;
+  --skin-ink-strong: var(--brand-200);
+  --skin-ink-on: #ffffff;
+
+  --skin-solid: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  --skin-solid-shadow: 0 4px 12px rgba(10, 163, 116, 0.3);
+  --skin-accent: var(--brand-200);
+  --skin-accent-rgb: 143, 242, 216;
+
+  --skin-glass: rgba(28, 28, 33, 0.65);
+  --skin-chip-bg: rgba(15, 186, 129, 0.14);
+  --skin-chip-hover: rgba(15, 186, 129, 0.18);
+  --skin-chip-border: rgba(47, 211, 166, 0.45);
+
+  --skin-hero-bg: linear-gradient(
+    118deg,
+    rgba(15, 186, 129, 0.07) 0%,
+    rgba(69, 82, 147, 0.1) 46%,
+    rgba(15, 186, 129, 0.16) 100%
+  );
+  --skin-fill-gradient: linear-gradient(90deg, var(--brand-400), var(--brand-700));
+  --skin-fill-soft: linear-gradient(90deg, var(--brand-400), var(--brand-600));
+  --skin-card-gradient: linear-gradient(
+    150deg,
+    rgba(15, 186, 129, 0.09),
+    rgba(69, 82, 147, 0.09) 55%,
+    rgba(15, 186, 129, 0.18)
+  );
+  --skin-dot: var(--brand-400);
+
+  --skin-blob-a: radial-gradient(circle, rgba(47, 211, 166, 0.1), rgba(47, 211, 166, 0));
+  --skin-blob-b: radial-gradient(circle, rgba(69, 82, 147, 0.12), rgba(69, 82, 147, 0));
+  --skin-dots-color: rgba(47, 211, 166, 0.2);
+
+  --skin-shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.25);
+  --skin-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --skin-shadow-btn: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --skin-ring-halo: rgba(47, 211, 166, 0.2);
+  --skin-card-border: rgba(47, 211, 166, 0.35);
+}
+
+/* ============================================================
+ * 皮肤工具类：供个人中心各页面直接使用（类名风格与语义 token 一致）
+ * - 作用域限定 [data-profile-skin]（含 html 自身），避免泄漏到其他页面
+ * - 页面里用 .text-skin 替代 text-brand，换肤即整页联动
+ * ============================================================ */
+[data-profile-skin] {
+  /* 主色文字（强调标题/链接/计数） */
+  .text-skin {
+    color: var(--skin-accent);
+  }
+  /* 强调文字（更深，用于选中态/已达态标题） */
+  .text-skin-strong {
+    color: var(--skin-ink-strong);
+  }
+  /* 淡底胶囊（tab 选中底/徽章底/图标盒底） */
+  .bg-skin-soft {
+    background-color: var(--skin-chip-bg);
+  }
+  /* 半透明淡底（更弱的提示底，等价 bg-brand-soft/50 的用法） */
+  .bg-skin-soft\/50 {
+    background-color: rgba(var(--skin-accent-rgb), 0.09);
+  }
+  /* 实底主色（选中计数胶囊/竖条/进度填充） */
+  .bg-skin {
+    background-color: var(--skin-accent);
+  }
+  /* 实底上的文字 */
+  .text-on-skin {
+    color: var(--skin-ink-on);
+  }
+  /* 皮肤实底渐变（头像/大按钮底） */
+  .bg-skin-solid {
+    background-image: var(--skin-solid);
+    box-shadow: var(--skin-solid-shadow);
+    color: var(--skin-ink-on);
+  }
+  /* 皮肤渐变进度填充（会员进度等横向进度条） */
+  .bg-skin-fill {
+    background-image: var(--skin-fill-gradient);
+  }
+  /* 皮肤渐变光面卡（已达成卡片底） */
+  .bg-skin-card {
+    background-image: var(--skin-card-gradient);
+  }
+  /* 描边：皮肤主色（默认地址卡 ring / 表单聚焦 ring） */
+  .ring-skin {
+    --tw-ring-color: var(--skin-accent);
+  }
+  .border-skin {
+    border-color: var(--skin-chip-border);
+  }
+  /* hover 时文字转皮肤主色（group-hover:text-brand 的皮肤版） */
+  .group:hover .group-hover\:text-skin {
+    color: var(--skin-accent);
+  }
+  /* 命名分组版（group-hover/comment:text-skin 等） */
+  .group\/comment:hover .group-hover\/comment\:text-skin {
+    color: var(--skin-accent);
+  }
+  /* tab 底部选中指示条 */
+  .bg-skin-tab {
+    background-color: var(--skin-accent);
+  }
+}
+
+/* ============================================================
+ * 个人中心作用域：把 Nuxt UI 的 primary 色映射到当前皮肤主色
+ * - 仅作用于个人中心布局壳（profile.vue 根节点挂了 .profile-skin-scope）
+ * - 使 UButton(color="primary") / UInput 聚焦态等内置组件的强调色随皮肤变化
+ * - 不覆盖全站，其他页面仍保持品牌绿
+ * ============================================================ */
+.profile-skin-scope {
+  --ui-primary: var(--skin-accent);
+  --ui-color-primary-500: var(--skin-accent);
+}

@@ -5,6 +5,8 @@
 @import '@nuxt/ui';
 /* 主题变量唯一事实源：定义配色 / 文字 / 线框等语义 token，并由 uno.config.ts 映射为类名 */
 @import './theme.css';
+/* 个人中心皮肤变量（薄荷/马卡龙双皮肤 × 亮暗），由 useProfileSkin 通过 data-profile-skin 切换 */
+@import './profile-skins.css';
 
 /* 通用 reset 一律交给 Tailwind v4 preflight（@layer base 内的 * 通配块，box-sizing 同样在内）。
    禁止在此文件再写未分层的 * { margin/padding } 通配 reset：
