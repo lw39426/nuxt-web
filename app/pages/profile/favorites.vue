@@ -61,7 +61,7 @@ onMounted(loadFavorites);
           class="flex-1 relative flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors duration-200"
           :class="
             activeTab === 'product'
-              ? 'text-brand bg-brand-soft/50'
+              ? 'text-skin-strong bg-skin-soft/50'
               : 'text-fg-muted hover:text-fg hover:bg-surface-muted'
           "
           @click="activeTab = 'product'"
@@ -71,21 +71,21 @@ onMounted(loadFavorites);
           <span
             class="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium flex items-center justify-center"
             :class="
-              activeTab === 'product' ? 'bg-brand text-on-brand' : 'bg-surface-muted text-fg-subtle'
+              activeTab === 'product' ? 'bg-skin text-on-skin' : 'bg-surface-muted text-fg-subtle'
             "
           >
             {{ productFavorites.length }}
           </span>
           <span
             v-if="activeTab === 'product'"
-            class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-skin-tab rounded-full"
           />
         </button>
         <button
           class="flex-1 relative flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors duration-200"
           :class="
             activeTab === 'article'
-              ? 'text-brand bg-brand-soft/50'
+              ? 'text-skin-strong bg-skin-soft/50'
               : 'text-fg-muted hover:text-fg hover:bg-surface-muted'
           "
           @click="activeTab = 'article'"
@@ -95,14 +95,14 @@ onMounted(loadFavorites);
           <span
             class="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium flex items-center justify-center"
             :class="
-              activeTab === 'article' ? 'bg-brand text-on-brand' : 'bg-surface-muted text-fg-subtle'
+              activeTab === 'article' ? 'bg-skin text-on-skin' : 'bg-surface-muted text-fg-subtle'
             "
           >
             {{ articleFavorites.length }}
           </span>
           <span
             v-if="activeTab === 'article'"
-            class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-skin-tab rounded-full"
           />
         </button>
       </div>
@@ -173,7 +173,7 @@ onMounted(loadFavorites);
         </div>
         <div class="p-4">
           <p
-            class="text-sm font-medium text-fg line-clamp-1 group-hover:text-brand transition-colors"
+            class="text-sm font-medium text-fg line-clamp-1 group-hover:text-skin transition-colors"
           >
             {{ item.item_title }}
           </p>
@@ -204,7 +204,7 @@ onMounted(loadFavorites);
           <div class="flex-1 min-w-0 flex flex-col justify-between py-1">
             <div>
               <p
-                class="text-sm font-medium text-fg line-clamp-1 group-hover:text-brand transition-colors"
+                class="text-sm font-medium text-fg line-clamp-1 group-hover:text-skin transition-colors"
               >
                 {{ item.item_title }}
               </p>

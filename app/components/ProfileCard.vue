@@ -26,7 +26,7 @@ withDefaults(defineProps<Props>(), {
     >
       <div class="flex items-center gap-3 min-w-0">
         <template v-if="title">
-          <span class="w-1 h-5 bg-brand rounded-full shrink-0" />
+          <span class="w-1 h-5 bg-skin rounded-full shrink-0" />
           <h2 class="text-base font-semibold text-fg truncate">{{ title }}</h2>
         </template>
         <slot name="header" />

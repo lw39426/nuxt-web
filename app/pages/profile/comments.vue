@@ -77,7 +77,7 @@ onMounted(loadComments);
           class="flex-1 relative flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors duration-200"
           :class="
             activeTab === 'published'
-              ? 'text-brand bg-brand-soft/50'
+              ? 'text-skin-strong bg-skin-soft/50'
               : 'text-fg-muted hover:text-fg hover:bg-surface-muted'
           "
           @click="activeTab = 'published'"
@@ -87,23 +87,21 @@ onMounted(loadComments);
           <span
             class="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium flex items-center justify-center"
             :class="
-              activeTab === 'published'
-                ? 'bg-brand text-on-brand'
-                : 'bg-surface-muted text-fg-subtle'
+              activeTab === 'published' ? 'bg-skin text-on-skin' : 'bg-surface-muted text-fg-subtle'
             "
           >
             {{ publishedCount }}
           </span>
           <span
             v-if="activeTab === 'published'"
-            class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-skin-tab rounded-full"
           />
         </button>
         <button
           class="flex-1 relative flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors duration-200"
           :class="
             activeTab === 'pending'
-              ? 'text-brand bg-brand-soft/50'
+              ? 'text-skin-strong bg-skin-soft/50'
               : 'text-fg-muted hover:text-fg hover:bg-surface-muted'
           "
           @click="activeTab = 'pending'"
@@ -113,14 +111,14 @@ onMounted(loadComments);
           <span
             class="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium flex items-center justify-center"
             :class="
-              activeTab === 'pending' ? 'bg-brand text-on-brand' : 'bg-surface-muted text-fg-subtle'
+              activeTab === 'pending' ? 'bg-skin text-on-skin' : 'bg-surface-muted text-fg-subtle'
             "
           >
             {{ pendingCount }}
           </span>
           <span
             v-if="activeTab === 'pending'"
-            class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-skin-tab rounded-full"
           />
         </button>
       </div>
@@ -189,7 +187,7 @@ onMounted(loadComments);
           </div>
           <div class="flex-1 min-w-0">
             <p
-              class="text-sm font-medium text-fg truncate transition-colors duration-200 group-hover/comment:text-brand"
+              class="text-sm font-medium text-fg truncate transition-colors duration-200 group-hover/comment:text-skin"
             >
               {{ comment.targetTitle }}
             </p>
@@ -217,7 +215,7 @@ onMounted(loadComments);
               {{ comment.status === 'published' ? '已评价' : '待评价' }}
             </Badge>
             <span
-              class="i-carbon-arrow-right w-4 h-4 text-brand shrink-0 opacity-0 -translate-x-1 group-hover/comment:opacity-100 group-hover/comment:translate-x-0 transition-all duration-300"
+              class="i-carbon-arrow-right w-4 h-4 text-skin shrink-0 opacity-0 -translate-x-1 group-hover/comment:opacity-100 group-hover/comment:translate-x-0 transition-all duration-300"
               aria-hidden="true"
             />
           </div>

@@ -137,15 +137,15 @@ onMounted(loadAddresses);
         v-for="address in addresses"
         :key="address.id"
         class="bg-surface rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
-        :class="{ 'ring-2 ring-brand': address.is_default }"
+        :class="{ 'ring-2 ring-skin': address.is_default }"
       >
         <!-- 默认地址标识 -->
         <div
           v-if="address.is_default"
-          class="bg-brand/5 border-b border-brand/10 px-5 py-2.5 flex items-center gap-2"
+          class="bg-skin-soft/50 border-b border-skin px-5 py-2.5 flex items-center gap-2"
         >
-          <span class="i-carbon-checkmark-filled w-4 h-4 text-brand" />
-          <span class="text-xs font-medium text-brand">默认地址</span>
+          <span class="i-carbon-checkmark-filled w-4 h-4 text-skin" />
+          <span class="text-xs font-medium text-skin-strong">默认地址</span>
         </div>
 
         <!-- 地址信息 -->

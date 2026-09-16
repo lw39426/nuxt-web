@@ -23,7 +23,7 @@ const statusMap: Record<
   { label: string; variant: 'brand' | 'success' | 'warning' | 'neutral' | 'error'; bg: string }
 > = {
   0: { label: '待付款', variant: 'warning', bg: 'bg-amber-50 text-amber-600' },
-  1: { label: '已支付', variant: 'brand', bg: 'bg-brand-soft text-brand' },
+  1: { label: '已支付', variant: 'brand', bg: 'bg-skin-soft text-skin' },
   2: { label: '已发货', variant: 'brand', bg: 'bg-blue-50 text-blue-600' },
   3: { label: '已完成', variant: 'success', bg: 'bg-green-50 text-green-600' },
   4: { label: '已取消', variant: 'neutral', bg: 'bg-surface-muted text-fg-subtle' }
@@ -89,7 +89,7 @@ onMounted(loadOrders);
           class="relative flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors duration-200"
           :class="
             activeTab === tab.value
-              ? 'text-brand bg-brand-soft/50'
+              ? 'text-skin-strong bg-skin-soft/50'
               : 'text-fg-muted hover:text-fg hover:bg-surface-muted'
           "
           @click="activeTab = tab.value"
@@ -99,7 +99,7 @@ onMounted(loadOrders);
             v-if="tabCounts[String(tab.value)] > 0"
             class="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium flex items-center justify-center"
             :class="
-              activeTab === tab.value ? 'bg-brand text-on-brand' : 'bg-surface-muted text-fg-subtle'
+              activeTab === tab.value ? 'bg-skin text-on-skin' : 'bg-surface-muted text-fg-subtle'
             "
           >
             {{ tabCounts[String(tab.value)] }}
@@ -107,7 +107,7 @@ onMounted(loadOrders);
           <!-- 选中指示条 -->
           <span
             v-if="activeTab === tab.value"
-            class="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full"
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-skin-tab rounded-full"
           />
         </button>
       </div>

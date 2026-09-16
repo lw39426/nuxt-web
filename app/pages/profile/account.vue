@@ -192,24 +192,24 @@ onMounted(loadProfile);
             <div class="flex flex-col items-center shrink-0 lg:pt-2">
               <button
                 type="button"
-                class="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface transition-transform duration-200"
+                class="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-skin focus-visible:ring-offset-2 focus-visible:ring-offset-surface transition-transform duration-200"
                 :class="isEditing ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'"
                 :disabled="!isEditing"
                 :aria-label="isEditing ? '更换头像' : '头像'"
                 @click="handleChangeAvatar"
               >
                 <div
-                  class="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-brand to-brand-active flex items-center justify-center text-on-brand font-bold text-5xl shadow-xl shadow-brand/25 ring-4 ring-surface"
+                  class="w-22 h-22 sm:w-28 sm:h-28 rounded-full bg-skin-solid flex items-center justify-center font-bold text-5xl ring-4 ring-surface"
                 >
                   {{ form.nickname?.charAt(0) || form.username?.charAt(0) || '用' }}
                 </div>
                 <span
                   class="absolute bottom-1 right-1 w-9 h-9 bg-surface rounded-full border-2 border-line shadow-md flex items-center justify-center transition-all duration-200"
-                  :class="isEditing ? 'group-hover:bg-brand-soft group-hover:border-brand' : ''"
+                  :class="isEditing ? 'group-hover:bg-skin-soft group-hover:border-skin' : ''"
                 >
                   <span
                     class="i-carbon-camera w-4 h-4 transition-colors duration-200"
-                    :class="isEditing ? 'text-fg-muted group-hover:text-brand' : 'text-fg-muted'"
+                    :class="isEditing ? 'text-fg-muted group-hover:text-skin' : 'text-fg-muted'"
                   />
                 </span>
               </button>
@@ -372,11 +372,11 @@ onMounted(loadProfile);
         />
         <ProfileRowItem
           icon="i-carbon-phone"
-          icon-bg="bg-brand-soft"
-          icon-color="text-brand"
+          icon-bg="bg-skin-soft"
+          icon-color="text-skin"
           title="手机号"
           :subtitle="`已绑定 · ${form.phone || '138****8888'}`"
-          subtitle-class="text-brand"
+          subtitle-class="text-skin"
           action-text="更换"
           action-class="text-fg-muted"
           @action="handleBindClick('phone')"
@@ -391,8 +391,8 @@ onMounted(loadProfile);
 
         <div class="p-6">
           <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-full bg-brand-soft flex items-center justify-center">
-              <span class="i-carbon-crown w-6 h-6 text-brand" />
+            <div class="w-12 h-12 rounded-full bg-skin-soft flex items-center justify-center">
+              <span class="i-carbon-crown w-6 h-6 text-skin" />
             </div>
             <div class="flex-1">
               <div class="flex items-center justify-between mb-2">
@@ -403,7 +403,7 @@ onMounted(loadProfile);
               </div>
               <div class="h-1.5 bg-surfaceMuted rounded-full overflow-hidden">
                 <div
-                  class="h-full bg-brand rounded-full transition-all duration-500"
+                  class="h-full bg-skin-fill rounded-full transition-all duration-500"
                   :style="{ width: `${progressPercent}%` }"
                 />
               </div>
@@ -411,7 +411,7 @@ onMounted(loadProfile);
           </div>
 
           <p class="text-xs text-fg-subtle">
-            再消费 ¥200 即可升级为<span class="text-brand font-medium">银牌会员</span>
+            再消费 ¥200 即可升级为<span class="text-skin font-medium">银牌会员</span>
           </p>
         </div>
       </ProfileCard>
@@ -543,14 +543,14 @@ onMounted(loadProfile);
   border-color: var(--line);
 }
 
-/* 聚焦 / 下拉展开态：白底 + 品牌色描边与光晕 */
+/* 聚焦 / 下拉展开态：白底 + 皮肤主色描边与光晕 */
 .form-field-wrap :deep([data-slot='base']:focus),
 .form-field-wrap :deep([data-slot='base']:focus-visible),
 .form-field-wrap :deep([data-slot='base']:focus-within),
 .form-field-wrap :deep([data-slot='base'][data-state='open']) {
   background-color: var(--surface);
-  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
-  box-shadow: 0 0 0 3px var(--brand-soft);
+  border-color: rgba(var(--skin-accent-rgb), 0.45);
+  box-shadow: 0 0 0 3px rgba(var(--skin-accent-rgb), 0.18);
 }
 
 /* 日期分段输入（UInputDate 内部）：还原为裸文本段，继承容器皮肤 */

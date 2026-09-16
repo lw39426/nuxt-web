@@ -30,7 +30,7 @@ withDefaults(defineProps<Props>(), {
   iconColor: 'text-fg-muted',
   iconShape: 'xl',
   actionText: '',
-  actionClass: 'text-brand',
+  actionClass: 'text-skin',
   hoverable: true
 });
 
@@ -59,7 +59,7 @@ defineEmits<{ action: [] }>();
         <button
           v-if="actionText"
           type="button"
-          class="text-sm hover:underline"
+          class="text-sm hover:scale-95 transition-transform duration-100"
           :class="actionClass"
           @click="$emit('action')"
         >

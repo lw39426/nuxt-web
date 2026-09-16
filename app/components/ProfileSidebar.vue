@@ -33,10 +33,10 @@ const handleLogout = () => {
 
 <template>
   <div class="flex flex-col h-full">
-    <!-- 用户信息区 -->
+    <!-- 用户信息区：头像底色引用皮肤实底渐变 -->
     <div class="flex items-center gap-3 px-5 py-5 mb-2">
       <div
-        class="h-14 w-14 rounded-full bg-fg flex items-center justify-center text-canvas font-bold text-xl shrink-0"
+        class="avatar h-14 w-14 rounded-full flex items-center justify-center text-canvas font-bold text-xl shrink-0"
       >
         {{ avatarLetter }}
       </div>
@@ -46,31 +46,30 @@ const handleLogout = () => {
       </div>
     </div>
 
-    <!-- 导航菜单 -->
+    <!-- 导航菜单：选中态引用皮肤色 -->
     <nav class="flex-1 px-3 space-y-1">
       <NuxtLink
         v-for="item in menuItems"
         :key="item.path"
         :to="item.path"
-        class="relative flex items-center gap-3 px-4 h-11 rounded-xl text-sm transition-colors duration-200"
-        :class="
-          isActive(item.path)
-            ? 'bg-brand-soft text-brand font-medium'
-            : 'text-fg-muted hover:bg-surface-muted'
-        "
+        class="nav-item"
+        :class="{ 'nav-item--on': isActive(item.path) }"
       >
         <!-- 选中态指示器 -->
-        <span
-          v-if="isActive(item.path)"
-          class="absolute left-0 top-2/3 -translate-y-1/2 w-[3px] h-5 bg-brand rounded-r-full"
-        />
+        <span v-if="isActive(item.path)" class="nav-indicator" />
         <span :class="[item.icon, 'w-5 h-5']" />
         {{ item.name }}
       </NuxtLink>
     </nav>
 
+    <!-- 皮肤快切：紧凑色卡（与悬浮菜单共享同一状态） -->
+    <div class="px-4 pt-3 mx-3 mb-1 skin-block">
+      <div class="skin-block-label">皮肤</div>
+      <ProfileSkinSwitcher compact />
+    </div>
+
     <!-- 底部帮助与退出 -->
-    <div class="px-3 pb-4 mt-4 space-y-1">
+    <div class="px-3 pb-4 mt-1 space-y-1">
       <NuxtLink
         to="/help"
         class="flex items-center gap-3 px-4 h-11 rounded-xl text-xs text-fg-subtle hover:text-fg-muted transition-colors"
@@ -88,3 +87,62 @@ const handleLogout = () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 头像：皮肤实底渐变 + 主色投影 */
+.avatar {
+  background: var(--skin-solid);
+  box-shadow: var(--skin-solid-shadow);
+  color: var(--skin-ink-on);
+}
+
+/* 菜单项：圆角胶囊，默认弱化文字 */
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 2.75rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+  transition: all 0.2s ease;
+}
+.nav-item:hover {
+  background: var(--skin-chip-hover);
+  color: var(--skin-ink);
+}
+
+/* 选中态：皮肤淡底 + 主色描边文字 */
+.nav-item--on {
+  background: var(--skin-chip-bg);
+  color: var(--skin-ink-strong);
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px var(--skin-chip-border);
+}
+
+/* 选中态指示器：左缘皮肤主色竖条 */
+.nav-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 1.25rem;
+  border-radius: 0 999px 999px 0;
+  background: var(--skin-accent);
+}
+
+/* 皮肤快切块：顶部细线与菜单区隔开 */
+.skin-block {
+  border-top: 1px solid var(--line);
+}
+.skin-block-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--fg-subtle);
+}
+</style>

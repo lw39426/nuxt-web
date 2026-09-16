@@ -191,7 +191,7 @@ const completedCount = computed(
             <p class="text-xs text-fg-subtle mt-3">
               已完成 <span class="font-medium text-fg">{{ completedCount }}</span
               >/{{ securityItems.length }} 项安全设置，
-              <span v-if="securityLevel !== 'high'" class="text-brand">继续提升安全等级</span>
+              <span v-if="securityLevel !== 'high'" class="text-skin">继续提升安全等级</span>
               <span v-else class="text-green-500">您的账户非常安全</span>
             </p>
           </div>
@@ -261,13 +261,13 @@ const completedCount = computed(
                 <!-- 设备图标 -->
                 <div
                   class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
-                  :class="record.current ? 'bg-brand-soft' : 'bg-surface-muted'"
+                  :class="record.current ? 'bg-skin-soft' : 'bg-surface-muted'"
                 >
                   <span
                     class="w-4.5 h-4.5"
                     :class="[
                       getDeviceIcon(record.os),
-                      record.current ? 'text-brand' : 'text-fg-muted'
+                      record.current ? 'text-skin' : 'text-fg-muted'
                     ]"
                   />
                 </div>
@@ -298,7 +298,7 @@ const completedCount = computed(
                 <div class="text-right shrink-0">
                   <p
                     class="text-xs"
-                    :class="record.current ? 'text-brand font-medium' : 'text-fg-subtle'"
+                    :class="record.current ? 'text-skin font-medium' : 'text-fg-subtle'"
                   >
                     {{ record.time }}
                   </p>

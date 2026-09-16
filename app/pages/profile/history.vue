@@ -148,7 +148,7 @@ onMounted(loadHistory);
             </div>
             <div class="flex-1 min-w-0">
               <p
-                class="text-sm font-medium text-fg line-clamp-1 group-hover:text-brand transition-colors"
+                class="text-sm font-medium text-fg line-clamp-1 group-hover:text-skin transition-colors"
               >
                 {{ item.title }}
               </p>
@@ -161,7 +161,7 @@ onMounted(loadHistory);
               <div class="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <UButton color="neutral" variant="ghost" size="xs" aria-label="加入购物车">
                   <span
-                    class="i-carbon-shopping-cart w-3.5 h-3.5 transition-colors group-hover:text-brand"
+                    class="i-carbon-shopping-cart w-3.5 h-3.5 transition-colors group-hover:text-skin"
                   />
                 </UButton>
               </div>

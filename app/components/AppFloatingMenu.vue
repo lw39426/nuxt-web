@@ -7,27 +7,6 @@ const setMode = (value: 'system' | 'light' | 'dark') => {
 };
 const modeIndex = computed(() => (mode.value === 'system' ? 0 : mode.value === 'light' ? 1 : 2));
 
-// Scroll Logic — 使用 IntersectionObserver 哨兵判断是否滚过页面顶部 240px。
-// 文档顶部放一个高 240px 的哨兵，其完全滚出视口即认为「已滚过」。
-// 相比 window scroll 监听，IO 回调仅在状态跨越阈值时触发，滚动过程中不占主线程。
-const showBackToTop = ref(false);
-const sentinelRef = ref<HTMLElement | null>(null);
-let observer: IntersectionObserver | null = null;
-
-/**
- * IntersectionObserver 回调函数
- * 当哨兵元素与视口的相交状态发生变化时触发
- * @param entries - 相交观测条目数组
- */
-const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-  // 取第一个观测条目（本组件只 observe 一个哨兵元素），安全访问避免数组为空的情况
-  const entry = entries[0];
-  if (entry) {
-    // 哨兵与视口无交集 = 已滚过顶部，显示「回到顶部」按钮
-    showBackToTop.value = !entry.isIntersecting;
-  }
-};
-
 // Menu State
 const isOpen = ref(false);
 const toggleMenu = (event: MouseEvent) => {
@@ -40,20 +19,10 @@ const menuRef = ref<HTMLElement | null>(null);
 
 // Basic click outside logic
 onMounted(() => {
-  // 替换 window scroll 监听为 IO 哨兵：observe 后立即触发一次回调，天然完成初始落位
-  observer = new IntersectionObserver(handleIntersection, {
-    root: null,
-    threshold: 0
-  });
-
-  if (sentinelRef.value) {
-    observer.observe(sentinelRef.value);
-  }
   window.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
-  if (observer) observer.disconnect();
   window.removeEventListener('click', handleClickOutside);
 });
 
@@ -61,10 +30,6 @@ const handleClickOutside = (event: MouseEvent) => {
   if (isOpen.value && menuRef.value && !menuRef.value.contains(event.target as Node)) {
     isOpen.value = false;
   }
-};
-
-const backToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const getIcon = (m: string) => {
@@ -89,14 +54,6 @@ const buttonClass = (value: 'system' | 'light' | 'dark') =>
 </script>
 
 <template>
-  <!-- 滚动哨兵：贴在文档顶部、高 240px。其完全滚出视口即等价于原先的 scrollY > 240。
-       不可见、不占位、不拦截事件，仅供 IntersectionObserver 观测。 -->
-  <div
-    ref="sentinelRef"
-    class="absolute top-0 left-0 h-[240px] w-full pointer-events-none bg-transparent"
-    aria-hidden="true"
-  ></div>
-
   <div ref="menuRef" class="fixed top-[90%] right-0 z-50">
     <!-- Panel (展开时的面板) -->
     <Transition
@@ -147,15 +104,11 @@ const buttonClass = (value: 'system' | 'light' | 'dark') =>
             </div>
           </div>
 
-          <!-- Back to Top -->
-          <button
-            v-show="showBackToTop"
-            class="flex items-center justify-center gap-2 w-full py-2.5 bg-surface-muted hover:bg-elevated text-fg rounded-xl transition-colors text-sm font-medium"
-            @click="backToTop"
-          >
-            <div class="i-carbon-arrow-up" />
-            <span>回到顶部</span>
-          </button>
+          <!-- Skin Switcher：个人中心皮肤切换（useProfileSkin 单例，全局生效） -->
+          <div class="space-y-2">
+            <div class="text-xs font-medium text-fg-muted uppercase tracking-wider px-1">皮肤</div>
+            <ProfileSkinSwitcher />
+          </div>
         </div>
       </div>
     </Transition>

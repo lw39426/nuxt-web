@@ -10,9 +10,11 @@
     <!-- Footer -->
     <AppFooter v-if="!$route.meta.hideFooter" />
 
-    <!-- Floating Menu -->
+    <!-- Floating Menu悬浮菜单 -->
     <ClientOnly>
       <AppFloatingMenu v-if="!$route.meta.hideFloatingMenu" />
+      <!-- 回到顶部：独立半圆图标按钮，位于悬浮菜单下方 -->
+      <AppBackToTop v-if="!$route.meta.hideFloatingMenu" />
     </ClientOnly>
 
     <!-- 小星AI入口 -->
