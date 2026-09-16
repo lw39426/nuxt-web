@@ -6,7 +6,8 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 查询进程：
 netstat -ano | findstr :3000
 netstat -ano | findstr LISTENING | findstr :3000
-结束进程：taskkill /PID 进程号 /F
+结束进程：
+taskkill /PID 进程号 /F
 
 ```bash
 # npm
