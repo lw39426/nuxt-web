@@ -9,6 +9,10 @@ const uiStore = useUiStore();
 const { openAuthModal } = uiStore;
 const authStore = useAuthStore();
 
+// 主题模式
+const colorMode = useColorMode();
+const isDark = computed(() => colorMode.value === 'dark');
+
 const isDropdownOpen = ref(false);
 const dropdownWrapperRef = ref<HTMLElement | null>(null);
 const dropdownStyle = ref<Record<string, string>>({});
@@ -132,15 +136,19 @@ onUnmounted(() => {
           <div class="shrink-0">
             <a href="/" class="flex items-center gap-2">
               <div
-                class="h-8 w-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black"
+                class="h-[40px] w-[60px] rounded-lg flex items-center justify-center overflow-hidden"
               >
-                <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                  <path
-                    d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"
-                  />
-                </svg>
+                <img
+                  :src="
+                    isDark
+                      ? '/images/logo/youmi-logo-dark-2048.png'
+                      : '/images/logo/youmi-logo-light-2048.png'
+                  "
+                  alt="YouMi Logo"
+                  class="w-full h-full object-contain"
+                />
               </div>
-              <p class="font-bold font-display text-xl text-fg">Mimo</p>
+              <!-- <p class="font-bold font-display text-xl text-fg">YouMi</p> -->
             </a>
           </div>
 

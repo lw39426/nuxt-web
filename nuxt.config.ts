@@ -47,7 +47,14 @@ export default defineNuxtConfig({
       link: [
         {
           rel: 'icon',
-          href: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect fill="none" width="1" height="1"/></svg>'
+          type: 'image/svg+xml',
+          href: '/favicon.svg'
+        },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '32x32',
+          href: '/images/logo/youmi-hand-color-square-32.png'
         }
       ]
     }

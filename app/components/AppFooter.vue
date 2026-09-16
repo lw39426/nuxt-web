@@ -10,6 +10,10 @@ interface FooterColumn {
   links: FooterLink[];
 }
 
+// 主题模式
+const colorMode = useColorMode();
+const isDark = computed(() => colorMode.value === 'dark');
+
 const columns: FooterColumn[] = [
   {
     title: '探索',
@@ -41,9 +45,9 @@ const columns: FooterColumn[] = [
   {
     title: '法律',
     links: [
-      { label: '隐私政策', href: '#' },
-      { label: '服务条款', href: '#' },
-      { label: 'Cookie 政策', href: '#' }
+      { label: '隐私政策', to: '/privacy' },
+      { label: '服务条款', to: '/terms' },
+      { label: '免责声明', to: '/disclaimer' }
     ]
   }
 ];
@@ -56,20 +60,22 @@ const columns: FooterColumn[] = [
         <!-- Brand -->
         <div class="col-span-2 md:col-span-1">
           <NuxtLink to="/" class="flex items-center gap-2 mb-4">
-            <div class="h-7 w-7 bg-black dark:bg-white rounded-lg flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="w-4 h-4 text-white dark:text-black"
-              >
-                <path
-                  d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"
-                />
-              </svg>
+            <div
+              class="h-[40px] w-[60px] rounded-lg flex items-center justify-center overflow-hidden"
+            >
+              <img
+                :src="
+                  isDark
+                    ? '/images/logo/youmi-logo-dark-2048.png'
+                    : '/images/logo/youmi-logo-light-2048.png'
+                "
+                alt="YouMi Logo"
+                class="w-full h-full object-contain"
+              />
             </div>
-            <span class="font-semibold text-base text-fg">Mimo</span>
+            <!-- <span class="font-semibold text-base text-fg">YouMi</span> -->
           </NuxtLink>
-          <p class="footer-desc">新一代智能购物平台，用科技连接品质生活。</p>
+          <p class="footer-desc">面向动漫 / 影视爱好者的角色百科与沉浸式浏览平台。</p>
         </div>
 
         <!-- 链接列 -->
@@ -89,7 +95,7 @@ const columns: FooterColumn[] = [
       <!-- 分隔线 -->
       <div class="border-t border-line pt-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-          <p class="footer-copy">Copyright © 2026 Mimo. 保留所有权利。</p>
+          <p class="footer-copy">Copyright © 2026 YouMi. 保留所有权利。</p>
           <div class="flex items-center gap-5">
             <a href="#" class="text-fg-subtle hover:text-fg transition-colors">
               <div class="i-carbon-logo-github w-4 h-4" />
