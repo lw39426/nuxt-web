@@ -10,10 +10,6 @@ interface FooterColumn {
   links: FooterLink[];
 }
 
-// 主题模式
-const colorMode = useColorMode();
-const isDark = computed(() => colorMode.value === 'dark');
-
 const columns: FooterColumn[] = [
   {
     title: '探索',
@@ -25,20 +21,9 @@ const columns: FooterColumn[] = [
     ]
   },
   {
-    title: '服务',
-    links: [
-      { label: '售后服务', href: '#' },
-      { label: '配送说明', href: '#' },
-      { label: '退换政策', href: '#' },
-      { label: '常见问题', href: '#' }
-    ]
-  },
-  {
     title: '关于',
     links: [
       { label: '关于我们', to: '/about' },
-      { label: '加入我们', href: '#' },
-      { label: '联系方式', href: '#' },
       { label: 'AI 助手', to: '/ai-page' }
     ]
   },
@@ -56,21 +41,23 @@ const columns: FooterColumn[] = [
   <footer class="bg-canvas-elevated pt-12 md:pt-16 pb-8">
     <div class="max-w-7xl mx-auto px-5 md:px-8">
       <!-- 上部内容 -->
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-10 mb-12">
+      <div class="flex flex-col md:flex-row justify-between mb-12">
         <!-- Brand -->
-        <div class="col-span-2 md:col-span-1">
+        <div class="mb-8 md:mb-0">
           <NuxtLink to="/" class="flex items-center gap-2 mb-4">
             <div
               class="h-[40px] w-[60px] rounded-lg flex items-center justify-center overflow-hidden"
             >
+              <!-- 双图显隐：SSR 与客户端首帧一致，避免水合 mismatch -->
               <img
-                :src="
-                  isDark
-                    ? '/images/logo/youmi-logo-dark-2048.png'
-                    : '/images/logo/youmi-logo-light-2048.png'
-                "
+                src="/images/logo/youmi-logo-light-2048.png"
                 alt="YouMi Logo"
-                class="w-full h-full object-contain"
+                class="w-full h-full object-contain dark:hidden"
+              />
+              <img
+                src="/images/logo/youmi-logo-dark-2048.png"
+                alt="YouMi Logo"
+                class="w-full h-full object-contain hidden dark:block"
               />
             </div>
             <!-- <span class="font-semibold text-base text-fg">YouMi</span> -->
@@ -79,16 +66,20 @@ const columns: FooterColumn[] = [
         </div>
 
         <!-- 链接列 -->
-        <div v-for="column in columns" :key="column.title">
-          <h3 class="footer-title">
-            {{ column.title }}
-          </h3>
-          <ul class="space-y-2">
-            <li v-for="link in column.links" :key="link.label">
-              <NuxtLink v-if="link.to" :to="link.to" class="footer-link">{{ link.label }}</NuxtLink>
-              <a v-else :href="link.href" class="footer-link">{{ link.label }}</a>
-            </li>
-          </ul>
+        <div class="flex flex-wrap gap-24 lg:gap-24">
+          <div v-for="column in columns" :key="column.title">
+            <h3 class="footer-title">
+              {{ column.title }}
+            </h3>
+            <ul class="space-y-2">
+              <li v-for="link in column.links" :key="link.label">
+                <NuxtLink v-if="link.to" :to="link.to" class="footer-link">{{
+                  link.label
+                }}</NuxtLink>
+                <a v-else :href="link.href" class="footer-link">{{ link.label }}</a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 

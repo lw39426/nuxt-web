@@ -9,10 +9,6 @@ const uiStore = useUiStore();
 const { openAuthModal } = uiStore;
 const authStore = useAuthStore();
 
-// 主题模式
-const colorMode = useColorMode();
-const isDark = computed(() => colorMode.value === 'dark');
-
 const isDropdownOpen = ref(false);
 const dropdownWrapperRef = ref<HTMLElement | null>(null);
 const dropdownStyle = ref<Record<string, string>>({});
@@ -138,14 +134,16 @@ onUnmounted(() => {
               <div
                 class="h-[40px] w-[60px] rounded-lg flex items-center justify-center overflow-hidden"
               >
+                <!-- 双图显隐：SSR 与客户端首帧一致，避免水合 mismatch -->
                 <img
-                  :src="
-                    isDark
-                      ? '/images/logo/youmi-logo-dark-2048.png'
-                      : '/images/logo/youmi-logo-light-2048.png'
-                  "
+                  src="/images/logo/youmi-logo-light-2048.png"
                   alt="YouMi Logo"
-                  class="w-full h-full object-contain"
+                  class="w-full h-full object-contain dark:hidden"
+                />
+                <img
+                  src="/images/logo/youmi-logo-dark-2048.png"
+                  alt="YouMi Logo"
+                  class="w-full h-full object-contain hidden dark:block"
                 />
               </div>
               <!-- <p class="font-bold font-display text-xl text-fg">YouMi</p> -->

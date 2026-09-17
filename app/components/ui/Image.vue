@@ -6,9 +6,13 @@ import { AVATAR_PLACEHOLDER, IMAGE_PLACEHOLDER } from '~/utils/image';
  * ------------------------------------------------------------
  * - src 为空或加载失败时展示占位图（data URI，不会再触发 error）
  * - variant 决定默认占位图；fallback 可指定自定义兜底图地址
+ * - darkFallback 用于暗色模式下的兜底图（如 logo、loading 图），
+ *   组件会自动渲染两张图并通过 dark:hidden / dark:block 显隐，
+ *   避免 SSR 与客户端首帧的水合 mismatch
  * - 提供 #fallback 插槽时，空源/加载失败改渲染插槽内容
  *   （如博客作者头像降级为首字母块）
- * - class / loading / decoding 等属性透传给内部 img
+ * - class / loading / decoding 等属性显式透传给内部 img；
+ *   渲染 #fallback 插槽时由插槽内容自行负责样式与属性
  */
 interface Props {
   /** 图片地址；为空或加载失败时展示兜底 */
@@ -18,23 +22,30 @@ interface Props {
   variant?: 'image' | 'avatar';
   /** 自定义兜底图地址（优先于 variant 默认占位图） */
   fallback?: string;
+  /** 暗色模式下的兜底图地址；提供时自动启用双图显隐 */
+  darkFallback?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   src: '',
   alt: '',
   variant: 'image',
-  fallback: ''
+  fallback: '',
+  darkFallback: ''
 });
+
+// 关闭自动继承，改为在内部 img 上显式绑定 $attrs
+defineOptions({ inheritAttrs: false });
 
 const failed = ref(false);
 
-const resolvedSrc = computed(() => {
-  if (!props.src || failed.value) {
-    return props.fallback || (props.variant === 'avatar' ? AVATAR_PLACEHOLDER : IMAGE_PLACEHOLDER);
-  }
-  return props.src;
-});
+// 是否处于兜底态（空源或加载失败）
+const shouldShowFallback = computed(() => !props.src || failed.value);
+
+// 兜底图地址（light 版本）
+const resolvedFallback = computed(
+  () => props.fallback || (props.variant === 'avatar' ? AVATAR_PLACEHOLDER : IMAGE_PLACEHOLDER)
+);
 
 /** 换图后重置失败状态，允许重新加载真实图片 */
 watch(
@@ -52,6 +63,24 @@ function onError() {
 </script>
 
 <template>
-  <slot v-if="$slots.fallback && (!src || failed)" name="fallback" />
-  <img v-else :src="resolvedSrc" :alt="alt" @error="onError" />
+  <!-- 正常图片 -->
+  <img
+    v-if="!shouldShowFallback"
+    :src="src || undefined"
+    :alt="alt"
+    v-bind="$attrs"
+    @error="onError"
+  />
+
+  <!-- 兜底态：需要双图显暗色适配 -->
+  <template v-else-if="darkFallback">
+    <img :src="resolvedFallback" :alt="alt" class="dark:hidden" v-bind="$attrs" />
+    <img :src="darkFallback" :alt="alt" class="hidden dark:block" v-bind="$attrs" />
+  </template>
+
+  <!-- 兜底态：插槽兜底（博客头像等） -->
+  <slot v-else-if="$slots.fallback" name="fallback" />
+
+  <!-- 兜底态：单图兜底（无暗色适配、无插槽） -->
+  <img v-else :src="resolvedFallback" :alt="alt" v-bind="$attrs" />
 </template>
