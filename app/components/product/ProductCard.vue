@@ -8,7 +8,8 @@
         <UiImage
           :src="product?.main_image"
           :alt="product?.name || ''"
-          fallback="/images/pro-loading.svg"
+          :fallback="'/images/pro_loading.svg'"
+          :dark-fallback="'/images/pro_loading_dark.svg'"
           loading="lazy"
           decoding="async"
           class="w-full h-full object-contain p-8 sm:p-8"
@@ -30,6 +31,23 @@
               isFavorite ? 'i-carbon-favorite-filled text-red-500' : 'i-carbon-favorite',
               'text-base sm:text-xl'
             ]"
+          />
+        </button>
+
+        <!-- Compare Button：加入 / 移出对比栏 -->
+        <button
+          v-if="!inCompare || !isComparePage"
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface dark:bg-white/20 shadow-md flex items-center justify-center transition-colors disabled:opacity-60"
+          :class="
+            inCompare
+              ? 'text-accent'
+              : 'text-fg-muted dark:text-fg hover:text-accent hover:bg-elevated'
+          "
+          :aria-label="inCompare ? '移出对比' : '加入对比'"
+          @click.stop="toggleCompare"
+        >
+          <div
+            :class="['i-carbon-compare', 'text-base sm:text-xl', inCompare ? 'text-accent' : '']"
           />
         </button>
       </div>
@@ -106,6 +124,7 @@ import type { Product } from '~/types/product';
 import { useAuthStore } from '~/stores/auth';
 import { useUiStore } from '~/stores/ui';
 import { useFavoriteStore } from '~/stores/favorite';
+import { useCompareStore } from '~/stores/compare';
 
 const props = defineProps<{
   product: Product;
@@ -115,10 +134,33 @@ const authStore = useAuthStore();
 const uiStore = useUiStore();
 // 收藏态统一走全局缓存 store：N 张卡片共享 1 次全量拉取，卡片自身 0 查询请求
 const favoriteStore = useFavoriteStore();
+const compareStore = useCompareStore();
 const favoritePending = ref(false);
+// useToast 属客户端能力：SSR 的 setup 阶段调用会使 vite-node worker 直接崩溃
+// （曾导致全站 500），沿用项目既有写法仅在客户端实例化
+const toast = import.meta.client ? useToast() : null;
+// 对比页自身卡片不再显示对比按钮（页面内已有移除按钮）
+const route = useRoute();
+const isComparePage = computed(() => route.path === '/compare');
 
 /** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
 const isFavorite = computed(() => favoriteStore.has('product', props.product.id));
+
+/** 是否已在对比栏 */
+const inCompare = computed(() => compareStore.has(props.product.id));
+
+/** 加入 / 移出对比栏；已满 4 个时 toast 提示 */
+const toggleCompare = () => {
+  const result = compareStore.toggle({ id: props.product.id, name: props.product.name || '' });
+  if (result === 'rejected') {
+    toast?.add({
+      id: 'compare-full',
+      title: '最多对比 4 个角色',
+      description: '请先移除对比栏中的角色',
+      color: 'warning'
+    });
+  }
+};
 
 const productDetailPath = computed(() => `/products/${props.product.code || props.product.id}`);
 
