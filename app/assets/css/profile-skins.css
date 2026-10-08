@@ -75,6 +75,12 @@
   --skin-shadow-btn: 0 6px 18px rgba(123, 97, 173, 0.22);
   --skin-ring-halo: rgba(203, 186, 240, 0.35); /* 分组圆点光晕环 */
   --skin-card-border: rgba(139, 112, 219, 0.4);
+
+  /* 标题渐变文字 + 弥散光斑（产品页/首页楼层标题，随皮肤切换） */
+  --skin-title-gradient: linear-gradient(90deg, #9d7ce0, #7c5cbf, #f0a4b8);
+  --skin-glow-a: rgba(157, 124, 224, 0.2); /* 薰衣草紫光斑 */
+  --skin-glow-b: rgba(240, 164, 184, 0.2); /* 桃粉光斑 */
+  --skin-glow-c: rgba(255, 224, 178, 0.18); /* 奶黄光斑 */
 }
 
 /* macaron · 暗色 */
@@ -118,6 +124,12 @@
   --skin-shadow-btn: 0 6px 18px rgba(0, 0, 0, 0.35);
   --skin-ring-halo: rgba(139, 112, 219, 0.25);
   --skin-card-border: rgba(167, 139, 219, 0.35);
+
+  /* 标题渐变文字 + 弥散光斑（暗色：整体提亮一档） */
+  --skin-title-gradient: linear-gradient(90deg, #a78bdb, #8b6fdb, #d998ad);
+  --skin-glow-a: rgba(139, 111, 219, 0.16);
+  --skin-glow-b: rgba(244, 132, 152, 0.12);
+  --skin-glow-c: rgba(255, 209, 102, 0.1);
 }
 
 /* ---------- 皮肤：mint（薄荷洗色，上一版本色彩） ---------- */
@@ -158,6 +170,12 @@
   --skin-shadow-btn: 0 6px 18px rgba(10, 92, 68, 0.18);
   --skin-ring-halo: var(--brand-soft);
   --skin-card-border: rgba(15, 186, 129, 0.4);
+
+  /* 标题渐变文字 + 弥散光斑（薄荷绿系 + 湖蓝点缀） */
+  --skin-title-gradient: linear-gradient(90deg, var(--brand-300), var(--brand-500), #3a9db5);
+  --skin-glow-a: rgba(92, 230, 192, 0.25);
+  --skin-glow-b: rgba(15, 186, 129, 0.18);
+  --skin-glow-c: rgba(58, 157, 181, 0.15);
 }
 
 /* mint · 暗色 */
@@ -203,6 +221,12 @@
   --skin-shadow-btn: 0 6px 18px rgba(0, 0, 0, 0.35);
   --skin-ring-halo: rgba(47, 211, 166, 0.2);
   --skin-card-border: rgba(47, 211, 166, 0.35);
+
+  /* 标题渐变文字 + 弥散光斑（暗色：薄荷绿提亮 + 靛蓝光斑呼应 hero-bg） */
+  --skin-title-gradient: linear-gradient(90deg, var(--brand-300), var(--brand-400), #5bc8dc);
+  --skin-glow-a: rgba(47, 211, 166, 0.14);
+  --skin-glow-b: rgba(69, 82, 147, 0.16);
+  --skin-glow-c: rgba(91, 200, 220, 0.12);
 }
 
 /* ============================================================
@@ -279,4 +303,25 @@
 .profile-skin-scope {
   --ui-primary: var(--skin-accent);
   --ui-color-primary-500: var(--skin-accent);
+}
+
+/* ============================================================
+ * 标题渐变 / 弥散光斑工具类（全局）
+ * - 不限定 [data-profile-skin] 作用域：SSR 首帧 html 尚无皮肤属性，
+ *   靠 :root 的 macaron 默认变量兜底，避免渐变文字透明不可见
+ * - 皮肤切换时变量翻转，引用处自动联动
+ * ============================================================ */
+/* 标题渐变文字（搭配 bg-clip-text text-transparent 使用） */
+.bg-skin-title {
+  background-image: var(--skin-title-gradient);
+}
+/* 弥散光斑三色（搭配 rounded-full blur-3xl 使用） */
+.bg-skin-glow-a {
+  background-color: var(--skin-glow-a);
+}
+.bg-skin-glow-b {
+  background-color: var(--skin-glow-b);
+}
+.bg-skin-glow-c {
+  background-color: var(--skin-glow-c);
 }

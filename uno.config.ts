@@ -28,10 +28,6 @@ export default defineConfig({
   ],
   transformers: [transformerDirectives()],
   theme: {
-    // fontFamily: {
-    //   sans: 'Inter, system-ui, -apple-system, sans-serif',
-    //   display: 'ClashDisplay-Variable, Inter, system-ui, sans-serif'
-    // },
     colors: {
       // ============================================================
       // 语义色板：值来自 app/assets/css/theme.css 的 CSS 变量
@@ -63,7 +59,11 @@ export default defineConfig({
       brandActive: 'var(--brand-active)',
       onBrand: 'var(--on-brand)',
       accent: 'var(--accent)',
-      accentSoft: 'var(--accent-soft)'
+      accentSoft: 'var(--accent-soft)',
+      // 淡紫按钮（light purple button）
+      btnLpurple: 'var(--btn-lpurple)',
+      btnLpurpleText: 'var(--btn-lpurple-text)',
+      btnLpurpleHover: 'var(--btn-lpurple-hover)'
     }
   },
   // 自定义快捷css方式

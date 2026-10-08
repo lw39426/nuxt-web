@@ -83,8 +83,13 @@
   --on-brand: #ffffff;
 
   /* 强调色（蓝紫，用于选中态 / 渐变装饰，需时再全站统一） */
-  --accent: #455293;
+  --accent: #7584cc;
   --accent-soft: rgba(69, 82, 147, 0.1);
+
+  /* 淡紫按钮（light purple button） */
+  --btn-lpurple: #eef2ff;
+  --btn-lpurple-text: #4338ca;
+  --btn-lpurple-hover: #e0e7ff;
 
   /* 阴影 / 遮罩 */
   --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.06);
@@ -114,6 +119,11 @@
 
   --accent: #8b93ff;
   --accent-soft: rgba(139, 147, 255, 0.12);
+
+  /* 淡紫按钮（深色主题） */
+  --btn-lpurple: #312e81;
+  --btn-lpurple-text: #c7d2fe;
+  --btn-lpurple-hover: #625fb6;
 
   --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
   --overlay: rgba(0, 0, 0, 0.6);
@@ -183,7 +193,12 @@
     font-size: 0.875rem;
     line-height: 1.625;
     color: var(--fg-muted);
-    max-width: 200px;
+    max-width: 100%;
+  }
+  @media (min-width: 768px) {
+    .footer-desc {
+      max-width: 220px;
+    }
   }
   .footer-copy {
     font-size: 0.75rem;
