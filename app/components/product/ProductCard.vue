@@ -56,9 +56,11 @@
     <!-- Content -->
     <div class="pt-3 flex flex-col flex-1">
       <div class="mb-1 sm:mb-2 flex items-center gap-2 flex-wrap">
+        <!-- 品牌 -->
         <span class="text-[10px] sm:text-xs font-medium text-fg-subtle uppercase tracking-wider">{{
           product.brand || 'Brand'
         }}</span>
+        <!-- 标签 -->
         <span
           v-for="tag in product.tags || []"
           :key="tag.id"
@@ -68,6 +70,7 @@
           {{ tag.name }}
         </span>
       </div>
+      <!-- 名称 -->
       <NuxtLink :to="productDetailPath" class="block mb-1 sm:mb-2">
         <h3
           class="text-sm sm:text-base font-medium text-fg group-hover:text-fg-muted line-clamp-2 transition-colors"
@@ -84,13 +87,24 @@
         {{ product.description }}
       </p>
 
+      <!-- 价格 -->
+      <div class="mb-2 flex items-baseline gap-2">
+        <span class="text-sm sm:text-base font-bold text-fg">{{ formatPrice(product.price) }}</span>
+        <span
+          v-if="product.salePrice && product.salePrice < product.price"
+          class="text-xs text-fg-muted line-through"
+        >
+          {{ formatPrice(product.salePrice) }}
+        </span>
+      </div>
+
       <div class="mt-auto">
         <!-- 角色信息：类型 / 年代 / 人气评分 -->
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
             <span
               v-if="product.character_type"
-              class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-accent/15 text-fg-subtle font-medium"
+              class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-surface-muted text-fg-subtle font-medium"
             >
               {{ product.character_type }}
             </span>
@@ -125,6 +139,7 @@ import { useAuthStore } from '~/stores/auth';
 import { useUiStore } from '~/stores/ui';
 import { useFavoriteStore } from '~/stores/favorite';
 import { useCompareStore } from '~/stores/compare';
+import { formatPrice } from '~/utils/format';
 
 const props = defineProps<{
   product: Product;
