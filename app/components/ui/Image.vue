@@ -39,6 +39,9 @@ defineOptions({ inheritAttrs: false });
 
 const failed = ref(false);
 
+// 正常图引用：用于挂载后检测"hydration 前已失败"的图片
+const imgRef = ref<HTMLImageElement | null>(null);
+
 // 是否处于兜底态（空源或加载失败）
 const shouldShowFallback = computed(() => !props.src || failed.value);
 
@@ -46,6 +49,18 @@ const shouldShowFallback = computed(() => !props.src || failed.value);
 const resolvedFallback = computed(
   () => props.fallback || (props.variant === 'avatar' ? AVATAR_PLACEHOLDER : IMAGE_PLACEHOLDER)
 );
+
+/**
+ * 挂载兜底检测：SSR 直出的 img 在浏览器解析 HTML 时即开始加载，
+ * 失败（如 DNS 错误）触发的 error 事件可能早于 Vue hydration 挂载 @error 监听，
+ * 导致事件被错过、兜底永不生效。此处通过 complete + naturalWidth 复检：
+ * 已结束加载且宽度为 0 即为失败，直接进入兜底态（lazy 未加载的 complete=false 不受影响）
+ */
+onMounted(() => {
+  if (imgRef.value?.complete && imgRef.value.naturalWidth === 0) {
+    failed.value = true;
+  }
+});
 
 /** 换图后重置失败状态，允许重新加载真实图片 */
 watch(
@@ -66,6 +81,7 @@ function onError() {
   <!-- 正常图片 -->
   <img
     v-if="!shouldShowFallback"
+    ref="imgRef"
     :src="src || undefined"
     :alt="alt"
     v-bind="$attrs"

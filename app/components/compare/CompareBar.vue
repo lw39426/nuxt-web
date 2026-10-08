@@ -16,8 +16,8 @@ const expanded = ref(false);
 /** 对比页自身不显示悬浮栏 */
 const hidden = computed(() => route.path === '/compare' || compareStore.items.length === 0);
 
-/** 客户端挂载时恢复 localStorage 持久化的对比列表 */
-onMounted(() => compareStore.restore());
+/** 初始化时恢复 localStorage 持久化的对比列表（幂等，SSR 安全） */
+compareStore.restore();
 </script>
 
 <template>
@@ -29,14 +29,20 @@ onMounted(() => compareStore.restore());
     leave-from-class="translate-y-0 opacity-100"
     leave-to-class="translate-y-8 opacity-0"
   >
+    <!--
+      居中方式必须用 flex 布局而非 left-1/2 + -translate-x-1/2：
+      Tailwind v4 与 UnoCSS 会为 -translate-x-1/2 各生成一条规则，
+      前者写 translate 属性、后者写 transform 属性，属性不同互不覆盖，
+      导致阴影位移被叠加成 -100%（元素整体左偏半个身位）。
+    -->
     <div
       v-if="!hidden"
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[92vw] md:max-w-2xl"
+      class="fixed bottom-6 inset-x-0 z-40 flex flex-col items-center px-4 pointer-events-none"
     >
       <!-- 展开态：已选列表 + 操作 -->
       <div
         v-if="expanded"
-        class="bg-surface/95 backdrop-blur border border-line rounded-2xl shadow-xl px-5 py-4"
+        class="pointer-events-auto w-fit max-w-full bg-surface/95 backdrop-blur border border-line rounded-2xl shadow-xl px-5 py-4"
       >
         <div class="flex items-center justify-between mb-3">
           <span class="text-sm font-medium text-fg">
@@ -66,7 +72,7 @@ onMounted(() => compareStore.restore());
             :class="[
               'h-9 px-3 rounded-full flex items-center justify-center text-xs font-medium border',
               i <= compareStore.items.length
-                ? 'bg-accent/10 text-accent border-accent/30'
+                ? 'bg-accent text-white border-accent/30'
                 : 'bg-elevated/50 text-fg-subtle border-dashed border-line'
             ]"
           >
@@ -95,7 +101,7 @@ onMounted(() => compareStore.restore());
       <!-- 收起态：小胶囊 -->
       <button
         v-else
-        class="flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-full shadow-lg shadow-accent/30 hover:opacity-95 transition-opacity"
+        class="pointer-events-auto flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-full shadow-lg shadow-accent/30 hover:opacity-95 transition-opacity"
         @click="expanded = true"
       >
         <div class="i-carbon-compare text-base" />

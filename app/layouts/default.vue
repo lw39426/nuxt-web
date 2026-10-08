@@ -17,6 +17,9 @@
       <AppBackToTop v-if="!$route.meta.hideFloatingMenu" />
     </ClientOnly>
 
+    <!-- 全局悬浮对比栏（加入对比角色后出现） -->
+    <CompareBar />
+
     <!-- 小星AI入口 -->
     <NuxtLink
       v-if="!$route.path.includes('/ai-page')"

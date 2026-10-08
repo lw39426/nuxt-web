@@ -54,11 +54,25 @@ const titleParts = computed(() => {
         : 'flex flex-col md:flex-row md:items-end md:justify-between gap-6'
     "
   >
-    <div :class="align === 'center' ? 'flex flex-col items-center' : 'max-w-2xl'">
+    <div class="relative" :class="align === 'center' ? 'flex flex-col items-center' : 'max-w-2xl'">
+      <!-- 弥散光背景：皮肤三色光斑，随皮肤切换联动 -->
+      <div
+        class="absolute -top-10 -left-10 w-56 h-56 bg-skin-glow-a rounded-full blur-3xl pointer-events-none"
+        aria-hidden="true"
+      ></div>
+      <div
+        class="absolute -top-6 right-0 w-48 h-48 bg-skin-glow-b rounded-full blur-3xl pointer-events-none"
+        aria-hidden="true"
+      ></div>
+      <div
+        class="absolute top-8 left-1/3 w-40 h-40 bg-skin-glow-c rounded-full blur-3xl pointer-events-none"
+        aria-hidden="true"
+      ></div>
+
       <!-- 眉题：楼层标记（胶囊造型与全站标签/按钮的圆角语言一致） -->
       <p
         v-if="label"
-        class="inline-flex items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] transition-colors"
+        class="relative inline-flex items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] transition-colors"
         :class="toneClasses[tone].label"
       >
         <span>{{ label }}</span>
@@ -67,18 +81,23 @@ const titleParts = computed(() => {
         </slot>
       </p>
 
-      <!-- 楼层标题 -->
+      <!-- 楼层标题：皮肤渐变文字（随皮肤切换，与产品页标题风格呼应） -->
       <h2
-        class="mt-5 text-[2rem] md:text-[2.75rem] leading-[1.15] font-bold tracking-[-0.03em] text-fg transition-colors"
+        class="relative mt-5 text-[2rem] md:text-[2.75rem] leading-[1.15] font-bold tracking-[-0.03em] transition-colors"
       >
-        {{ titleParts.lead
-        }}<span v-if="titleParts.emphasized" :class="toneClasses[tone].emphasized">{{
-          titleParts.emphasized
-        }}</span>
+        <span class="bg-clip-text text-transparent bg-skin-title">
+          {{ titleParts.lead
+          }}<span v-if="titleParts.emphasized" :class="toneClasses[tone].emphasized">{{
+            titleParts.emphasized
+          }}</span>
+        </span>
       </h2>
 
       <!-- 楼层描述 -->
-      <p v-if="description" class="mt-4 text-base md:text-lg leading-relaxed text-fg-muted">
+      <p
+        v-if="description"
+        class="relative mt-4 text-base md:text-lg leading-relaxed text-fg-muted"
+      >
         {{ description }}
       </p>
     </div>
