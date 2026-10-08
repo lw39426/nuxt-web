@@ -283,11 +283,13 @@ const ARTICLES: MockArticle[] = [
 /** 获取文章分类列表 */
 export const getMockArticleCategories = (): MockArticleCategory[] => ARTICLE_CATEGORIES
 
-/** 获取文章列表（支持分页和分类筛选） */
+/** 获取文章列表（支持分页、分类筛选与标签筛选） */
 export const getMockArticles = (params?: {
   page?: number
   pageSize?: number
   category_id?: number
+  /** 标签名，支持逗号分隔多值（命中任一即保留） */
+  tag?: string
 }): {
   articles: MockArticle[]
   pagination: { page: number; pageSize: number; total: number; pages: number }
@@ -295,10 +297,18 @@ export const getMockArticles = (params?: {
   const page = params?.page || 1
   const pageSize = params?.pageSize || 10
   const categoryId = params?.category_id
+  const tagNames = (params?.tag || '')
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
 
   let filtered = ARTICLES
   if (categoryId !== undefined && categoryId !== null) {
-    filtered = ARTICLES.filter((a) => a.category_id === categoryId)
+    filtered = filtered.filter((a) => a.category_id === categoryId)
+  }
+  // 标签筛选：命中任一标签名即保留
+  if (tagNames.length > 0) {
+    filtered = filtered.filter((a) => (a.tags || []).some((t) => tagNames.includes(t.name)))
   }
 
   const total = filtered.length
@@ -310,4 +320,33 @@ export const getMockArticles = (params?: {
     articles,
     pagination: { page, pageSize, total, pages }
   }
+}
+
+/**
+ * 聚合全部文章的标签列表
+ * 同 id 标签去重，按引用次数（热度）倒序排列
+ */
+export const getMockArticleTags = (): {
+  id: number
+  name: string
+  color: string
+  weight: number
+  type: number
+  count: number
+}[] => {
+  const map = new Map<
+    number,
+    { id: number; name: string; color: string; weight: number; type: number; count: number }
+  >()
+  for (const article of ARTICLES) {
+    for (const tag of article.tags || []) {
+      const exist = map.get(tag.id)
+      if (exist) {
+        exist.count += 1
+      } else {
+        map.set(tag.id, { ...tag, count: 1 })
+      }
+    }
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count)
 }

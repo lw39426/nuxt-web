@@ -173,3 +173,31 @@ export async function proxyOnly<T>(
     })
   }
 }
+
+/**
+ * Mock 优先方法：仅在开启 Mock 模式时返回 Mock 数据，否则走纯代理
+ *
+ * 与 withMockFallback 的区别：代理失败时不降级到 Mock。
+ * 适用于登录等不允许伪造结果的写操作，既支持无后端时的本地联调，
+ * 又保证线上后端故障时不会签发假凭证
+ *
+ * @param event   当前请求上下文
+ * @param path    Flask 侧的相对路径（不含 /api/v1 前缀）
+ * @param mock    Mock 数据工厂函数，仅在使用 Mock 模式时调用
+ * @param options 代理请求可选配置
+ */
+export async function withMockOrProxy<T>(
+  event: H3Event,
+  path: string,
+  mock: () => T | Promise<T>,
+  options: ProxyOptions = {}
+): Promise<BffResponse<T>> {
+  if (isMockMode()) {
+    if (import.meta.dev) {
+      console.info(`[BFF] ${path} 使用 Mock 数据（USE_MOCK=true）`)
+    }
+    setResponseHeader(event, 'X-Data-Source', 'mock')
+    return { code: 200, message: 'success', data: await mock() }
+  }
+  return await proxyOnly<T>(event, path, options)
+}

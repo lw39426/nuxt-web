@@ -7,6 +7,8 @@ export interface ArticleListParams {
   pageSize?: number
   category_id?: number
   keyword?: string
+  /** 标签名，支持逗号分隔多值 */
+  tag?: string
 }
 
 /** 文章搜索参数 */
