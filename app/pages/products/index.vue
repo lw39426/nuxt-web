@@ -11,15 +11,25 @@
         <div
           class="flex flex-col md:flex-row justify-between items-start md:items-end mb-4 md:mb-16"
         >
-          <div>
-            <h1 class="text-5xl font-bold mb-2">
-              <span
-                class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500"
-              >
-                角色图鉴
-              </span>
+          <div class="relative">
+            <!-- 弥散光背景：皮肤三色光斑，随皮肤切换联动 -->
+            <div
+              class="absolute -top-14 -left-10 w-72 h-72 bg-skin-glow-a rounded-full blur-3xl pointer-events-none"
+              aria-hidden="true"
+            ></div>
+            <div
+              class="absolute -top-8 left-36 w-60 h-60 bg-skin-glow-b rounded-full blur-3xl pointer-events-none"
+              aria-hidden="true"
+            ></div>
+            <div
+              class="absolute -top-4 left-80 w-52 h-52 bg-skin-glow-c rounded-full blur-3xl pointer-events-none"
+              aria-hidden="true"
+            ></div>
+
+            <h1 class="relative text-5xl font-bold mb-2">
+              <span class="bg-clip-text text-transparent bg-skin-title"> 角色图鉴 </span>
             </h1>
-            <div class="mt-4 text-xl font-medium text-fg-muted">
+            <div class="relative mt-4 text-xl font-medium text-fg-muted">
               <span class="text-fg font-bold">每一个角色，都值得被认真看见。</span>
             </div>
           </div>
@@ -93,7 +103,7 @@
                 'px-3 py-1.5 rounded-full text-sm border transition-colors',
                 isSelected(group.key, option)
                   ? 'bg-accent text-white border-accent'
-                  : 'text-fg border-line hover:border-accent hover:text-accent'
+                  : 'text-fg border-line hover:bg-accent hover:text-white hover:border-accent'
               ]"
               @click="toggleFilter(group.key, option)"
             >
@@ -101,15 +111,42 @@
             </button>
           </div>
         </div>
-
-        <!-- 已选筛选条件汇总 + 清空 -->
-        <div v-if="activeFilterCount > 0" class="flex items-center gap-3">
-          <span class="text-sm text-fg-muted">
-            已筛选 <span class="text-fg font-semibold">{{ filteredCharacterCount }}</span> 位角色
-          </span>
-          <button class="text-sm text-accent hover:underline" @click="clearFilters">
-            清空筛选
-          </button>
+        <!-- 已选筛选标签汇总 + 清空 -->
+        <div v-if="activeFilterCount > 0" class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span
+              v-for="tag in activeFilterTags"
+              :key="`${tag.key}-${tag.value}`"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent text-white text-sm group"
+            >
+              <span class="text-xs">{{ tag.label }}</span>
+              <span class="text-xs text-[#efefef]">{{ tag.value }}</span>
+              <button
+                type="button"
+                class="ml-0.5 rounded-full hover:bg-accent/20 transition-colors p-0.5 grid place-items-center"
+                :aria-label="`移除筛选条件: ${tag.value}`"
+                @click="toggleFilter(tag.key, tag.value)"
+              >
+                <span class="i-carbon-close w-4 h-4 inline-block"></span>
+              </button>
+            </span>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-sm text-fg-muted">
+              已筛选 <span class="text-fg font-semibold">{{ filteredCharacterCount }}</span> 位角色
+            </span>
+            <UButton
+              class="bg-btn-lpurple text-btn-lpurple-text hover:bg-btn-lpurple-hover"
+              variant="soft"
+              size="sm"
+              @click="clearFilters"
+            >
+              <template #leading>
+                <span class="i-carbon-reset w-4 h-4" />
+              </template>
+              重置筛选
+            </UButton>
+          </div>
         </div>
       </div>
     </div>
@@ -317,8 +354,8 @@ const filterGroups = computed(() => {
     product.tags?.forEach((tag) => tags.add(tag.name));
   });
 
-  // 年代按时间顺序排列
-  const eraOrder = ['80年代', '90年代', '00年代', '10年代', '20年代'];
+  // 年代按时间顺序排列（40年代对应《猫和老鼠》等早期作品）
+  const eraOrder = ['40年代', '80年代', '90年代', '00年代', '10年代', '20年代'];
   const sortedEras = eraOrder.filter((era) => eras.has(era));
 
   return [
@@ -349,6 +386,28 @@ const activeFilterCount = computed(
     selectedFilters.value.era.length +
     selectedFilters.value.tag.length
 );
+
+interface ActiveFilterTag {
+  key: FilterKey;
+  label: string;
+  value: string;
+}
+
+/** 已选筛选项扁平化列表（用于渲染可删除标签） */
+const activeFilterTags = computed<ActiveFilterTag[]>(() => {
+  const keyLabel: Record<FilterKey, string> = {
+    character_type: '类型',
+    era: '年代',
+    tag: '标签'
+  };
+  const tags: ActiveFilterTag[] = [];
+  (Object.keys(selectedFilters.value) as FilterKey[]).forEach((key) => {
+    selectedFilters.value[key].forEach((value) => {
+      tags.push({ key, label: keyLabel[key], value });
+    });
+  });
+  return tags;
+});
 
 /** 清空全部筛选条件 */
 const clearFilters = () => {
