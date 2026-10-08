@@ -207,6 +207,24 @@ const readTime = computed(() => {
           <div v-html="post.content"></div>
         </article>
 
+        <!-- 标签：点击跳转列表页并按该标签筛选 -->
+        <div v-if="post.tags?.length" class="mt-10 flex flex-wrap items-center gap-2">
+          <div class="i-carbon-tag w-4 h-4 text-fg-subtle"></div>
+          <NuxtLink
+            v-for="tag in post.tags"
+            :key="tag.id"
+            :to="{ path: '/blog', query: { tag: tag.name } }"
+            class="px-3 py-1 rounded-full text-xs font-medium border transition-opacity hover:opacity-80"
+            :style="{
+              color: tag.color || '#6B7280',
+              borderColor: `${tag.color || '#6B7280'}55`,
+              backgroundColor: `${tag.color || '#6B7280'}14`
+            }"
+          >
+            {{ tag.name }}
+          </NuxtLink>
+        </div>
+
         <!-- Share / Tags -->
         <div class="mt-12 pt-8 border-t border-line flex justify-between items-center">
           <div class="text-sm text-fg-muted">分享这篇文章</div>

@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import type { BlogPost, Article, ArticleCategory } from '~/types/blog';
+import type { BlogPost, Article, ArticleCategory, ArticleTag } from '~/types/blog';
 import { useArticleApi } from '~/composables/api/article';
 import { useIntersectionObserver } from '@vueuse/core';
 
-const { list, categories: fetchCategories } = useArticleApi();
+const {
+  list,
+  categories: fetchCategories,
+  tags: fetchTags,
+  search: searchArticles
+} = useArticleApi();
+
+/** 当前路由：用于读取详情页标签 / 关键词跳转带入的 query */
+const route = useRoute();
 
 /** 安全格式化日期（无效/缺失时返回空串） */
 function formatDate(dateStr?: string): string {
@@ -40,6 +48,15 @@ function articleToBlogPost(article: Article): BlogPost {
 const categoryList = ref<ArticleCategory[]>([]);
 const activeCategory = ref<number | null>(null); // null = 全部
 
+// --- 标签 ---
+const tagList = ref<ArticleTag[]>([]);
+const activeTag = ref<string | null>(null); // null = 全部标签
+
+// --- 搜索 ---
+const keyword = ref('');
+/** 已提交生效的关键词（区别于输入框实时值，避免每次按键都请求） */
+const activeKeyword = ref('');
+
 // 加载分类
 const loadCategories = async () => {
   try {
@@ -49,6 +66,17 @@ const loadCategories = async () => {
   } catch (err) {
     // 分类加载失败时保持默认
     console.error('Failed to load categories:', err);
+  }
+};
+
+// 加载标签
+const loadTags = async () => {
+  try {
+    const data = await fetchTags(2); // 2 = 文章标签
+    tagList.value = Array.isArray(data) ? data : [];
+  } catch (err) {
+    // 标签加载失败时不展示标签行
+    console.error('Failed to load tags:', err);
   }
 };
 
@@ -63,34 +91,53 @@ const loadMoreTrigger = ref<HTMLElement | null>(null);
 /** 空数据状态：非加载中且无文章 */
 const isEmpty = computed(() => !isLoading.value && displayedPosts.value.length === 0);
 
-/** Hero 文章：与列表同源取第一条；列表渲染时跳过它避免重复 */
-const heroPost = computed(() => displayedPosts.value[0] ?? null);
-const listPosts = computed(() =>
-  heroPost.value ? displayedPosts.value.slice(1) : displayedPosts.value
-);
+/** Hero 轮播数据：独立于筛选，始终展示最新 5 篇 */
+const heroPosts = ref<BlogPost[]>([]);
 
-/** 加载文章列表 */
+/** 加载 Hero 轮播数据（仅首次进入页面请求一次，失败静默由占位兜底） */
+const loadHeroPosts = async () => {
+  try {
+    const data = await list({ page: 1, pageSize: 5 });
+    const articles = Array.isArray(data?.articles) ? data.articles : [];
+    heroPosts.value = articles.map(articleToBlogPost);
+  } catch (err) {
+    console.error('Failed to load hero posts:', err);
+  }
+};
+
+/** 加载文章列表（reset=true 时回到第一页；有关键词时走搜索接口） */
 const loadArticles = async (reset = false) => {
   if (isLoading.value || (!hasMore.value && !reset)) return;
   isLoading.value = true;
 
   if (reset) {
     currentPage.value = 1;
-    displayedPosts.value = [];
+    // 不清空 displayedPosts：保留旧列表避免文档高度骤降导致浏览器钳制滚动跳顶
     hasMore.value = true;
   }
 
   try {
-    const data = await list({
+    const params = {
       page: currentPage.value,
       pageSize,
-      category_id: activeCategory.value ?? undefined
-    });
+      category_id: activeCategory.value ?? undefined,
+      tag: activeTag.value ?? undefined
+    };
+    // 关键词存在时走搜索接口以支持相关性检索，否则走普通列表
+    const data = activeKeyword.value
+      ? await searchArticles({ ...params, keyword: activeKeyword.value })
+      : await list(params);
 
     // 接口异常返回缺失字段时做降级处理
     const articles = Array.isArray(data?.articles) ? data.articles : [];
     const newPosts = articles.map(articleToBlogPost);
-    displayedPosts.value.push(...newPosts);
+
+    if (reset) {
+      // 新数据整体替换，保证中间态高度稳定
+      displayedPosts.value = newPosts;
+    } else {
+      displayedPosts.value.push(...newPosts);
+    }
 
     if (data?.pagination) {
       const { page, pages } = data.pagination;
@@ -115,6 +162,25 @@ const selectCategory = (categoryId: number | null) => {
   loadArticles(true);
 };
 
+// 切换标签：再次点击同一标签则取消选中
+const selectTag = (tagName: string | null) => {
+  activeTag.value = activeTag.value === tagName ? null : tagName;
+  loadArticles(true);
+};
+
+// // 提交搜索
+// const submitSearch = () => {
+//   activeKeyword.value = keyword.value.trim();
+//   loadArticles(true);
+// };
+
+// // 清空搜索
+// const clearSearch = () => {
+//   keyword.value = '';
+//   activeKeyword.value = '';
+//   loadArticles(true);
+// };
+
 // 监听滚动触底 - 无限加载
 useIntersectionObserver(
   loadMoreTrigger,
@@ -131,7 +197,18 @@ useIntersectionObserver(
 
 // 初始加载
 onMounted(() => {
+  // 支持从详情页标签跳转带入 ?tag=xxx 与 ?keyword=xxx
+  const qTag = route.query.tag;
+  if (typeof qTag === 'string' && qTag) activeTag.value = qTag;
+  const qKeyword = route.query.keyword;
+  if (typeof qKeyword === 'string' && qKeyword) {
+    keyword.value = qKeyword;
+    activeKeyword.value = qKeyword;
+  }
+
   loadCategories();
+  loadTags();
+  loadHeroPosts();
   loadArticles();
 });
 </script>
@@ -139,63 +216,19 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-canvas pb-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <!-- 头部宣传区域Hero Post：取文章列表第一条 -->
-      <NuxtLink
-        v-if="heroPost"
-        :to="`/blog/${heroPost.code}`"
-        class="group relative block w-full aspect-[2/1] md:aspect-[2.5/1] rounded-3xl overflow-hidden mb-12 isolate transform-gpu"
-      >
-        <!-- 底层背景图 -->
-        <UiImage
-          :src="heroPost.image"
-          :alt="heroPost.title"
-          class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        <!-- 叠加层: 背景图加载失败时的渐变背景色 -->
-        <div
-          class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
-        ></div>
-        <!-- 叠加层: 文章内容 Content -->
-        <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-2/3">
-          <div class="text-gray-300 text-sm mb-3 font-medium">{{ heroPost.date }}</div>
-          <h1
-            class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight group-hover:text-blue-200 transition-colors"
-          >
-            {{ heroPost.title }}
-          </h1>
-          <p class="text-gray-300 text-lg mb-6 line-clamp-2 md:line-clamp-none">
-            {{ heroPost.excerpt }}
-          </p>
-
-          <div class="flex items-center gap-3">
-            <UiImage
-              :src="heroPost.author?.avatar"
-              :alt="heroPost.author?.name || ''"
-              class="h-10 w-10 rounded-full border-2 border-white/20 object-cover"
-              variant="avatar"
-            />
-            <div class="flex flex-col">
-              <span class="text-sm font-bold text-white">{{ heroPost.author?.name || '' }}</span>
-              <span class="text-xs text-gray-400">{{ heroPost.author?.role }}</span>
-            </div>
-          </div>
-        </div>
-        <!-- 叠加层:边框效果Border Overlay for Anti-aliasing -->
-        <div
-          class="absolute inset-0 rounded-3xl ring-1 ring-inset ring-transparent dark:ring-[#686868] pointer-events-none z-10"
-        ></div>
-      </NuxtLink>
+      <!-- 头部宣传区域：独立轮播板块（最新 5 篇，不随筛选变化） -->
+      <BlogHeroCarousel :posts="heroPosts" />
 
       <!-- 筛选器: 分类标签Filter Tabs -->
       <div
-        class="flex flex-wrap items-center justify-start gap-2 mb-12 overflow-x-auto pb-2 scrollbar-hide"
+        class="flex flex-wrap items-center justify-start gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide"
       >
         <button
           class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
           :class="[
             activeCategory === null
               ? 'bg-fg text-canvas'
-              : 'bg-surface-muted text-fg-muted hover:bg-elevated'
+              : 'bg-surface-muted text-fg-muted hover:bg-fg hover:text-canvas'
           ]"
           @click="selectCategory(null)"
         >
@@ -208,7 +241,7 @@ onMounted(() => {
           :class="[
             activeCategory === cat.id
               ? 'bg-fg text-canvas'
-              : 'bg-surface-muted text-fg-muted hover:bg-elevated'
+              : 'bg-surface-muted text-fg-muted hover:bg-fg hover:text-canvas'
           ]"
           @click="selectCategory(cat.id)"
         >
@@ -220,17 +253,52 @@ onMounted(() => {
         </button>
       </div>
 
+      <!-- 标签筛选行：无标签数据时整行隐藏 -->
+      <div v-if="tagList.length > 0" class="flex flex-wrap items-center gap-2 mb-12">
+        <div class="i-carbon-tag w-4 h-4 text-fg-subtle shrink-0"></div>
+        <button
+          v-for="tag in tagList"
+          :key="tag.id"
+          class="px-3 py-1 rounded-full text-xs font-medium border transition-all"
+          :class="[
+            activeTag === tag.name
+              ? 'text-white border-transparent bg-[var(--tag-color)]'
+              : 'border-line text-fg-muted hover:text-white hover:border-transparent hover:bg-[var(--tag-color)]'
+          ]"
+          :style="{ '--tag-color': tag.color || '#6B7280' }"
+          @click="selectTag(tag.name)"
+        >
+          {{ tag.name }}
+        </button>
+        <UButton
+          v-if="activeTag"
+          class="bg-btn-lpurple text-btn-lpurple-text hover:bg-btn-lpurple-hover"
+          variant="soft"
+          size="sm"
+          @click="selectTag(null)"
+        >
+          <template #leading>
+            <span class="i-carbon-reset w-4 h-4" />
+          </template>
+          清除标签
+        </UButton>
+      </div>
+
       <!-- 空数据状态 -->
       <div v-if="isEmpty" class="text-center py-20 text-fg-subtle">
         <div class="text-5xl flex items-center justify-center gap-2 mb-4">
           <div class="i-carbon-blog w-12 h-12"></div>
         </div>
-        <p class="text-sm">暂无文章，换个分类试试吧</p>
+        <p class="text-sm">
+          {{
+            activeKeyword ? `没有找到与「${activeKeyword}」相关的文章` : '暂无文章，换个分类试试吧'
+          }}
+        </p>
       </div>
 
       <!-- 文章内容布局Blog Grid -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20">
-        <BlogCard v-for="blogPost in listPosts" :key="blogPost.id" :blog-post="blogPost" />
+        <BlogCard v-for="blogPost in displayedPosts" :key="blogPost.id" :blog-post="blogPost" />
       </div>
 
       <!-- 加载更多触发器 / 底部状态 -->
