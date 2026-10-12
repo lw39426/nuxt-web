@@ -11,6 +11,19 @@ useHead({
   ]
 });
 
+/**
+ * 首页 SEO 元信息
+ * - title 使用「品牌名 | 标语」形式，避免与全站 titleTemplate 叠加导致品牌名重复
+ * - description 覆盖全站默认描述，突出首页核心价值
+ * - canonical / og:url 由 nuxt-seo-utils 依据 site.url 自动生成
+ */
+useSeoMeta({
+  title: 'YouMi 角色百科',
+  titleTemplate: '%s | 每一个角色，都值得被认真看见',
+  description:
+    'YouMi 角色百科 —— 面向动漫与影视爱好者的角色图鉴平台，收录海量角色档案、能力设定与人物关系，支持 AI 角色问答与多角色对比。'
+});
+
 const { getHomeData } = useHomeApi();
 
 // 获取首页聚合数据

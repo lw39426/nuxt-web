@@ -342,7 +342,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Product } from '~/types/product';
+import type { Product, ProductTag } from '~/types/product';
 import { useProductApi } from '~/composables/api/product';
 import { useProducts } from '~/composables/useProducts';
 import { useAuthStore } from '~/stores/auth';
@@ -629,29 +629,6 @@ const metaRows = computed(() => {
   ].filter((row) => row.value);
 });
 
-/** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
-const isFavorite = computed(() =>
-  product.value ? favoriteStore.has('product', product.value.id) : false
-);
-
-/** 挂载后触发评分条动画与收藏缓存预热 */
-onMounted(() => {
-  favoriteStore.ensureLoaded().catch(() => {
-    // 加载失败静默降级为"未收藏"展示，不阻塞详情页渲染
-  });
-  setTimeout(() => {
-    barsMounted.value = true;
-  }, 300);
-});
-
-/** 卸载时清除悬停防抖定时器，避免离开页面后仍触发状态更新 */
-onUnmounted(() => {
-  if (hoverDebounceTimer) {
-    clearTimeout(hoverDebounceTimer);
-    hoverDebounceTimer = null;
-  }
-});
-
 /** 收藏 / 取消收藏：未登录唤起登录弹窗；乐观更新与失败回滚均在 store 内完成 */
 const toggleFavorite = async () => {
   if (!authStore.isAuthenticated) {
@@ -679,6 +656,92 @@ watchEffect(() => {
 });
 
 const relatedProducts = computed(() => detailData.value?.relatedItems ?? []);
+
+// ==================== SEO：动态 meta ====================
+// 站点正式域名（用于生成 JSON-LD 中的绝对 URL）
+const siteUrl = String(useRuntimeConfig().public.siteUrl || '').replace(/\/$/, '');
+
+/** 当前页面绝对地址（canonical 由 nuxt-seo-utils 自动生成，此处供 JSON-LD 使用） */
+const pageUrl = computed(() => `${siteUrl}/products/${productIdentifier.value}`);
+
+/**
+ * 角色详情页动态 meta
+ * - 全部使用 getter：SSR 首屏即注入真实数据，避免出现"未命名角色"等占位标题
+ * - 标题模板覆盖全站默认，突出「角色名 + 作品」；无数据时回退到通用标题
+ */
+useSeoMeta({
+  title: () => (product.value ? `${product.value.name} 角色资料` : '角色资料'),
+  description: () =>
+    product.value
+      ? (
+          product.value.description ||
+          `YouMi 角色百科收录的「${product.value.name}」角色资料，包含人物背景、能力设定、四维评分与人物关系。`
+        ).slice(0, 150)
+      : 'YouMi 角色百科角色资料页',
+  ogTitle: () => (product.value ? `${product.value.name} - YouMi 角色百科` : 'YouMi 角色百科'),
+  ogDescription: () => product.value?.description || '',
+  ogType: 'article',
+  ogImage: () => product.value?.images?.[0] || product.value?.main_image || '/favicon.svg',
+  ogUrl: () => pageUrl.value
+});
+
+/**
+ * 角色详情页结构化数据（JSON-LD）
+ * - 使用 Person 描述角色，便于搜索引擎理解实体
+ * - 仅在拿到角色数据后输出，避免无效空结构化数据
+ */
+useHead(() => ({
+  script: product.value
+    ? [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            name: product.value.name,
+            description: product.value.description || product.value.background || '',
+            image: product.value.images?.[0] || product.value.main_image || undefined,
+            url: pageUrl.value,
+            ...(product.value.origin ? { affiliation: product.value.origin } : {}),
+            ...(product.value.ratings
+              ? {
+                  aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: product.value.rating ?? 0,
+                    bestRating: 10,
+                    worstRating: 0,
+                    ratingCount: Math.max(product.value.favorite_count || 0, 1)
+                  }
+                }
+              : {})
+          })
+        }
+      ]
+    : []
+}));
+
+/** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
+const isFavorite = computed(() =>
+  product.value ? favoriteStore.has('product', product.value.id) : false
+);
+
+/** 挂载后触发评分条动画与收藏缓存预热 */
+onMounted(() => {
+  favoriteStore.ensureLoaded().catch(() => {
+    // 加载失败静默降级为"未收藏"展示，不阻塞详情页渲染
+  });
+  setTimeout(() => {
+    barsMounted.value = true;
+  }, 300);
+});
+
+/** 卸载时清除悬停防抖定时器，避免离开页面后仍触发状态更新 */
+onUnmounted(() => {
+  if (hoverDebounceTimer) {
+    clearTimeout(hoverDebounceTimer);
+    hoverDebounceTimer = null;
+  }
+});
 </script>
 
 <style scoped>

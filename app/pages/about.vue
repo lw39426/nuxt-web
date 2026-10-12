@@ -9,6 +9,16 @@ import WorksSection from '~/components/about/WorksSection.vue';
 
 definePageMeta({ hideFooter: true });
 
+/**
+ * 关于页 SEO 元信息
+ * - 覆盖全站默认 description，介绍站点定位与团队
+ */
+useSeoMeta({
+  title: '关于我们',
+  description:
+    '了解 YouMi 角色百科的定位与理念 —— 一个由爱好者维护的角色图鉴平台，致力于让每一个角色都值得被认真看见。'
+});
+
 // 主题
 const colorMode = useColorMode();
 const isDark = computed({

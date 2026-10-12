@@ -42,6 +42,7 @@
     "@iconify/types": "^2.0.0",
     "@nuxt/eslint": "latest",
     "@nuxt/eslint-config": "latest",
+    "@nuxtjs/seo": "^5.3.16",
     "@pinia/testing": "^1.0.3",
     "@typescript-eslint/parser": "^8.46.2",
     "@unocss/nuxt": "66.5.10-beta.1",

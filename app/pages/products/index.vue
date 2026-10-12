@@ -267,6 +267,17 @@ const { getProductCateList, getProducts } = useCategoryApi();
 // useToast 必须在 setup 同步阶段调用，不能在 await 之后的回调中使用
 const toast = useToast();
 
+/**
+ * 角色图鉴页 SEO 元信息
+ * - 覆盖全站默认 title/description，突出「角色图鉴」关键词
+ * - canonical / og:url 由 nuxt-seo-utils 依据 site.url 自动生成
+ */
+useSeoMeta({
+  title: '角色图鉴',
+  description:
+    '浏览 YouMi 角色图鉴，按作品系列、角色类型、年代与标签筛选，收录动漫与影视中的海量角色档案、能力设定与人物关系。'
+});
+
 interface SeriesGroup {
   categoryId?: number;
   category: string;

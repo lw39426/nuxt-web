@@ -3,20 +3,49 @@ import type { Article, BlogPost } from '~/types/blog';
 import { useArticleApi } from '~/composables/api/article';
 
 const route = useRoute();
-const articleCode = route.params.id as string;
-if (import.meta.dev) {
-  console.log('Article code from route:', articleCode);
-}
+/** 文章标识（code 或 id），随路由变化响应式更新 */
+const articleCode = computed(() => String(route.params.id ?? '').trim());
 
 const { detail, related } = useArticleApi();
 
-// --- 文章详情 ---
-const post = ref<Article | null>(null);
-const isLoading = ref(true);
-const error = ref(false);
+/**
+ * 文章详情（SSR 预取）
+ * - 使用 useAsyncData 而非 onMounted：保证首屏 HTML 即包含正文与 meta/JSON-LD，
+ *   否则搜索引擎抓取时只能看到空壳页面，SEO 形同虚设
+ * - 接口异常时 detail 抛出会被捕获到 error，页面展示「文章不存在」兜底
+ */
+const {
+  data: articleData,
+  pending: articlePending,
+  error: articleError
+} = await useAsyncData(
+  () => `blog-detail-${articleCode.value}`,
+  () => detail(articleCode.value),
+  { watch: [articleCode], default: () => null }
+);
 
-// --- 相关文章 ---
-const relatedPosts = ref<BlogPost[]>([]);
+/** 文章详情数据（null 表示加载失败或不存在） */
+const post = computed<Article | null>(() => articleData.value ?? null);
+const isLoading = computed(() => articlePending.value);
+const error = computed(() => !!articleError.value);
+
+// --- 相关文章（同样 SSR 预取，失败时静默降级为空列表） ---
+const { data: relatedData } = await useAsyncData(
+  () => `blog-related-${articleCode.value}`,
+  async () => {
+    try {
+      const data = await related(articleCode.value, 4);
+      // 接口异常返回非数组时保持空列表
+      return Array.isArray(data) ? data : [];
+    } catch (err) {
+      console.error('Failed to load related articles:', err);
+      return [];
+    }
+  },
+  { watch: [articleCode], default: () => [] }
+);
+
+const relatedPosts = computed<BlogPost[]>(() => (relatedData.value ?? []).map(articleToBlogPost));
 
 /** 安全格式化日期（无效/缺失时返回空串） */
 function formatDate(dateStr?: string): string {
@@ -49,44 +78,6 @@ function articleToBlogPost(article: Article): BlogPost {
   };
 }
 
-/** 加载文章详情 */
-const loadArticle = async () => {
-  isLoading.value = true;
-  error.value = false;
-  try {
-    const data = await detail(articleCode);
-    if (import.meta.dev) {
-      console.log('Loaded article data:', data);
-    }
-    post.value = data;
-  } catch (err) {
-    console.error('Failed to load article:', err);
-    error.value = true;
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-/** 加载相关文章 */
-const loadRelated = async () => {
-  try {
-    const data = await related(articleCode, 4);
-    // 接口异常返回非数组时保持空列表
-    relatedPosts.value = Array.isArray(data) ? data.map(articleToBlogPost) : [];
-  } catch (err) {
-    console.error('Failed to load related articles:', err);
-    // 相关文章加载失败不影响主内容
-  }
-};
-
-// 初始加载
-onMounted(async () => {
-  await loadArticle();
-  if (post.value) {
-    loadRelated();
-  }
-});
-
 // 计算属性: 发布日期格式化（日期无效时返回空串）
 const formattedDate = computed(() => {
   if (!post.value?.published_date) return '';
@@ -117,6 +108,64 @@ const readTime = computed(() => {
   const minutes = Math.max(1, Math.ceil(text.length / 500));
   return `${minutes} min read`;
 });
+
+// ==================== SEO：动态 meta ====================
+// 站点正式域名（用于生成 JSON-LD 中的绝对 URL）
+const siteUrl = String(useRuntimeConfig().public.siteUrl || '').replace(/\/$/, '');
+
+/** 当前页面绝对地址（canonical 由 nuxt-seo-utils 自动生成，此处供 JSON-LD 使用） */
+const pageUrl = computed(() => `${siteUrl}/blog/${articleCode.value}`);
+
+/**
+ * 文章详情页动态 meta
+ * - 全部使用 getter：数据本身来自 SSR 预取，避免出现无标题页面
+ * - description 优先取文章摘要，缺失时回退到通用描述
+ */
+useSeoMeta({
+  title: () => (post.value?.title ? post.value.title : '文章详情'),
+  description: () =>
+    post.value?.description || (post.value?.title ? `${post.value.title} - YouMi 角色资讯` : ''),
+  ogTitle: () => (post.value?.title ? `${post.value.title} - YouMi 角色百科` : 'YouMi 角色百科'),
+  ogDescription: () => post.value?.description || '',
+  ogType: 'article',
+  ogImage: () => post.value?.image || '/favicon.svg',
+  ogUrl: () => pageUrl.value,
+  articlePublishedTime: () => post.value?.published_date || undefined,
+  articleModifiedTime: () => post.value?.update_date || undefined
+});
+
+/**
+ * 文章详情页结构化数据（JSON-LD）
+ * - 使用 Article 描述，包含标题、封面、作者与发布时间，提升搜索结果展现
+ * - 仅在拿到文章数据后输出，避免无效空结构化数据
+ */
+useHead(() => ({
+  script: post.value
+    ? [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: post.value.title,
+            description: post.value.description || '',
+            image: post.value.image || undefined,
+            url: pageUrl.value,
+            ...(post.value.published_date ? { datePublished: post.value.published_date } : {}),
+            ...(post.value.update_date ? { dateModified: post.value.update_date } : {}),
+            author: {
+              '@type': 'Person',
+              name: post.value.author || post.value.user?.nickname || '佚名'
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: 'YouMi 角色百科'
+            }
+          })
+        }
+      ]
+    : []
+}));
 </script>
 
 <template>

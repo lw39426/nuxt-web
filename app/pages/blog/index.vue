@@ -10,6 +10,17 @@ const {
   search: searchArticles
 } = useArticleApi();
 
+/**
+ * 博客列表页 SEO 元信息
+ * - 覆盖全站默认 title/description，突出「角色资讯 / 博客」关键词
+ * - canonical / og:url 由 nuxt-seo-utils 依据 site.url 自动生成
+ */
+useSeoMeta({
+  title: '角色资讯',
+  description:
+    'YouMi 角色资讯频道，分享动漫与影视角色的深度解读、人物关系梳理、作品盘点与粉丝话题，带你更全面地了解每个角色。'
+});
+
 /** 当前路由：用于读取详情页标签 / 关键词跳转带入的 query */
 const route = useRoute();
 

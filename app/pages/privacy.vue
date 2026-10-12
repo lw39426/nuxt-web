@@ -4,6 +4,16 @@ definePageMeta({ layout: 'default' });
 const pageTitle = '隐私政策';
 const lastUpdated = '2026年9月15日';
 
+/**
+ * 隐私政策页 SEO 元信息
+ * - 该页已从 sitemap 中排除，此处仅补充页面级 title，避免出现无标题页面
+ */
+useSeoMeta({
+  title: '隐私政策',
+  description:
+    'YouMi 角色百科隐私政策，说明我们如何收集、使用、存储与保护您的个人信息，以及您享有的相关权利。'
+});
+
 const sections = [
   {
     title: '1. 信息收集',
@@ -73,7 +83,7 @@ const sections = [
     title: '9. 联系我们',
     content: `如果您对本隐私政策有任何疑问，请通过以下方式联系我们：
     <ul class="list-disc list-inside mt-2 space-y-1">
-      <li>邮箱：privacy@youmi.com</li>
+      <li>邮箱：2308739426@qq.com</li>
     </ul>`
   }
 ];

@@ -4,6 +4,16 @@ definePageMeta({ layout: 'default' });
 const pageTitle = '免责声明';
 const lastUpdated = '2026年9月15日';
 
+/**
+ * 免责声明页 SEO 元信息
+ * - 该页已从 sitemap 中排除，此处仅补充页面级 title
+ */
+useSeoMeta({
+  title: '免责声明',
+  description:
+    'YouMi 角色百科免责声明，说明本站为独立粉丝社区平台，展示的角色内容均来源于公开网络，版权归原作者所有。'
+});
+
 const sections = [
   {
     title: '1. 非官方粉丝站声明',
@@ -54,7 +64,7 @@ const sections = [
     title: '8. 联系我们',
     content: `如果您对本免责声明有任何疑问，请通过以下方式联系我们：
     <ul class="list-disc list-inside mt-2 space-y-1">
-      <li>邮箱：disclaimer@youmi.com</li>
+      <li>邮箱：2308739426@qq.com</li>
     </ul>`
   }
 ];
@@ -86,10 +96,10 @@ const sections = [
       </div>
 
       <!-- 返回链接 -->
-      <div class="mt-12 text-center">
+      <div class="mt-12">
         <NuxtLink
           to="/"
-          class="inline-flex items-center text-brand hover:text-brand-hover transition-colors"
+          class="inline-flex items-center text-fg-muted hover:text-fg-muted transition-colors"
         >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

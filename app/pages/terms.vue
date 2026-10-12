@@ -4,6 +4,16 @@ definePageMeta({ layout: 'default' });
 const pageTitle = '用户服务协议';
 const lastUpdated = '2026年9月15日';
 
+/**
+ * 用户服务协议页 SEO 元信息
+ * - 该页已从 sitemap 中排除，此处仅补充页面级 title
+ */
+useSeoMeta({
+  title: '用户服务协议',
+  description:
+    'YouMi 角色百科用户服务协议，说明使用本站服务时您与平台之间的权利义务、账号规范与内容版权约定。'
+});
+
 const sections = [
   {
     title: '1. 服务条款的接受',
@@ -58,7 +68,7 @@ const sections = [
     title: '9. 联系我们',
     content: `如果您对本协议有任何疑问，请通过以下方式联系我们：
     <ul class="list-disc list-inside mt-2 space-y-1">
-      <li>邮箱：support@youmi.com</li>
+      <li>邮箱：2308739426@qq.com</li>
     </ul>`
   }
 ];
