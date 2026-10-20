@@ -47,17 +47,20 @@ jobs:
 
       # 上传 pm2 配置（唯一事实源在仓库，避免服务器手工维护导致漂移）
       - name: Upload pm2 config
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: 'ecosystem.config.js'
           target: '/data/www/nuxt-web/'
+          # 目标目录已存在同名文件时必须显式覆盖，否则 tar 报 "Cannot open: File exists"
+          # 注意不能用 rm: true，那会删掉整个应用根目录（含 releases / current / logs）
+          overwrite: true
 
       # 上传构建产物到临时目录（保留 .output 这一层，由服务器侧改名）
       - name: Upload build artifacts to staging
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
@@ -69,13 +72,16 @@ jobs:
           rm: true
 
       - name: Finalize deployment
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script_stop: true
           script: |
+            # 任意命令失败即中止（v1.2.0 起已移除 script_stop，必须显式 set -e）
+            # 不用 pipefail：远程可能走 /bin/sh（dash 不支持该选项）
+            set -e
+
             APP_ROOT="/data/www/nuxt-web"
             STAGING_DIR="$APP_ROOT/releases/staging"
             RELEASE_DIR="$APP_ROOT/releases/$(date +%Y%m%d%H%M%S)"
@@ -111,7 +117,8 @@ jobs:
             echo "🔄 重启 pm2..."
             cd "$APP_ROOT"
             pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
-            pm2 start ecosystem.config.js
+            # 启动失败不立即退出，交由下方健康检查统一判定并触发回滚
+            pm2 start ecosystem.config.js || echo "⚠️ pm2 启动返回非零，交由健康检查判定"
             pm2 save > /dev/null 2>&1 || true
 
             # ============ 4. 健康检查（最多重试 10 次） ============
@@ -133,7 +140,7 @@ jobs:
               if [ -n "$PREV_RELEASE" ] && [ -d "$PREV_RELEASE" ]; then
                 ln -sfn "$PREV_RELEASE" "$CURRENT_LINK"
                 pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
-                pm2 start ecosystem.config.js
+                pm2 start ecosystem.config.js || echo "⚠️ 回滚启动返回非零，请手动检查 pm2 状态"
                 pm2 save > /dev/null 2>&1 || true
                 echo "⏪ 已回滚到: $PREV_RELEASE"
               else
@@ -149,6 +156,7 @@ jobs:
             # ============ 5. 清理旧版本（保留最近 N 个） ============
             echo "🧹 清理旧版本（保留最近 $KEEP_RELEASES 个）..."
             cd "$APP_ROOT/releases"
-            ls -1dt */ 2>/dev/null | grep -v '^staging/' | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf
+            # || true 兜底：清理是收尾动作，不应因空目录等边界情况把成功的部署判为失败
+            ls -1dt */ 2>/dev/null | grep -v '^staging/' | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf || true
 
             echo "🎉 部署完成！当前版本: $(readlink -f "$CURRENT_LINK")"
