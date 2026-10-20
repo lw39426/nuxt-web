@@ -4,9 +4,9 @@
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "scripts": {
-    "build": "set NODE_OPTIONS=--max-old-space-size=4096 && nuxt build",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 nuxt build",
     "dev": "nuxt dev",
-    "dev:mock": "set NUXT_PUBLIC_USE_MOCK=true&& nuxt dev",
+    "dev:mock": "cross-env NUXT_PUBLIC_USE_MOCK=true nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare && npx simple-git-hooks",
@@ -36,6 +36,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@eslint/js": "^9.38.0",
     "@iconify-json/carbon": "^1.2.14",
     "@iconify-json/lucide": "^1.2.77",
