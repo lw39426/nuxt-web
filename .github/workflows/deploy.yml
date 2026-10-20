@@ -1,34 +1,154 @@
-deploy:
-  needs: test
-  runs-on: ubuntu-latest
-  steps:
-    - name: Build production assets
-      run: pnpm run build # 生成 .output
+name: Deploy to Production
 
-    - name: Deploy to server
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd /app
-          # 停止并清理旧容器
-          docker stop nuxt-app || true
-          docker rm nuxt-app || true
+on:
+  push:
+    branches: [main]
+  # 支持手动触发（用于回滚后重试或补部署）
+  workflow_dispatch:
 
-          # 从 CI 工作目录直接构建镜像（关键！）
-          docker build -t nuxt-app:latest $GITHUB_WORKSPACE
+# 同一时间只允许一个部署任务，避免软链竞争
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
-          # 启动新容器（绑定 3000 端口）
-          docker run -d --name nuxt-app -p 3000:3000 nuxt-app:latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-          # 健康检查（Nginx 会代理到此端口）
-          sleep 10
-          if ! curl -f http://localhost:3000; then
-            echo "❌ 应用启动失败！"
-            docker stop nuxt-app
-            docker rm nuxt-app
-            exit 1
-          fi
-          echo "✅ 应用部署成功！"
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Prettier check
+        run: pnpm run format:check
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build production assets
+        run: pnpm run build
+
+      # 上传 pm2 配置（唯一事实源在仓库，避免服务器手工维护导致漂移）
+      - name: Upload pm2 config
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: 'ecosystem.config.js'
+          target: '/data/www/nuxt-web/'
+
+      # 上传构建产物到临时目录（保留 .output 这一层，由服务器侧改名）
+      - name: Upload build artifacts to staging
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: '.output/'
+          target: '/data/www/nuxt-web/releases/staging/'
+          strip_components: 0
+          # 上传前清空 staging，避免上次残留文件混入新版本
+          rm: true
+
+      - name: Finalize deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            APP_ROOT="/data/www/nuxt-web"
+            STAGING_DIR="$APP_ROOT/releases/staging"
+            RELEASE_DIR="$APP_ROOT/releases/$(date +%Y%m%d%H%M%S)"
+            CURRENT_LINK="$APP_ROOT/current"
+            KEEP_RELEASES=5
+            APP_NAME="NuxtWeb"
+
+            mkdir -p "$APP_ROOT/releases" "$APP_ROOT/logs"
+
+            # ============ 1. 校验并落盘新版本 ============
+            if [ ! -f "$STAGING_DIR/.output/server/index.mjs" ]; then
+              echo "❌ 上传产物不完整：$STAGING_DIR/.output/server/index.mjs 不存在"
+              rm -rf "$STAGING_DIR"
+              exit 1
+            fi
+
+            # 记录当前版本，供回滚使用
+            PREV_RELEASE=""
+            if [ -L "$CURRENT_LINK" ]; then
+              PREV_RELEASE=$(readlink -f "$CURRENT_LINK")
+            fi
+
+            mv "$STAGING_DIR/.output" "$RELEASE_DIR"
+            rm -rf "$STAGING_DIR"
+            echo "📦 新版本: $RELEASE_DIR"
+
+            # ============ 2. 切换软链 ============
+            ln -sfn "$RELEASE_DIR" "$CURRENT_LINK"
+            echo "🔗 current -> $(readlink -f "$CURRENT_LINK")"
+
+            # ============ 3. 启动/重启 pm2 ============
+            # 使用 delete + start：script 路径或 env 变更时 reload 可能沿用旧配置
+            echo "🔄 重启 pm2..."
+            cd "$APP_ROOT"
+            pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
+            pm2 start ecosystem.config.js
+            pm2 save > /dev/null 2>&1 || true
+
+            # ============ 4. 健康检查（最多重试 10 次） ============
+            echo "🏥 健康检查..."
+            HEALTHY=0
+            for i in $(seq 1 10); do
+              sleep 2
+              if curl -fsi --max-time 5 http://127.0.0.1:3000/api/v1/home/data 2>/dev/null | grep -q "X-Data-Source: backend"; then
+                HEALTHY=1
+                break
+              fi
+              echo "  第 $i 次检查未通过，继续等待..."
+            done
+
+            if [ "$HEALTHY" -ne 1 ]; then
+              echo "❌ 健康检查失败，开始回滚..."
+              pm2 logs "$APP_NAME" --lines 30 --nostream || true
+
+              if [ -n "$PREV_RELEASE" ] && [ -d "$PREV_RELEASE" ]; then
+                ln -sfn "$PREV_RELEASE" "$CURRENT_LINK"
+                pm2 delete "$APP_NAME" > /dev/null 2>&1 || true
+                pm2 start ecosystem.config.js
+                pm2 save > /dev/null 2>&1 || true
+                echo "⏪ 已回滚到: $PREV_RELEASE"
+              else
+                echo "⚠️ 没有可回滚的历史版本"
+              fi
+
+              rm -rf "$RELEASE_DIR"
+              exit 1
+            fi
+
+            echo "✅ 部署成功，后端连接正常"
+
+            # ============ 5. 清理旧版本（保留最近 N 个） ============
+            echo "🧹 清理旧版本（保留最近 $KEEP_RELEASES 个）..."
+            cd "$APP_ROOT/releases"
+            ls -1dt */ 2>/dev/null | grep -v '^staging/' | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf
+
+            echo "🎉 部署完成！当前版本: $(readlink -f "$CURRENT_LINK")"

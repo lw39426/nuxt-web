@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# 本地商品导入数据（临时文件，不入库）
+/*.xlsx
