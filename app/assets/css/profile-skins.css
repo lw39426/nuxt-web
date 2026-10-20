@@ -259,12 +259,6 @@
   .text-on-skin {
     color: var(--skin-ink-on);
   }
-  /* 皮肤实底渐变（头像/大按钮底） */
-  .bg-skin-solid {
-    background-image: var(--skin-solid);
-    box-shadow: var(--skin-solid-shadow);
-    color: var(--skin-ink-on);
-  }
   /* 皮肤渐变进度填充（会员进度等横向进度条） */
   .bg-skin-fill {
     background-image: var(--skin-fill-gradient);
@@ -314,6 +308,14 @@
 /* 标题渐变文字（搭配 bg-clip-text text-transparent 使用） */
 .bg-skin-title {
   background-image: var(--skin-title-gradient);
+}
+/* 皮肤实底渐变（头像 / 大按钮底）—— 全局可用
+ * 不限定 [data-profile-skin] 作用域：全局导航栏等组件在 SSR 首帧
+ * html 尚无皮肤属性，需靠 :root 的 macaron 默认变量兜底，否则无背景 */
+.bg-skin-solid {
+  background-image: var(--skin-solid);
+  box-shadow: var(--skin-solid-shadow);
+  color: var(--skin-ink-on);
 }
 /* 弥散光斑三色（搭配 rounded-full blur-3xl 使用） */
 .bg-skin-glow-a {

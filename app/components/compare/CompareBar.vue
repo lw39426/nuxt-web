@@ -72,8 +72,8 @@ compareStore.restore();
             :class="[
               'h-9 px-3 rounded-full flex items-center justify-center text-xs font-medium border',
               i <= compareStore.items.length
-                ? 'bg-accent text-white border-accent/30'
-                : 'bg-elevated/50 text-fg-subtle border-dashed border-line'
+                ? 'bg-skin-solid border-transparent'
+                : 'bg-surface-muted text-fg-subtle border-dashed border-line'
             ]"
           >
             <template v-if="i <= compareStore.items.length">
@@ -90,7 +90,7 @@ compareStore.restore();
           </div>
           <NuxtLink
             to="/compare"
-            class="ml-auto px-5 py-2 bg-accent text-white text-xs font-medium rounded-full hover:opacity-90 transition-opacity"
+            class="ml-auto px-5 py-2 bg-skin-solid text-xs font-medium rounded-full hover:opacity-90 transition-opacity"
             :class="compareStore.items.length < 2 ? 'pointer-events-none opacity-50' : ''"
           >
             开始对比
@@ -101,7 +101,7 @@ compareStore.restore();
       <!-- 收起态：小胶囊 -->
       <button
         v-else
-        class="pointer-events-auto flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-full shadow-lg shadow-accent/30 hover:opacity-95 transition-opacity"
+        class="pointer-events-auto flex items-center gap-2 px-4 py-2.5 bg-skin-solid rounded-full hover:opacity-95 transition-opacity"
         @click="expanded = true"
       >
         <div class="i-carbon-compare text-base" />

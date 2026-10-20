@@ -123,7 +123,7 @@ onUnmounted(() => {
            形态样式统一由 scoped CSS 的 .nav-shell / .is-capsule 声明，
            避免 UnoCSS 同优先级工具类（如 max-w-3xl / max-w-7xl）互相覆盖导致状态错乱。 -->
       <div
-        class="nav-shell w-full flex items-center justify-between px-6 py-3 md:px-8 md:py-4"
+        class="nav-shell w-full flex items-center justify-between px-6 py-3 md:px-8 md:py-2"
         :class="{ 'is-capsule': isScrolled }"
       >
         <!-- 内容层 -->
@@ -199,7 +199,7 @@ onUnmounted(() => {
             <div v-else ref="dropdownWrapperRef" class="relative hidden md:block">
               <button
                 type="button"
-                class="h-8 w-8 rounded-full bg-brand flex items-center justify-center text-on-brand font-bold text-sm hover:ring-2 hover:ring-brand-hover transition-all"
+                class="nav-avatar h-8 w-8 rounded-full bg-skin-solid flex items-center justify-center font-bold text-sm transition-all"
                 @click="toggleDropdown"
               >
                 {{ avatarLetter }}
@@ -316,6 +316,14 @@ nav {
   transform: translateZ(0);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 用户头像按钮：皮肤渐变底（.bg-skin-solid）+ hover 皮肤主色描边。
+ * 描边与底色的 box-shadow 合并到同一条声明，避免被 .bg-skin-solid 覆盖而失效 */
+.nav-avatar:hover {
+  box-shadow:
+    var(--skin-solid-shadow),
+    0 0 0 2px var(--skin-accent);
 }
 
 /**
