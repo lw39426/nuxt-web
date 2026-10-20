@@ -16,9 +16,9 @@ onMounted(restoreSkin);
 </script>
 
 <template>
-  <!-- 暗黑下页面底用 canvas（更深），与卡片 surface 拉开层次，避免整片糊在一起 -->
-  <!-- profile-skin-scope：把 Nuxt UI primary 色映射到当前皮肤主色（仅个人中心生效） -->
   <div class="profile-skin-scope bg-surfaceMuted dark:bg-canvas min-h-screen">
+    <!-- 暗黑下页面底用 canvas（更深），与卡片 surface 拉开层次，避免整片糊在一起 -->
+    <!-- profile-skin-scope：把 Nuxt UI primary 色映射到当前皮肤主色（仅个人中心生效） -->
     <div class="section-container py-6 sm:py-8">
       <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
         <!-- 侧边栏 -->
