@@ -119,8 +119,6 @@ export default defineNuxtConfig({
       ],
       meta: [
         { name: 'theme-color', content: '#ffffff' },
-        // 全站默认描述：单页未设置 description 时兜底，避免出现空描述
-        { name: 'description', content: siteDescription },
         { name: 'format-detection', content: 'telephone=no' }
       ]
     }
