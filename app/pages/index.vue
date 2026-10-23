@@ -34,7 +34,11 @@ const featuredCharacters = computed(() => homeData.value?.hot_products || []);
 const featuredTagName = computed(() => homeData.value?.featured?.tag_name || '精选角色');
 const articles = computed(() => homeData.value?.articles || []);
 
-const bgImage = computed(() => '/futuristic-moon-background.webp');
+// const bgImage = computed(() => '/futuristic-moon-background.webp');
+/** 首页 Hero 背景图（banner） */
+// const bgImage = computed(() => '/hero01.jpeg');
+// const bgImage = computed(() => '/hero01.png');
+const bgImage = computed(() => '/hero02.jpeg');
 
 const aiQuestion = ref('');
 const canAskAI = computed(() => aiQuestion.value.trim().length > 0);
@@ -69,11 +73,11 @@ const askAI = (question?: string) => {
       <!-- 英雄标题板块 -->
       <div class="z-10 section-container text-center">
         <h3
-          class="text-6xl pt-[3rem] md:pt-24 md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
-          v-html="'YouMi <br /> 每一个角色，都值得被认真看见。'"
+          class="text-5xl pt-[15rem] md:pt-24 md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
+          v-html="'YouMi <br /> 每一个角色，都值得被认真看见'"
         ></h3>
         <p
-          class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-6 md:mb-12 font-medium drop-shadow-sm"
+          class="text-lg md:text-xl text-[#bfaeed] max-w-2xl mx-auto mb-12 md:mb-12 font-medium drop-shadow-sm"
         >
           It is wonderful, and at the same time it is also terrible. Please be more tolerant, thank
           you very much.
