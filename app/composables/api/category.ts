@@ -1,4 +1,4 @@
-import type { Product } from '~/types/product'
+import type { Product, ProductCategory, ProductSeriesGroup } from '~/types/product'
 import type { Pagination } from '~/types/api'
 
 /** 分类树节点 */
@@ -17,11 +17,19 @@ export interface CategoryProductsParams {
   sort_order?: 'asc' | 'desc'
 }
 
-/**
- * 分类模块 API 封装
- * 前缀: /product/category
- * 无鉴权要求
- */
+/** 分类商品列表响应 */
+export interface CategoryProductsResponse {
+  category_name: string
+  products: Product[]
+  pagination: Pagination
+}
+
+/** 角色图鉴聚合响应 */
+export interface ProductCatalogResponse {
+  categories: ProductCategory[]
+  series: ProductSeriesGroup[]
+}
+
 export function useCategoryApi() {
   const { get } = useApi()
 
@@ -38,11 +46,12 @@ export function useCategoryApi() {
    * GET /product/category/<category_id>/products
    */
   async function getProducts(categoryId: number, params?: CategoryProductsParams) {
-    return await get<{ category_name: string; data: Product[]; pagination: Pagination }>(
-      `/product/category/${categoryId}/products`,
-      params
-    )
+    return await get<CategoryProductsResponse>(`/product/category/${categoryId}/products`, params)
   }
 
-  return { getProductCateList, getProducts }
+  async function getProductCatalog() {
+    return await get<ProductCatalogResponse>('/product/catalog')
+  }
+
+  return { getProductCateList, getProducts, getProductCatalog }
 }
