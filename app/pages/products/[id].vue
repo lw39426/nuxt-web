@@ -376,6 +376,7 @@ interface ProductDetailViewModel {
   tags: ProductTag[];
   create_time: string;
   update_time: string;
+  is_new?: boolean;
 
   // ===== YouMi 角色图鉴扩展字段（可选，mock/角色数据补充） =====
   /** 综合评分（0-10，角色数据由人工评分） */
@@ -489,7 +490,6 @@ const { data: detailData, pending } = await useAsyncData(
         console.error('Failed to load related products, fallback to empty:', e);
       }
     }
-
     return { apiProduct, fallbackProduct, relatedItems };
   },
   {
@@ -537,6 +537,7 @@ function mapApiProductToViewModel(source: Product): ProductDetailViewModel {
     tags: source.tags,
     create_time: source.create_time,
     update_time: source.update_time,
+    is_new: source.is_new,
     // 角色扩展字段
     rating: source.rating,
     era: source.era,
@@ -581,6 +582,7 @@ function mapMockProductToViewModel(source: Record<string, any>): ProductDetailVi
     tags: Array.isArray(source.tags) ? source.tags : [],
     create_time: source.create_time || '',
     update_time: source.update_time || '',
+    is_new: source.is_new ?? source.isNew,
     rating: source.rating || undefined,
     era: source.era || undefined,
     character_type: source.character_type || undefined,

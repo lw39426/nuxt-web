@@ -59,6 +59,22 @@ describe('normalizeProduct', () => {
     expect(product.salePrice).toBe(6999)
   })
 
+  it('透传创建时间、更新时间与分类名称', () => {
+    const product = normalizeProduct({
+      code: 'prd_7',
+      name: '汤姆猫',
+      category_name: '猫和老鼠',
+      create_time: '2025-09-15T12:57:48Z',
+      update_time: '2026-04-09T12:31:59Z',
+      is_new: true
+    })
+
+    expect(product.category_name).toBe('猫和老鼠')
+    expect(product.create_time).toBe('2025-09-15T12:57:48Z')
+    expect(product.update_time).toBe('2026-04-09T12:31:59Z')
+    expect(product.is_new).toBe(true)
+  })
+
   it('Mock 数据使用 reviewCount 时回填 favorite_count', () => {
     const product = normalizeProduct({ code: 'CHAR-1', reviewCount: 12 })
     expect(product.favorite_count).toBe(12)

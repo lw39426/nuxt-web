@@ -39,6 +39,7 @@ export function normalizeProduct(raw: Record<string, any>): Product {
     salePrice: Number(raw?.sale_price ?? raw?.salePrice ?? raw?.originalPrice ?? 0) || 0,
     stock: Number(raw?.stock) || 0,
     category_id: raw?.category_id ?? 0,
+    category_name: raw?.category_name || '',
     status: raw?.status ?? 1,
     main_image: image,
     images: Array.isArray(raw?.images) && raw.images.length > 0 ? raw.images : image ? [image] : [],
@@ -47,6 +48,9 @@ export function normalizeProduct(raw: Record<string, any>): Product {
     sort: raw?.sort ?? 0,
     brand: normalizeProductBrand(raw?.brand),
     tags: Array.isArray(raw?.tags) ? raw.tags : [],
+    create_time: raw?.create_time || '',
+    update_time: raw?.update_time || '',
+    is_new: raw?.is_new ?? raw?.isNew,
     ...(raw?.favorite_count != null || raw?.reviewCount != null
       ? { favorite_count: Number(raw.favorite_count ?? raw.reviewCount) || 0 }
       : {}),
