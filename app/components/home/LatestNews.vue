@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Article } from '~/types/blog';
+import { formatDate } from '~/utils/format';
 
 interface Props {
   articles?: Article[];
@@ -10,30 +11,6 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const displayArticles = computed(() => props.articles.slice(0, 4));
-
-const MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec'
-] as const;
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return '';
-  const y = date.getFullYear();
-  const m = MONTHS[date.getMonth()];
-  const d = date.getDate();
-  return `${y} ${m} ${d}`;
-};
 
 const fallbackArticles = [
   {

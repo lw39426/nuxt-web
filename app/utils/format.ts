@@ -9,18 +9,23 @@ export function formatPriceFromCent(cent: number) {
   return `¥${yuan.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-/** 格式化日期字符串（如 2023-08-15T12:00:00Z -> 2023-08-15） */
+/** 格式化日期字符串（如 2023-08-15T12:00:00Z -> 2023/08/15） */
 export function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('zh-CN', {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit'
+    day: '2-digit',
+    timeZone: 'UTC'
   })
 }
 
 /** 格式化日期时间字符串（如 2023-08-15T12:00:00Z -> 2023-08-15 12:00） */
 export function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString('zh-CN', {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('zh-CN', {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',

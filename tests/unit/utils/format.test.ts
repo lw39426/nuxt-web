@@ -16,6 +16,10 @@ describe('formatDate', () => {
     // 中文环境下为 2025/08/04 或 2025年08月04日，取决于 Node 的 ICU，断言包含关键字段
     expect(out).toContain('2025')
   })
+
+  it('无效日期返回空字符串', () => {
+    expect(formatDate('not-a-date')).toBe('')
+  })
 })
 
 describe('formatDateTime', () => {
@@ -25,6 +29,10 @@ describe('formatDateTime', () => {
     // 这里只断言包含月/日/时/分结构，不绑定具体年份。
     expect(out).toMatch(/\d{2}\/\d{2}/) // 月/日
     expect(out).toMatch(/\d{2}:\d{2}/) // 时:分
+  })
+
+  it('无效日期返回空字符串', () => {
+    expect(formatDateTime('not-a-date')).toBe('')
   })
 })
 
