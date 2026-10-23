@@ -77,7 +77,7 @@ const activeTag = ref(0);
         v-if="displayProducts.length > 0"
         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
       >
-        <ProductCard v-for="product in displayProducts" :key="product.id" :product="product" />
+        <ProductCard v-for="product in displayProducts" :key="product.code" :product="product" />
       </div>
 
       <!-- 骨架屏 -->

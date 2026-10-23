@@ -1,11 +1,12 @@
 import { getMockProductList } from '../../../../utils/mockStoreData'
+import { normalizeProductList } from '../../../../utils/product'
 
 /**
  * 获取相关推荐商品接口
  * GET /api/v1/product/:code/related
  * 优先代理 Flask，失败时降级为 Mock 数据
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const code = getRouterParam(event, 'code') || ''
   const limit = Number(getQuery(event).limit) || 8
 
@@ -25,7 +26,7 @@ export default defineEventHandler((event) => {
       : []
     // 其他作品角色补齐
     const others = list.filter((item) => excludeSelf(item) && item.brand !== self?.brand)
-    const related = [...sameBrand, ...others].slice(0, limit)
+    const related = normalizeProductList([...sameBrand, ...others].slice(0, limit))
 
     return {
       product_code: code,
@@ -34,5 +35,9 @@ export default defineEventHandler((event) => {
     }
   }
 
-  return withMockFallback(event, `/product/${code}/related`, buildMock)
+  const res = await withMockFallback(event, `/product/${code}/related`, buildMock)
+  if (res.data?.related) {
+    res.data.related = normalizeProductList(res.data.related)
+  }
+  return res
 })

@@ -58,7 +58,7 @@
       <div class="mb-1 sm:mb-2 flex items-center gap-2 flex-wrap">
         <!-- 品牌 -->
         <span class="text-[10px] sm:text-xs font-medium text-fg-subtle uppercase tracking-wider">{{
-          product.brand || 'Brand'
+          product.brand?.name || '官方品牌'
         }}</span>
         <!-- 标签 -->
         <span
@@ -89,12 +89,11 @@
 
       <!-- 价格 -->
       <div class="mb-2 flex items-baseline gap-2">
-        <span class="text-sm sm:text-base font-bold text-fg">{{ formatPrice(product.price) }}</span>
-        <span
-          v-if="product.salePrice && product.salePrice < product.price"
-          class="text-xs text-fg-muted line-through"
-        >
-          {{ formatPrice(product.salePrice) }}
+        <span class="text-sm sm:text-base font-bold text-fg">{{
+          formatPriceFromCent(hasSale ? product.salePrice : product.price)
+        }}</span>
+        <span v-if="hasSale" class="text-xs text-fg-muted line-through">
+          {{ formatPriceFromCent(product.price) }}
         </span>
       </div>
 
@@ -139,7 +138,7 @@ import { useAuthStore } from '~/stores/auth';
 import { useUiStore } from '~/stores/ui';
 import { useFavoriteStore } from '~/stores/favorite';
 import { useCompareStore } from '~/stores/compare';
-import { formatPrice } from '~/utils/format';
+import { formatPriceFromCent } from '~/utils/format';
 
 const props = defineProps<{
   product: Product;
@@ -151,6 +150,10 @@ const uiStore = useUiStore();
 const favoriteStore = useFavoriteStore();
 const compareStore = useCompareStore();
 const favoritePending = ref(false);
+/** 是否存在有效促销价（分） */
+const hasSale = computed(
+  () => props.product.salePrice > 0 && props.product.salePrice < props.product.price
+);
 // useToast 属客户端能力：SSR 的 setup 阶段调用会使 vite-node worker 直接崩溃
 // （曾导致全站 500），沿用项目既有写法仅在客户端实例化
 const toast = import.meta.client ? useToast() : null;
@@ -158,15 +161,20 @@ const toast = import.meta.client ? useToast() : null;
 const route = useRoute();
 const isComparePage = computed(() => route.path === '/compare');
 
+/** 收藏接口仍使用数字 item_id；新商品契约不保证下发时禁用收藏 */
+const favoriteItemId = computed(() => props.product.id);
+
 /** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
-const isFavorite = computed(() => favoriteStore.has('product', props.product.id));
+const isFavorite = computed(() =>
+  favoriteItemId.value != null ? favoriteStore.has('product', favoriteItemId.value) : false
+);
 
 /** 是否已在对比栏 */
-const inCompare = computed(() => compareStore.has(props.product.id));
+const inCompare = computed(() => compareStore.has(props.product.code));
 
 /** 加入 / 移出对比栏；已满 4 个时 toast 提示 */
 const toggleCompare = () => {
-  const result = compareStore.toggle({ id: props.product.id, name: props.product.name || '' });
+  const result = compareStore.toggle({ code: props.product.code, name: props.product.name || '' });
   if (result === 'rejected') {
     toast?.add({
       id: 'compare-full',
@@ -177,7 +185,9 @@ const toggleCompare = () => {
   }
 };
 
-const productDetailPath = computed(() => `/products/${props.product.code || props.product.id}`);
+const productDetailPath = computed(
+  () => `/products/${props.product.code || props.product.id || ''}`
+);
 
 /** 预热收藏缓存：并发去重（N 张卡片共享 1 个 Promise），命中缓存则 0 请求 */
 onMounted(() => {
@@ -192,11 +202,11 @@ const toggleFavorite = async () => {
     uiStore.openAuthModal('login');
     return;
   }
-  if (favoritePending.value) return;
+  if (favoritePending.value || favoriteItemId.value == null) return;
   favoritePending.value = true;
   try {
     // store 内部：先改本地 Set（UI 立即反馈）→ 请求 → 成功按后端回正 / 失败回滚
-    await favoriteStore.toggle('product', props.product.id);
+    await favoriteStore.toggle('product', favoriteItemId.value);
   } catch {
     // 失败提示由 useApi 全局 toast 兜底，本地状态已在 store 内回滚
   } finally {

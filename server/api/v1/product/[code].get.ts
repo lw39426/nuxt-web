@@ -1,11 +1,12 @@
 import { getMockProductById, getMockProductList } from '../../../utils/mockStoreData'
+import { normalizeProduct } from '../../../utils/product'
 
 /**
  * 获取商品详情接口
  * GET /api/v1/product/:code
  * 优先代理 Flask，失败时降级为 Mock 数据
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const code = getRouterParam(event, 'code') || ''
 
   /**
@@ -21,5 +22,9 @@ export default defineEventHandler((event) => {
     return product ?? list[0] ?? null
   }
 
-  return withMockFallback(event, `/product/${code}`, buildMock)
+  const res = await withMockFallback(event, `/product/${code}`, buildMock)
+  if (res.data) {
+    res.data = normalizeProduct(res.data as Record<string, any>) as typeof res.data
+  }
+  return res
 })

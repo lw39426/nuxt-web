@@ -81,7 +81,7 @@ compareStore.restore();
               <button
                 class="ml-1.5 w-4 h-4 rounded-full hover:text-red-500 flex items-center justify-center transition-colors"
                 :aria-label="`移除 ${compareStore.items[i - 1]!.name}`"
-                @click="compareStore.remove(compareStore.items[i - 1]!.id)"
+                @click="compareStore.remove(compareStore.items[i - 1]!.code)"
               >
                 <div class="i-carbon-close text-[10px]" />
               </button>

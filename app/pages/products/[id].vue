@@ -59,7 +59,7 @@
                 >
                   <div>
                     <p class="text-xs text-white/50 mb-2 tracking-wide">
-                      {{ product.origin || product.brand }}
+                      {{ product.origin || product.brand?.name }}
                     </p>
                     <h2 class="text-3xl sm:text-4xl font-bold leading-tight">
                       {{ product.name }}
@@ -131,12 +131,11 @@
               </p>
               <!-- 价格 -->
               <div class="flex items-baseline gap-3 mb-3">
-                <span class="text-2xl font-bold text-fg">{{ formatPrice(product.price) }}</span>
-                <span
-                  v-if="product.salePrice && product.salePrice < product.price"
-                  class="text-sm text-fg-muted line-through"
-                >
-                  {{ formatPrice(product.salePrice) }}
+                <span class="text-2xl font-bold text-fg">{{
+                  formatPriceFromCent(hasSale ? product.salePrice : product.price)
+                }}</span>
+                <span v-if="hasSale" class="text-sm text-fg-muted line-through">
+                  {{ formatPriceFromCent(product.price) }}
                 </span>
                 <span
                   v-if="product.stock <= 5 && product.stock > 0"
@@ -342,13 +341,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Product, ProductTag } from '~/types/product';
+import type { Product, ProductBrand, ProductTag } from '~/types/product';
 import { useProductApi } from '~/composables/api/product';
 import { useProducts } from '~/composables/useProducts';
 import { useAuthStore } from '~/stores/auth';
 import { useUiStore } from '~/stores/ui';
 import { useFavoriteStore } from '~/stores/favorite';
-import { formatPrice, formatDate } from '~/utils/format';
+import { formatPriceFromCent, formatDate } from '~/utils/format';
 
 interface ProductHighlight {
   text: string;
@@ -356,7 +355,8 @@ interface ProductHighlight {
 
 interface ProductDetailViewModel {
   // ===== 后端核心字段（全部保留，对齐 Product 契约） =====
-  id: number;
+  /** 兼容旧收藏接口的内部主键；新后端商品对象不再下发，业务标识统一使用 code */
+  id?: number;
   code: string;
   name: string;
   description: string;
@@ -370,8 +370,8 @@ interface ProductDetailViewModel {
   detail_html: string;
   sales: number;
   sort: number;
-  brand: string;
-  favorite_count: number;
+  brand: ProductBrand | null;
+  favorite_count?: number;
   category_name: string;
   tags: ProductTag[];
   create_time: string;
@@ -481,7 +481,7 @@ const { data: detailData, pending } = await useAsyncData(
         const response = await related(relatedProductCode, { limit: 4 });
         relatedItems = Array.isArray(response?.related)
           ? response.related
-              .filter((item) => item.id !== (apiProduct?.id ?? localProduct?.id))
+              .filter((item) => item.code !== relatedProductCode)
               .slice(0, 4)
               .map((item) => mapApiProductToCardProduct(item))
           : [];
@@ -554,8 +554,9 @@ function mapApiProductToViewModel(source: Product): ProductDetailViewModel {
 
 /** 将本地 mock 角色数据映射为页面使用的展示模型 */
 function mapMockProductToViewModel(source: Record<string, any>): ProductDetailViewModel {
+  const brandName = typeof source.brand === 'string' ? source.brand.trim() : '';
   return {
-    id: Number(source.id),
+    ...(Number.isFinite(Number(source.id)) ? { id: Number(source.id) } : {}),
     code: source.code || '',
     name: source.name || source.title || '未命名角色',
     description: source.description || '',
@@ -569,8 +570,13 @@ function mapMockProductToViewModel(source: Record<string, any>): ProductDetailVi
     detail_html: source.detail_html || '',
     sales: Number(source.sales) || 0,
     sort: Number(source.sort) || 0,
-    brand: source.brand || '',
-    favorite_count: Number(source.favorite_count ?? source.reviewCount) || 0,
+    brand: brandName ? { code: '', name: brandName, logo: '' } : null,
+    favorite_count:
+      source.favorite_count != null
+        ? Number(source.favorite_count)
+        : source.reviewCount != null
+          ? Number(source.reviewCount)
+          : undefined,
     category_name: source.category_name || '',
     tags: Array.isArray(source.tags) ? source.tags : [],
     create_time: source.create_time || '',
@@ -604,6 +610,12 @@ const product = computed(() =>
     : fallbackProduct.value
 );
 
+/** 是否存在有效促销价（分） */
+const hasSale = computed(
+  () =>
+    !!product.value && product.value.salePrice > 0 && product.value.salePrice < product.value.price
+);
+
 /** 四维评分展示配置（人气 / 战力 / 智商 / 颜值） */
 const ratingDims = computed(() => {
   const r = product.value?.ratings;
@@ -621,7 +633,7 @@ const metaRows = computed(() => {
   const p = product.value;
   if (!p) return [];
   return [
-    { label: '出品', value: p.brand },
+    { label: '出品', value: p.brand?.name },
     { label: '系列', value: p.category_name },
     { label: '年代', value: p.era },
     { label: '类型', value: p.character_type },
@@ -636,10 +648,12 @@ const toggleFavorite = async () => {
     return;
   }
   if (!product.value || favoritePending.value) return;
+  const itemId = product.value.id;
+  if (itemId == null) return;
   favoritePending.value = true;
   try {
     // store 内部：先改本地 Set（UI 立即反馈）→ 请求 → 成功按后端回正 / 失败回滚
-    await favoriteStore.toggle('product', product.value.id);
+    await favoriteStore.toggle('product', itemId);
   } catch {
     // 失败提示由 useApi 全局 toast 兜底，本地状态已在 store 内回滚
   } finally {
@@ -722,7 +736,7 @@ useHead(() => ({
 
 /** 收藏态：从全局缓存 Set 读取（内存匹配，0 网络请求），跨页自动同步 */
 const isFavorite = computed(() =>
-  product.value ? favoriteStore.has('product', product.value.id) : false
+  product.value?.id != null ? favoriteStore.has('product', product.value.id) : false
 );
 
 /** 挂载后触发评分条动画与收藏缓存预热 */

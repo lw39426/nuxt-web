@@ -1,4 +1,5 @@
 import { getMockProductList } from '../../../utils/mockStoreData'
+import { normalizeProductList } from '../../../utils/product'
 
 /**
  * 角色（商品）搜索接口
@@ -85,7 +86,7 @@ export default defineEventHandler((event) => {
     const start = (page - 1) * pageSize
 
     return {
-      products: list.slice(start, start + pageSize),
+      products: normalizeProductList(list.slice(start, start + pageSize)),
       pagination: {
         page,
         pageSize,
@@ -101,7 +102,9 @@ export default defineEventHandler((event) => {
      * 前端契约（及 Mock）为 { products: [...], pagination }，此处对齐
      */
     transform: (backendData: any) => ({
-      products: Array.isArray(backendData?.data) ? backendData.data : backendData?.products || [],
+      products: normalizeProductList(
+        Array.isArray(backendData?.data) ? backendData.data : backendData?.products || []
+      ),
       pagination: backendData?.pagination || {
         page,
         pageSize,

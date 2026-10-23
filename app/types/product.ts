@@ -1,7 +1,7 @@
 /**
  * 商品类型定义
  * 对应接口文档中的 Product 数据模型
- * 价格单位：元（整数），前端直接展示
+ * 价格单位：分（展示时使用 formatPriceFromCent）
  */
 
 /** 商品标签 */
@@ -10,6 +10,13 @@ export interface ProductTag {
   name: string
   color: string
   weight: number
+}
+
+/** 商品品牌 */
+export interface ProductBrand {
+  code: string
+  name: string
+  logo: string
 }
 
 /** 角色四维人工评分（0-10 分：人气 / 战力 / 智商 / 颜值） */
@@ -34,7 +41,8 @@ export interface CharacterQuote {
 
 /** 商品对象 */
 export interface Product {
-  id: number
+  /** 兼容旧收藏接口的内部主键；新后端商品对象不再下发，业务标识统一使用 code */
+  id?: number
   code: string
   name: string
   description: string
@@ -48,8 +56,9 @@ export interface Product {
   detail_html: string
   sales: number
   sort: number
-  brand: string
-  favorite_count: number
+  brand: ProductBrand | null
+  /** 仅商品详情接口注入，列表/搜索/分类/首页不保证返回 */
+  favorite_count?: number
   /** 综合评分（0-10，角色数据由人工评分） */
   rating?: number
   category_name: string
@@ -77,6 +86,43 @@ export interface Product {
   /** 经典台词 */
   quotes?: CharacterQuote[]
 }
+
+/** 角色作品分类 */
+export interface ProductCategory {
+  id: number
+  name: string
+  image: string
+}
+
+/** 角色系列分组 */
+export interface ProductSeriesGroup {
+  categoryId: number
+  category: string
+  categoryImage: string
+  products: Product[]
+  /** 该系列角色总数（分页 total，可能大于已加载数量） */
+  total: number
+}
+
+/** 角色筛选维度 */
+export type ProductFilterKey = 'character_type' | 'era' | 'tag'
+
+/** 筛选维度候选项 */
+export interface ProductFilterOptionGroup {
+  key: ProductFilterKey
+  label: string
+  options: string[]
+}
+
+/** 已选筛选标签 */
+export interface ProductActiveFilterTag {
+  key: ProductFilterKey
+  label: string
+  value: string
+}
+
+/** 筛选状态 */
+export type ProductCatalogFilters = Record<ProductFilterKey, string[]>
 
 export interface FilterOption {
   label: string

@@ -6,7 +6,7 @@ import { useCompareStore } from '~/stores/compare';
 /**
  * 角色对比页
  * - 选取 2-4 个角色并排对比：四维评分条形对比 + 属性表格
- * - 数据来源：对比栏 store 中的角色 id → 逐个拉取详情接口
+ * - 数据来源：对比栏 store 中的角色 code → 逐个拉取详情接口
  * - 少于 2 个角色时展示引导（去列表页添加）
  */
 useSeoMeta({
@@ -25,14 +25,14 @@ const hydrated = ref(false);
 
 /** 逐个拉取角色详情；单个失败跳过不阻塞整页 */
 async function loadCharacters() {
-  const ids = compareStore.ids;
-  if (ids.length === 0) {
+  const codes = compareStore.codes;
+  if (codes.length === 0) {
     characters.value = [];
     return;
   }
   loading.value = true;
   try {
-    const results = await Promise.allSettled(ids.map((id) => getDetail(String(id))));
+    const results = await Promise.allSettled(codes.map((code) => getDetail(code)));
     characters.value = results
       .filter((r): r is PromiseFulfilledResult<Product> => r.status === 'fulfilled')
       .map((r) => r.value);
@@ -52,14 +52,14 @@ onMounted(async () => {
   await loadCharacters();
   // store 变化（本页移除 / 其他入口加入）时自动重载
   watch(
-    () => compareStore.ids,
+    () => compareStore.codes,
     () => loadCharacters()
   );
 });
 
 /** 从对比栏移除（watch 自动刷新列表） */
-function removeFromCompare(id: number) {
-  compareStore.remove(id);
+function removeFromCompare(code: string) {
+  compareStore.remove(code);
 }
 
 /** 清空对比栏 */
@@ -79,16 +79,16 @@ const ratingDims = [
 const ratingValue = (c: Product, key: string) =>
   Math.round(((c.ratings?.[key as keyof typeof c.ratings] as number) || 0) * 10);
 
-/** 某维度全场最高分对应角色 id 集合（用于"最强"高亮） */
+/** 某维度全场最高分对应角色 code 集合（用于"最强"高亮） */
 const bestIdsOf = (key: string) => {
   const max = Math.max(...characters.value.map((c) => ratingValue(c, key)), 0);
-  if (max <= 0) return new Set<number>();
-  return new Set(characters.value.filter((c) => ratingValue(c, key) === max).map((c) => c.id));
+  if (max <= 0) return new Set<string>();
+  return new Set(characters.value.filter((c) => ratingValue(c, key) === max).map((c) => c.code));
 };
 
 /** 属性行定义：label + 取值函数（缺失显示 —） */
 const attrRows = [
-  { label: '所属作品', value: (c: Product) => c.brand || '—' },
+  { label: '所属作品', value: (c: Product) => c.brand?.name || '—' },
   { label: '角色类型', value: (c: Product) => c.character_type || '—' },
   { label: '出品年代', value: (c: Product) => c.era || '—' },
   { label: '出处', value: (c: Product) => c.origin || '—' },
@@ -175,14 +175,14 @@ const attrRows = [
         >
           <div
             v-for="c in characters"
-            :key="c.id"
+            :key="c.code"
             class="relative bg-surface border border-line rounded-2xl p-5 text-center"
           >
             <!-- 移除按钮 -->
             <button
               class="absolute top-2 right-2 w-7 h-7 rounded-full bg-elevated text-fg-muted hover:text-red-500 flex items-center justify-center transition-colors"
               :aria-label="`移除 ${c.name}`"
-              @click="removeFromCompare(c.id)"
+              @click="removeFromCompare(c.code)"
             >
               <div class="i-carbon-close text-sm" />
             </button>
@@ -192,7 +192,7 @@ const attrRows = [
               {{ c.name?.slice(0, 1) }}
             </div>
             <h3 class="font-semibold text-fg">{{ c.name }}</h3>
-            <p class="text-xs text-fg-subtle mt-1">{{ c.brand }}</p>
+            <p class="text-xs text-fg-subtle mt-1">{{ c.brand?.name }}</p>
           </div>
         </div>
 
@@ -211,7 +211,7 @@ const attrRows = [
               <!-- 每个角色一行：名字 + 条形 + 分值 -->
               <div
                 v-for="c in characters"
-                :key="`${dim.key}-${c.id}`"
+                :key="`${dim.key}-${c.code}`"
                 class="flex items-center gap-3 mb-2"
               >
                 <span class="w-20 shrink-0 text-xs text-fg-muted truncate">{{ c.name }}</span>
@@ -224,10 +224,10 @@ const attrRows = [
                 </div>
                 <span
                   class="w-12 text-right text-xs font-semibold"
-                  :class="bestIdsOf(dim.key).has(c.id) ? 'text-accent' : 'text-fg-subtle'"
+                  :class="bestIdsOf(dim.key).has(c.code) ? 'text-accent' : 'text-fg-subtle'"
                 >
                   {{ ratingValue(c, dim.key) / 10 }}
-                  <span v-if="bestIdsOf(dim.key).has(c.id)" class="text-[10px]"> 最强</span>
+                  <span v-if="bestIdsOf(dim.key).has(c.code)" class="text-[10px]"> 最强</span>
                 </span>
               </div>
             </div>
@@ -255,7 +255,7 @@ const attrRows = [
                   </th>
                   <td
                     v-for="c in characters"
-                    :key="`${row.label}-${c.id}`"
+                    :key="`${row.label}-${c.code}`"
                     class="px-5 py-4 text-fg-muted align-top"
                   >
                     {{ row.value(c) }}

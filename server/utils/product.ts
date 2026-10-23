@@ -1,18 +1,37 @@
-import type { Product } from '~/types/product'
+import type { Product, ProductBrand } from '~/types/product'
+
+/** 品牌字段归一化：兼容字符串 / 对象 / null 三种历史形态 */
+export function normalizeProductBrand(raw: unknown): ProductBrand | null {
+  if (!raw) return null
+  if (typeof raw === 'string') {
+    const name = raw.trim()
+    return name ? { code: '', name, logo: '' } : null
+  }
+  if (typeof raw === 'object') {
+    const brand = raw as Record<string, unknown>
+    const name = String(brand.name || '').trim()
+    if (!name) return null
+    return {
+      code: String(brand.code || '').trim(),
+      name,
+      logo: String(brand.logo || '').trim()
+    }
+  }
+  return null
+}
 
 /**
- * 商品对象规范化：把 Flask /home/data 等聚合接口返回的 snake_case 商品
- * 适配为前端 Product 契约（types/product.ts）
+ * 商品对象规范化：适配 Flask 接口的 snake_case 与前端 Product 契约
  *
- * 注意：Flask 聚合接口不下发 code，但全部列表/详情接口的 code 均遵循
- * `prd_{id}` 规律（实测 /product/search 全量商品 15/15 命中），
- * 缺失时按此补全，否则商品卡无法加购（/cart/add 以 product_code 定位商品）。
+ * 后端契约（2026-10）：不保证下发 id，业务标识统一使用 code；
+ * brand 为 { code, name, logo } | null；price / salePrice 单位为分。
+ * 旧接口仍可能返回字符串 brand 与数字 id，此处做兼容归一化。
  */
 export function normalizeProduct(raw: Record<string, any>): Product {
   const id = raw?.id
   const image = raw?.main_image || raw?.image || ''
   return {
-    id: id ?? 0,
+    ...(id != null ? { id: Number(id) } : {}),
     code: raw?.code || (id != null ? `prd_${id}` : ''),
     name: raw?.name || raw?.title || '',
     description: raw?.description || '',
@@ -26,11 +45,13 @@ export function normalizeProduct(raw: Record<string, any>): Product {
     detail_html: raw?.detail_html || '',
     sales: Number(raw?.sales) || 0,
     sort: raw?.sort ?? 0,
-    brand: raw?.brand || '',
+    brand: normalizeProductBrand(raw?.brand),
     tags: Array.isArray(raw?.tags) ? raw.tags : [],
-    favorite_count: Number(raw?.favorite_count) || 0,
+    ...(raw?.favorite_count != null || raw?.reviewCount != null
+      ? { favorite_count: Number(raw.favorite_count ?? raw.reviewCount) || 0 }
+      : {}),
     rating: raw?.rating != null ? Number(raw.rating) : undefined,
-    // YouMi 角色图鉴扩展字段透传（后端未返回时保持 undefined，不影响纯商品数据）
+    // YouMi 角色图鉴扩展字段透传（后端未返回时保留 undefined，不影响纯商品数据）
     era: raw?.era,
     character_type: raw?.character_type,
     origin: raw?.origin,
