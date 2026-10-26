@@ -195,11 +195,15 @@ onUnmounted(() => {
               ></span>
             </button>
 
-            <!-- 已登录：头像下拉菜单 -->
-            <div v-else ref="dropdownWrapperRef" class="relative hidden md:block">
+            <!-- 已登录：头像下拉菜单（移动端同样展示，保证登录态可见） -->
+            <div v-else ref="dropdownWrapperRef" class="relative">
               <button
                 type="button"
                 class="nav-avatar h-8 w-8 rounded-full bg-skin-solid flex items-center justify-center font-bold text-sm transition-all"
+                :title="displayName"
+                aria-haspopup="menu"
+                :aria-expanded="isDropdownOpen"
+                aria-label="打开用户菜单"
                 @click="toggleDropdown"
               >
                 {{ avatarLetter }}
@@ -241,28 +245,69 @@ onUnmounted(() => {
 
         <div class="h-px bg-line my-1"></div>
 
-        <button
-          type="button"
-          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
-          @click="
-            isMobileMenuOpen = false;
-            openAuthModal('login');
-          "
-        >
-          <div class="i-carbon-login w-5 h-5 text-fg-subtle group-hover:text-fg-muted"></div>
-          Sign In
-        </button>
-        <button
-          type="button"
-          class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
-          @click="
-            isMobileMenuOpen = false;
-            openAuthModal('register');
-          "
-        >
-          <div class="i-carbon-user-follow w-5 h-5 text-fg-subtle group-hover:text-fg-muted"></div>
-          Create Account
-        </button>
+        <!-- 已登录：展示用户信息与个人中心入口 -->
+        <template v-if="authStore.isAuthenticated">
+          <div class="flex items-center gap-3 px-4 py-3">
+            <div
+              class="nav-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-skin-solid text-sm font-bold"
+            >
+              {{ avatarLetter }}
+            </div>
+            <div class="min-w-0">
+              <p class="truncate text-base font-semibold text-fg">
+                {{ displayName }}
+              </p>
+              <p class="text-xs text-fg-subtle">已登录</p>
+            </div>
+          </div>
+          <NuxtLink
+            to="/profile"
+            class="flex items-center gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
+            @click="isMobileMenuOpen = false"
+          >
+            <div class="i-carbon-user w-5 h-5 text-fg-subtle"></div>
+            个人中心
+          </NuxtLink>
+          <button
+            type="button"
+            class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+            @click="
+              isMobileMenuOpen = false;
+              handleLogout();
+            "
+          >
+            <div class="i-carbon-logout w-5 h-5"></div>
+            退出登录
+          </button>
+        </template>
+
+        <!-- 未登录：登录 / 注册入口 -->
+        <template v-else>
+          <button
+            type="button"
+            class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
+            @click="
+              isMobileMenuOpen = false;
+              openAuthModal('login');
+            "
+          >
+            <div class="i-carbon-login w-5 h-5 text-fg-subtle group-hover:text-fg-muted"></div>
+            Sign In
+          </button>
+          <button
+            type="button"
+            class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
+            @click="
+              isMobileMenuOpen = false;
+              openAuthModal('register');
+            "
+          >
+            <div
+              class="i-carbon-user-follow w-5 h-5 text-fg-subtle group-hover:text-fg-muted"
+            ></div>
+            Create Account
+          </button>
+        </template>
       </div>
     </nav>
   </div>

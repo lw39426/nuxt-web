@@ -14,11 +14,14 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null)
 
   // 初始化时从 Cookie 读取（SSR 服务端读请求 Cookie，客户端读浏览器 Cookie）
+  // 用户信息一并持久化，刷新页面后导航栏仍能展示正确的用户名/头像首字母
   const initAuthFromCookie = () => {
     const tokenCookie = useCookie<string | null>('auth_token')
     const refreshTokenCookie = useCookie<string | null>('refresh_token')
+    const userCookie = useCookie<AuthUser | null>('auth_user')
     token.value = tokenCookie.value
     refreshToken.value = refreshTokenCookie.value
+    user.value = userCookie.value ?? null
   }
 
   // 设置认证信息（写入内存与 Cookie）
@@ -35,8 +38,10 @@ export const useAuthStore = defineStore('auth', () => {
     if (import.meta.client) {
       const tokenCookie = useCookie<string | null>('auth_token')
       const refreshTokenCookie = useCookie<string | null>('refresh_token')
+      const userCookie = useCookie<AuthUser | null>('auth_user')
       tokenCookie.value = token.value
       refreshTokenCookie.value = refreshToken.value
+      userCookie.value = user.value
     }
   }
 
@@ -50,8 +55,10 @@ export const useAuthStore = defineStore('auth', () => {
     if (import.meta.client) {
       const tokenCookie = useCookie<string | null>('auth_token')
       const refreshTokenCookie = useCookie<string | null>('refresh_token')
+      const userCookie = useCookie<AuthUser | null>('auth_user')
       tokenCookie.value = null
       refreshTokenCookie.value = null
+      userCookie.value = null
     }
   }
 
