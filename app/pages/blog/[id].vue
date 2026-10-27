@@ -243,13 +243,6 @@ useHead(() => ({
         </div>
       </div>
 
-      <!-- Featured Image -->
-      <div v-if="post.image" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div class="aspect-[2/1] rounded-3xl overflow-hidden shadow-2xl">
-          <UiImage :src="post.image" :alt="post.title" class="w-full h-full object-cover" />
-        </div>
-      </div>
-
       <!-- Content -->
       <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <article class="prose prose-lg dark:prose-invert max-w-none text-fg-muted">

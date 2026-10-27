@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import type { BlogPost } from '~/types/blog';
 
-const props = defineProps<{ posts: BlogPost[] }>();
+const props = withDefaults(
+  defineProps<{
+    posts: BlogPost[];
+    /** hero：桌面端大号排版（博客页全宽）；compact：半栏小号排版 */
+    size?: 'hero' | 'compact';
+  }>(),
+  { size: 'hero' }
+);
 
 /** 当前轨道指针（含克隆边缘，有效范围 1~posts.length） */
 const current = ref(1);
@@ -9,6 +16,10 @@ const current = ref(1);
 let timer: ReturnType<typeof setInterval> | null = null;
 /** 自动播放间隔（毫秒） */
 const AUTO_PLAY_INTERVAL = 5000;
+/** 轨道滑动动画时长（毫秒），须与模板里的 duration-700 保持一致 */
+const SLIDE_DURATION = 700;
+/** 滑动动画的兜底收尾定时器 */
+let resetTimer: ReturnType<typeof setTimeout> | null = null;
 /** 是否在瞬跳重置中（禁用过渡动画） */
 const isResetting = ref(false);
 
@@ -68,16 +79,41 @@ const goTo = (index: number) => {
   jumpTo(index + 1);
 };
 
-/** 轨道过渡动画结束时检查是否需要瞬跳到真实页（仅响应轨道自身的 transform） */
-const onTrackTransitionEnd = (e: TransitionEvent) => {
-  if (e.target !== trackRef.value || e.propertyName !== 'transform') return;
+/**
+ * 滑到克隆边缘页后瞬跳回对应的真实页。
+ * 不能只依赖 transitionend：首张与末尾克隆内容相同，
+ * 从首张滑到克隆页时计算后的 transform 没变化（0px → 0px），
+ * 浏览器不产生过渡也就永不派发该事件，指针会卡在克隆页导致后续右滑无效。
+ * 故以动画时长的定时器兜底，事件若先到则取消定时器重复收尾。
+ */
+const finishSlide = () => {
+  if (resetTimer) {
+    clearTimeout(resetTimer);
+    resetTimer = null;
+  }
   if (current.value === props.posts.length + 1) jumpTo(1);
   else if (current.value === 0) jumpTo(props.posts.length);
 };
 
-/** 启动自动播放（单篇或空数据不启动，已有定时器时不重复启动） */
+/** 轨道过渡动画结束时检查是否需要瞬跳到真实页（仅响应轨道自身的 transform） */
+const onTrackTransitionEnd = (e: TransitionEvent) => {
+  if (e.target !== trackRef.value || e.propertyName !== 'transform') return;
+  if (current.value === 0 || current.value === props.posts.length + 1) finishSlide();
+};
+
+/** 箭头切换：滑动后同样需要克隆边缘的兜底收尾 */
+const goPrev = () => {
+  prev();
+  scheduleFinish();
+};
+const goNext = () => {
+  next();
+  scheduleFinish();
+};
+
+/** 启动自动播放（单篇或空数据不启动；SSR 阶段禁止定时器，仅客户端生效） */
 const startAutoPlay = () => {
-  if (timer || !interactive.value) return;
+  if (!import.meta.client || timer || !interactive.value) return;
   timer = setInterval(next, AUTO_PLAY_INTERVAL);
 };
 
@@ -116,6 +152,17 @@ const onDragStart = (x: number, y: number) => {
   stopAutoPlay();
 };
 
+/**
+ * 为刚发起的一次滑动挂上兜底收尾。
+ * 只有落在克隆边缘页（0 与 posts.length+1）时才需要：
+ * 这些页与相邻真实页内容相同，transform 计算值不变 → 无 transitionend。
+ */
+const scheduleFinish = () => {
+  if (resetTimer) clearTimeout(resetTimer);
+  if (current.value !== 0 && current.value !== props.posts.length + 1) return;
+  resetTimer = setTimeout(finishSlide, SLIDE_DURATION + 60);
+};
+
 /** 手势结束：水平位移超阈值且大于垂直位移时切换（避免干扰页面垂直滚动） */
 const onDragEnd = (x: number, y: number) => {
   const dx = x - dragStartX;
@@ -125,6 +172,7 @@ const onDragEnd = (x: number, y: number) => {
     swiped = true;
     if (dx < 0) next();
     else prev();
+    scheduleFinish();
   }
   startAutoPlay();
 };
@@ -205,13 +253,15 @@ watch(
   { immediate: true }
 );
 
-// 挂载/卸载时绑定/解绑全局鼠标监听
+// 挂载/卸载时绑定/解绑全局鼠标监听；SSR 已带数据的场景（如首页）在挂载后补启自动播放
 onMounted(() => {
   window.addEventListener('mousemove', onMouseMoveGlobal);
   window.addEventListener('mouseup', onMouseUpGlobal);
+  startAutoPlay();
 });
 onUnmounted(() => {
   stopAutoPlay();
+  if (resetTimer) clearTimeout(resetTimer);
   window.removeEventListener('mousemove', onMouseMoveGlobal);
   window.removeEventListener('mouseup', onMouseUpGlobal);
 });
@@ -220,7 +270,7 @@ onUnmounted(() => {
 <template>
   <div
     ref="containerRef"
-    class="relative w-full aspect-[2/1] md:aspect-[2.5/1] rounded-3xl overflow-hidden mb-12 isolate transform-gpu group"
+    class="relative w-full overflow-hidden isolate transform-gpu group"
     :class="interactive ? 'cursor-grab active:cursor-grabbing select-none' : ''"
     @mouseenter="stopAutoPlay"
     @mouseleave="startAutoPlay"
@@ -266,22 +316,47 @@ onUnmounted(() => {
         <div
           class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
         ></div>
-        <!-- 叠加层: 文章内容 -->
-        <div class="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-2/3">
-          <div class="text-gray-300 text-sm mb-3 font-medium">{{ post.date }}</div>
+        <!-- 叠加层: 文章内容（多篇时底部让位给指示点） -->
+        <div
+          class="absolute bottom-0 left-0 w-full"
+          :class="[
+            size === 'hero' ? 'p-4 md:p-12 md:w-2/3' : 'p-4 md:p-6 md:w-5/6',
+            interactive ? 'pb-10' : ''
+          ]"
+        >
+          <div
+            :class="
+              size === 'hero' ? 'text-xs md:text-sm mb-1.5 md:mb-3' : 'text-xs mb-1.5 md:mb-2'
+            "
+          >
+            <span class="text-gray-300 font-medium">{{ post.date }}</span>
+          </div>
           <h1
-            class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight group-hover:text-blue-200 transition-colors"
+            class="font-bold text-white leading-tight group-hover:text-blue-200 transition-colors line-clamp-2"
+            :class="
+              size === 'hero'
+                ? 'mb-2 md:mb-4 text-lg md:text-4xl lg:text-5xl'
+                : 'mb-2 md:mb-3 text-lg md:text-2xl'
+            "
           >
             {{ post.title }}
           </h1>
-          <p class="text-gray-300 text-lg mb-6 line-clamp-2 md:line-clamp-none">
+          <p
+            class="text-gray-300 line-clamp-2"
+            :class="
+              size === 'hero'
+                ? 'mb-3 md:mb-6 text-[13px] md:text-lg'
+                : 'mb-3 md:mb-4 text-[13px] md:text-sm'
+            "
+          >
             {{ post.excerpt }}
           </p>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2.5 md:gap-3">
             <UiImage
               :src="post.author?.avatar"
               :alt="post.author?.name || ''"
-              class="h-10 w-10 rounded-full border-2 border-white/20 object-cover"
+              class="rounded-full border-2 border-white/20 object-cover"
+              :class="size === 'hero' ? 'h-7 w-7 md:h-10 md:w-10' : 'h-7 w-7 md:h-8 md:w-8'"
               variant="avatar"
             />
             <div class="flex flex-col">
@@ -293,25 +368,31 @@ onUnmounted(() => {
       </NuxtLink>
     </div>
 
-    <!-- 左右切换箭头（悬停容器时浮现） -->
+    <!-- 左右切换箭头（悬停容器时浮现）。垂直居中用 inset-y-0 + items-center，理由同指示点 -->
     <template v-if="interactive">
-      <button
-        class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-        aria-label="上一张"
-        @click.prevent="prev"
-      >
-        <div class="i-carbon-chevron-left w-6 h-6"></div>
-      </button>
-      <button
-        class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-        aria-label="下一张"
-        @click.prevent="next"
-      >
-        <div class="i-carbon-chevron-right w-6 h-6"></div>
-      </button>
+      <div class="absolute inset-y-0 left-4 z-20 flex items-center">
+        <button
+          class="w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+          aria-label="上一张"
+          @click.prevent="goPrev"
+        >
+          <div class="i-carbon-chevron-left w-6 h-6"></div>
+        </button>
+      </div>
+      <div class="absolute inset-y-0 right-4 z-20 flex items-center">
+        <button
+          class="w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+          aria-label="下一张"
+          @click.prevent="goNext"
+        >
+          <div class="i-carbon-chevron-right w-6 h-6"></div>
+        </button>
+      </div>
 
-      <!-- 底部指示点（基于真实索引，当前项拉伸为胶囊） -->
-      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+      <!-- 底部指示点（基于真实索引，当前项拉伸为胶囊）。
+           居中用 inset-x-0 + justify-center，不用 left-1/2 + -translate-x-1/2：
+           Tailwind v4 写 translate 属性、UnoCSS 写 transform 属性，两者叠加会把元素左推半个身位 -->
+      <div class="absolute bottom-4 inset-x-0 z-20 flex items-center justify-center gap-2">
         <button
           v-for="(post, index) in posts"
           :key="`dot-${post.id}`"
@@ -323,9 +404,9 @@ onUnmounted(() => {
       </div>
     </template>
 
-    <!-- 叠加层: 边框效果（抗锯齿） -->
+    <!-- 叠加层: 边框效果（圆角跟随父级传入的形状） -->
     <div
-      class="absolute inset-0 rounded-3xl ring-1 ring-inset ring-transparent dark:ring-[#686868] pointer-events-none z-10"
+      class="absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-transparent dark:ring-[#686868] pointer-events-none z-10"
     ></div>
   </div>
 </template>

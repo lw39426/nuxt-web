@@ -226,9 +226,13 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-canvas pb-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <!-- 头部宣传区域：独立轮播板块（最新 5 篇，不随筛选变化） -->
-      <BlogHeroCarousel :posts="heroPosts" />
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
+      <!-- 头部宣传区域：独立轮播板块（最新 5 篇，不随筛选变化）。
+           尺寸/圆角/间距由页面控制，全宽下桌面端封顶 60% 屏高 -->
+      <BlogHeroCarousel
+        :posts="heroPosts"
+        class="aspect-[4/3] md:aspect-[16/11] md:max-h-[60vh] rounded-3xl mb-6"
+      />
 
       <!-- 筛选器: 分类标签Filter Tabs -->
       <div
