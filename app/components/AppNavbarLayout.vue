@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useScrollLock } from '@vueuse/core';
 import { useUiStore } from '~/stores/ui';
 import { useAuthStore } from '~/stores/auth';
 
@@ -48,6 +49,33 @@ const menuItems = [
 const isScrolled = ref(false);
 const isMobileMenuOpen = ref(false);
 const sentinelRef = ref<HTMLElement | null>(null);
+
+// 移动端目录展开时锁滚动，避免面板背后页面跟着滑动
+const isScrollLocked = useScrollLock(import.meta.client ? document.documentElement : null);
+watch(isMobileMenuOpen, (open) => {
+  isScrollLocked.value = open;
+  if (open) isDropdownOpen.value = false;
+});
+
+// 路由切换后目录面板必须收起（软导航复用同一组件实例）
+watch(
+  () => route.fullPath,
+  () => {
+    isMobileMenuOpen.value = false;
+  }
+);
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key !== 'Escape') return;
+  isMobileMenuOpen.value = false;
+  isDropdownOpen.value = false;
+};
+
+// 视口跨过 md 断点时面板被 CSS 隐藏，必须同步解锁滚动（横屏/旋转场景）
+let desktopQuery: MediaQueryList | null = null;
+const handleDesktopChange = (event: MediaQueryList | MediaQueryListEvent) => {
+  if (event.matches) isMobileMenuOpen.value = false;
+};
 
 // IntersectionObserver 实例
 let observer: IntersectionObserver | null = null;
@@ -97,17 +125,24 @@ onMounted(() => {
   if (sentinelRef.value) {
     observer.observe(sentinelRef.value);
   }
+
+  window.addEventListener('keydown', handleKeydown);
+  desktopQuery = window.matchMedia('(min-width: 768px)');
+  desktopQuery.addEventListener('change', handleDesktopChange);
 });
 
 onUnmounted(() => {
   if (observer) observer.disconnect();
+  window.removeEventListener('keydown', handleKeydown);
+  desktopQuery?.removeEventListener('change', handleDesktopChange);
+  isScrollLocked.value = false;
 });
 </script>
 
 <template>
   <!-- 占位元素：外层导航改为 fixed 后脱离文档流，此处在正常流中占据等高空间，
        将页面内容顶到导航下方（等效原 sticky 的占位行为）。强制胶囊态的沉浸式页面不占位。 -->
-  <div v-if="!route.meta.forceCapsule" class="h-[72px] md:h-[80px]" aria-hidden="true"></div>
+  <div v-if="!route.meta.forceCapsule" class="h-[60px] md:h-[80px]" aria-hidden="true"></div>
 
   <!-- 哨兵元素：位于文档流顶部，滚出视口即视为「已滚动」，由 IntersectionObserver 监听 -->
   <div
@@ -118,12 +153,22 @@ onUnmounted(() => {
   <!-- 外层容器：始终 fixed 悬浮。脱离文档流后，导航壳的宽度/内边距过渡只重排自身，
        不触发整页 reflow —— 这是流畅切换的关键（参考 LongCat 的实现思路）。 -->
   <div class="fixed top-0 left-0 right-0 z-50 w-full">
-    <nav class="relative flex justify-center px-4 py-2">
+    <!-- 点击面板外关闭：只覆盖导航栏以下区域，不拦截栏内按钮。
+         nav 因 translateZ(0) 是独立层叠上下文，面板的 z-10 无法越出它参与比较，
+         故必须显式给 nav 指定高于遮罩 z-0 的层级，否则遮罩会盖住面板吃掉菜单点击 -->
+    <div
+      v-if="isMobileMenuOpen"
+      class="md:hidden fixed inset-x-0 top-[60px] bottom-0 z-0"
+      aria-hidden="true"
+      @click="isMobileMenuOpen = false"
+    />
+
+    <nav class="relative z-10 flex justify-center px-2 py-0 md:px-4 md:py-2">
       <!-- 导航壳：胶囊态 ⇄ 全宽态，纯 CSS transition 平滑过渡，天然可中断。
            形态样式统一由 scoped CSS 的 .nav-shell / .is-capsule 声明，
            避免 UnoCSS 同优先级工具类（如 max-w-3xl / max-w-7xl）互相覆盖导致状态错乱。 -->
       <div
-        class="nav-shell w-full flex items-center justify-between px-6 py-3 md:px-8 md:py-2"
+        class="nav-shell w-full flex items-center justify-between px-6 py-2 md:px-8 md:py-2"
         :class="{ 'is-capsule': isScrolled }"
       >
         <!-- 内容层 -->
@@ -196,10 +241,14 @@ onUnmounted(() => {
             </button>
 
             <!-- 已登录：头像下拉菜单（移动端同样展示，保证登录态可见） -->
-            <div v-else ref="dropdownWrapperRef" class="relative">
+            <div
+              v-else
+              ref="dropdownWrapperRef"
+              class="relative flex h-11 w-11 items-center justify-center md:h-8 md:w-8"
+            >
               <button
                 type="button"
-                class="nav-avatar h-8 w-8 rounded-full bg-skin-solid flex items-center justify-center font-bold text-sm transition-all"
+                class="nav-avatar flex h-9 w-9 items-center justify-center rounded-full bg-skin-solid font-bold text-sm transition-all md:h-full md:w-full"
                 :title="displayName"
                 aria-haspopup="menu"
                 :aria-expanded="isDropdownOpen"
@@ -210,106 +259,124 @@ onUnmounted(() => {
               </button>
             </div>
 
-            <!-- 移动端菜单按钮（保持不变） -->
-            <UButton
-              class="md:hidden rounded-full"
-              variant="ghost"
-              color="neutral"
-              :icon="isMobileMenuOpen ? 'i-carbon-close' : 'i-carbon-menu'"
-              @click="
-                () => {
-                  isMobileMenuOpen = !isMobileMenuOpen;
-                }
-              "
-            />
+            <!-- 移动端目录按钮：文字标签替代裸汉堡，命中区 44px -->
+            <button
+              type="button"
+              class="md:hidden flex h-11 items-center gap-1.5 rounded-full px-3 text-[15px] font-medium text-fg backdrop-blur-sm transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+              :aria-expanded="isMobileMenuOpen"
+              :aria-label="isMobileMenuOpen ? '关闭目录' : '打开目录'"
+              aria-controls="mobile-nav-panel"
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
+            >
+              <span
+                :class="isMobileMenuOpen ? 'i-carbon-close' : 'i-carbon-menu'"
+                class="text-[20px]"
+                aria-hidden="true"
+              />
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- 移动端菜单面板 -->
-      <div
-        v-show="isMobileMenuOpen"
-        class="mobile-panel absolute top-full left-4 right-4 mx-auto w-auto flex flex-col gap-2 overflow-hidden bg-glass rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-4 mt-2 origin-top md:hidden"
-        :class="{ 'is-capsule': isScrolled }"
+      <!-- 移动端目录：贴栏的实底索引卡（150ms 下沉淡入，respects reduced motion） -->
+      <Transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 -translate-y-1.5"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-1.5"
       >
-        <a
-          v-for="item in menuItems"
-          :key="item.name"
-          :href="item.href"
-          class="flex items-center gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
-          @click="isMobileMenuOpen = false"
+        <div
+          v-if="isMobileMenuOpen"
+          id="mobile-nav-panel"
+          class="mobile-panel absolute top-full left-2 right-2 z-10 mt-1.5 flex flex-col gap-1 overflow-hidden rounded-[20px] border border-line bg-canvas px-4 md:hidden"
         >
-          <div :class="[item.icon, 'w-5 h-5 text-fg-subtle group-hover:text-fg-muted']"></div>
-          {{ item.name }}
-        </a>
-
-        <div class="h-px bg-line my-1"></div>
-
-        <!-- 已登录：展示用户信息与个人中心入口 -->
-        <template v-if="authStore.isAuthenticated">
-          <div class="flex items-center gap-3 px-4 py-3">
-            <div
-              class="nav-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-skin-solid text-sm font-bold"
-            >
-              {{ avatarLetter }}
-            </div>
-            <div class="min-w-0">
-              <p class="truncate text-base font-semibold text-fg">
-                {{ displayName }}
-              </p>
-              <p class="text-xs text-fg-subtle">已登录</p>
-            </div>
-          </div>
-          <NuxtLink
-            to="/profile"
-            class="flex items-center gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
+          <a
+            v-for="item in menuItems"
+            :key="item.name"
+            :href="item.href"
+            class="flex h-11 items-center gap-3 rounded-xl px-2 text-[15px] font-medium text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg"
             @click="isMobileMenuOpen = false"
           >
-            <div class="i-carbon-user w-5 h-5 text-fg-subtle"></div>
-            个人中心
-          </NuxtLink>
-          <button
-            type="button"
-            class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
-            @click="
-              isMobileMenuOpen = false;
-              handleLogout();
-            "
-          >
-            <div class="i-carbon-logout w-5 h-5"></div>
-            退出登录
-          </button>
-        </template>
+            <div :class="[item.icon, 'h-5 w-5 shrink-0 text-fg-subtle']"></div>
+            {{ item.name }}
+          </a>
 
-        <!-- 未登录：登录 / 注册入口 -->
-        <template v-else>
-          <button
-            type="button"
-            class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
-            @click="
-              isMobileMenuOpen = false;
-              openAuthModal('login');
-            "
-          >
-            <div class="i-carbon-login w-5 h-5 text-fg-subtle group-hover:text-fg-muted"></div>
-            Sign In
-          </button>
-          <button
-            type="button"
-            class="flex items-center w-full gap-3 px-4 py-3 text-base font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-xl transition-colors"
-            @click="
-              isMobileMenuOpen = false;
-              openAuthModal('register');
-            "
-          >
-            <div
-              class="i-carbon-user-follow w-5 h-5 text-fg-subtle group-hover:text-fg-muted"
-            ></div>
-            Create Account
-          </button>
-        </template>
-      </div>
+          <div class="my-1 h-px bg-line"></div>
+
+          <!-- 已登录：展示用户信息与个人中心入口 -->
+          <template v-if="authStore.isAuthenticated">
+            <div class="flex items-center gap-3 px-2 py-2">
+              <div
+                class="nav-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-skin-solid text-sm font-bold"
+              >
+                {{ avatarLetter }}
+              </div>
+              <div class="min-w-0">
+                <p class="truncate text-[15px] font-semibold text-fg">
+                  {{ displayName }}
+                </p>
+                <p class="text-xs text-fg-subtle">已登录</p>
+              </div>
+            </div>
+            <NuxtLink
+              to="/profile"
+              class="flex h-11 items-center gap-3 rounded-xl px-2 text-[15px] font-medium text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg"
+              @click="isMobileMenuOpen = false"
+            >
+              <div class="i-carbon-user h-5 w-5 shrink-0 text-fg-subtle"></div>
+              个人中心
+            </NuxtLink>
+            <button
+              type="button"
+              class="flex h-11 w-full items-center gap-3 rounded-xl px-2 text-[15px] font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+              @click="
+                isMobileMenuOpen = false;
+                handleLogout();
+              "
+            >
+              <div class="i-carbon-logout h-5 w-5 shrink-0"></div>
+              退出登录
+            </button>
+          </template>
+
+          <!-- 未登录：登录 / 注册入口（并排，主次分明） -->
+          <template v-else>
+            <div class="grid grid-cols-2 gap-2 p-1 py-2">
+              <button
+                type="button"
+                class="h-11 rounded-xl bg-brand text-[15px] font-semibold text-on-brand transition active:scale-[0.98]"
+                @click="
+                  isMobileMenuOpen = false;
+                  openAuthModal('login');
+                "
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                class="h-11 rounded-xl border border-line text-[15px] font-medium text-fg transition hover:bg-surface-muted active:scale-[0.98]"
+                @click="
+                  isMobileMenuOpen = false;
+                  openAuthModal('register');
+                "
+              >
+                Create Account
+              </button>
+            </div>
+          </template>
+        </div>
+      </Transition>
     </nav>
+
+    <!-- 点击面板外关闭：只覆盖导航栏以下区域，不拦截栏内按钮 -->
+    <div
+      v-if="isMobileMenuOpen"
+      class="md:hidden fixed inset-x-0 top-[60px] bottom-0 z-0"
+      aria-hidden="true"
+      @click="isMobileMenuOpen = false"
+    />
   </div>
 
   <!-- 下拉菜单：使用 Teleport 渲染到 body，避免受导航栏层叠上下文与溢出裁剪影响 -->
@@ -424,21 +491,21 @@ nav {
     inset 0 0 0 1px rgb(255 255 255 / 0.1);
 }
 
-/* 移动端菜单面板：宽度跟随导航壳形态同步收缩 */
+/* 移动端目录卡：实底 + 柔和投影，避免 hero 文字透出；内部滚动不带动页面 */
 .mobile-panel {
-  max-width: 80rem;
-  transition: max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.mobile-panel.is-capsule {
-  max-width: 48rem;
+  box-shadow: var(--shadow-soft);
+  overscroll-behavior: contain;
 }
 
 /* 尊重系统「减少动态效果」偏好 */
 @media (prefers-reduced-motion: reduce) {
-  .nav-shell,
-  .mobile-panel {
+  .nav-shell {
     transition: none;
+  }
+  .mobile-panel,
+  .mobile-panel * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
 
