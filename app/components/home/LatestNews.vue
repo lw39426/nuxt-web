@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
   articles: () => []
 });
 
-const displayArticles = computed(() => props.articles.slice(0, 5));
+const displayArticles = computed(() => props.articles.slice(0, 6));
 
 const fallbackArticles = [
   {
@@ -149,7 +149,7 @@ const tagStyle = (color?: string) => {
             >
               <!-- 缩略图 -->
               <div
-                class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-muted md:h-32 md:w-40"
+                class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-muted md:h-22 md:w-30"
               >
                 <UiImage
                   :src="article.image"
