@@ -49,7 +49,7 @@ const askAI = () => {
 </script>
 
 <template>
-  <section class="relative py-24 md:py-32 bg-canvas overflow-hidden content-visibility-auto">
+  <section class="relative py-14 md:py-32 bg-canvas overflow-hidden content-visibility-auto">
     <!-- 背景光晕 -->
     <div
       class="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse"
@@ -60,7 +60,7 @@ const askAI = () => {
 
     <div class="section-container relative z-10">
       <UiSectionHeader
-        class="max-w-3xl mx-auto mb-16 md:mb-24"
+        class="max-w-3xl mx-auto mb-6 md:mb-24"
         align="center"
         tone="accent"
         label="AI 助手"
@@ -70,87 +70,104 @@ const askAI = () => {
         description="不只是聊天机器人，更是懂你的动漫角色百科全书"
       />
 
-      <!-- 能力卡片 + 对话演示 -->
-      <div class="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
-        <!-- 左侧：能力特性 -->
-        <div class="grid grid-cols-2 gap-4 md:gap-6">
-          <div
-            v-for="cap in aiCapabilities"
-            :key="cap.title"
-            class="group bg-surface-muted rounded-3xl p-6 md:p-8 transition-all duration-500 hover:-translate-y-1 border border-line hover:border-pink-500/30 dark:hover:border-pink-400/30 shadow-sm hover:shadow-xl hover:shadow-pink-500/10"
+      <!-- 对话演示 + 能力索引 -->
+      <div class="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
+        <!-- 能力特性：移动端为发丝分隔的索引清单，桌面端恢复 2×2 卡片 -->
+        <div class="order-2 grid grid-cols-1 gap-0 md:order-none md:grid-cols-2 md:gap-6">
+          <p
+            class="flex items-center gap-2 pb-1 text-[14px] font-bold uppercase tracking-[0.22em] text-fg-subtle md:hidden"
           >
+            <span class="h-px w-3 bg-line" aria-hidden="true" />
+            能力索引
+            <span class="h-px w-3 bg-line" aria-hidden="true" />
+          </p>
+          <template v-for="cap in aiCapabilities" :key="cap.title">
+            <div class="h-px bg-line/70 md:hidden" aria-hidden="true" />
             <div
-              class="w-14 h-14 rounded-2xl bg-surface flex items-center justify-center mb-6 shadow-sm group-hover:bg-pink-500 group-hover:text-white transition-all duration-500"
+              class="group flex items-start gap-3 py-4 md:block md:rounded-3xl md:border md:border-line md:bg-surface-muted md:p-8 md:shadow-sm md:transition-all md:duration-500 md:hover:-translate-y-1 md:hover:border-pink-500/30 md:hover:shadow-xl md:hover:shadow-pink-500/10 dark:md:hover:border-pink-400/30"
             >
               <div
-                :class="[
-                  cap.icon,
-                  'text-2xl text-fg group-hover:text-white transition-colors duration-300'
-                ]"
-              />
+                class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 ring-1 ring-purple-500/10 dark:text-purple-300 md:mt-0 md:mb-6 md:h-14 md:w-14 md:rounded-2xl md:bg-surface md:text-fg md:shadow-sm md:ring-0 md:transition-all md:duration-500 md:group-hover:bg-pink-500 md:group-hover:text-white"
+              >
+                <div :class="[cap.icon, 'text-xl md:text-2xl']" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-[15px] font-bold leading-snug text-fg md:mb-2 md:text-lg">
+                  {{ cap.title }}
+                </h3>
+                <p
+                  class="mt-1 text-[13px] leading-[1.65] text-fg-muted md:mt-0 md:text-sm md:leading-relaxed"
+                >
+                  {{ cap.desc }}
+                </p>
+              </div>
             </div>
-            <!-- 能力标题 -->
-            <h3 class="text-lg font-bold text-fg mb-2">
-              {{ cap.title }}
-            </h3>
-            <p class="text-sm text-fg-muted leading-relaxed">
-              {{ cap.desc }}
-            </p>
-          </div>
+          </template>
         </div>
 
-        <!-- 右侧：对话演示 -->
-        <div class="relative">
+        <!-- 对话演示：移动端前置为楼层主视觉，桌面端保持右侧 -->
+        <div class="relative order-1 md:order-none">
           <!-- 装饰背景 -->
           <div
             class="absolute -inset-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-[40px] blur-3xl opacity-50 dark:opacity-30"
           />
 
           <div
-            class="relative bg-surface rounded-[32px] overflow-hidden shadow-2xl border border-line backdrop-blur-xl"
+            class="relative overflow-hidden rounded-3xl border border-line bg-surface shadow-2xl backdrop-blur-xl md:rounded-[32px]"
           >
             <!-- 顶部栏 -->
-            <div class="flex items-center gap-4 px-6 py-5 border-b border-line bg-surface-muted">
+            <div
+              class="flex items-center gap-3 border-b border-line bg-surface-muted px-4 py-4 md:gap-4 md:px-6 md:py-5"
+            >
               <div class="relative">
                 <div
-                  class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20"
+                  class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/20"
                 >
-                  <!-- <div class="i-carbon- text-white text-lg" /> -->
+                  <div class="i-carbon-chat-bot text-lg text-white" aria-hidden="true" />
                 </div>
                 <span
-                  class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-surface animate-pulse"
+                  class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 animate-pulse rounded-full border-2 border-surface bg-green-500"
                 />
               </div>
-              <div>
-                <p class="text-base font-bold text-fg">YouMi AI</p>
+              <div class="min-w-0">
+                <p class="text-base font-bold text-fg">小星 AI</p>
                 <p
-                  class="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-widest"
+                  class="text-[10px] font-bold uppercase tracking-[0.18em] text-green-600 dark:text-green-400"
                 >
                   ONLINE NOW
                 </p>
               </div>
             </div>
 
-            <!-- 对话内容 -->
-            <div class="px-6 py-6 space-y-6 max-h-[380px] overflow-y-auto custom-scrollbar">
+            <!-- 对话内容：移动端完整展开，避免卡片内二次滚动 -->
+            <div
+              class="custom-scrollbar max-h-none space-y-5 overflow-y-auto px-4 py-5 md:max-h-[380px] md:space-y-6 md:px-6 md:py-6"
+            >
               <div
                 v-for="(msg, idx) in demoMessages"
                 :key="idx"
-                class="flex"
+                class="flex items-start gap-2"
                 :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
               >
                 <div
-                  class="max-w-[85%] rounded-[20px] px-5 py-3.5 text-sm leading-relaxed shadow-sm"
+                  v-if="msg.role === 'ai'"
+                  class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-sm md:hidden"
+                  aria-hidden="true"
+                >
+                  <div class="i-carbon-chat-bot text-[13px]" />
+                </div>
+                <div
+                  class="max-w-[85%] rounded-[20px] px-4 py-3 text-sm leading-relaxed shadow-sm md:px-5 md:py-3.5"
                   :class="
                     msg.role === 'user'
                       ? 'bg-fg text-canvas rounded-br-none'
-                      : 'bg-surface-muted text-fg rounded-bl-none border border-line'
+                      : 'bg-surface-muted text-fg border border-line'
                   "
                 >
                   {{ msg.content }}
                   <div
                     v-if="msg.hasProduct"
-                    class="mt-3 pt-3 border-t border-line flex items-center justify-between group/link cursor-pointer"
+                    class="group/link mt-3 flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-purple-500/10 px-3 py-2 md:rounded-none md:border-t md:border-line md:bg-transparent md:px-0 md:pb-0 md:pt-3"
                   >
                     <div class="flex items-center gap-2">
                       <div
@@ -169,25 +186,28 @@ const askAI = () => {
             </div>
 
             <!-- 输入框 -->
-            <div class="px-6 pb-6 pt-2">
+            <div class="px-4 pb-5 pt-2 md:px-6 md:pb-6">
               <div
-                class="flex items-center gap-3 bg-surface-muted rounded-2xl px-5 py-1 border border-line transition-all focus-within:border-purple-500/50 focus-within:ring-4 focus-within:ring-purple-500/5"
+                class="flex items-center gap-2 rounded-2xl border border-line bg-surface-muted px-4 py-1 transition-all focus-within:border-purple-500/50 focus-within:ring-4 focus-within:ring-purple-500/5 md:gap-3 md:px-5"
               >
                 <input
                   v-model="aiQuestion"
                   type="text"
                   placeholder="试试问AI：推荐一个海贼王里的强力角色..."
-                  class="flex-1 bg-transparent text-sm text-fg placeholder:text-fg-subtle outline-none"
+                  class="min-w-0 flex-1 bg-transparent text-base text-fg outline-none placeholder:text-fg-subtle md:text-sm"
+                  aria-label="向 AI 提问"
                   @keydown.enter.prevent="askAI"
                 />
                 <button
-                  class="w-10 h-8 rounded-xl flex items-center justify-center transition-all duration-500"
+                  type="button"
+                  class="flex h-8 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-500 md:h-8 md:w-10 md:rounded-xl"
                   :class="
                     canAskAI
                       ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30 active:scale-95'
-                      : 'bg-surface-muted text-fg-subtle'
+                      : 'bg-surface text-fg-subtle md:bg-surface-muted'
                   "
                   :disabled="!canAskAI"
+                  aria-label="发送问题"
                   @click="askAI"
                 >
                   <div class="i-carbon-send-filled text-sm" />
@@ -199,10 +219,10 @@ const askAI = () => {
       </div>
 
       <!-- 底部CTA -->
-      <div class="text-center mt-20">
+      <div class="text-center mt-10 md:mt-20">
         <NuxtLink
           to="/ai-page"
-          class="inline-flex items-center gap-3 px-10 py-4 bg-fg text-canvas rounded-full text-sm font-bold hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1 transition-all duration-500 group"
+          class="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-fg px-10 py-4 text-sm font-bold text-canvas transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/20 md:w-auto"
         >
           <div class="i-lucide-sparkles text-lg group-hover:rotate-12 transition-transform" />
           开始探索角色

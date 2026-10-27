@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Article } from '~/types/blog';
+import type { Article, BlogPost } from '~/types/blog';
 import { formatDate } from '~/utils/format';
 
 interface Props {
@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
   articles: () => []
 });
 
-const displayArticles = computed(() => props.articles.slice(0, 4));
+const displayArticles = computed(() => props.articles.slice(0, 5));
 
 const fallbackArticles = [
   {
@@ -22,6 +22,7 @@ const fallbackArticles = [
     category_name: '行业洞察',
     author: '科技前沿',
     views: 2340,
+    tags: [],
     published_date: '2026-07-20T10:00:00Z'
   },
   {
@@ -33,6 +34,7 @@ const fallbackArticles = [
     category_name: '选购指南',
     author: '产品评测',
     views: 1856,
+    tags: [],
     published_date: '2026-07-18T14:30:00Z'
   },
   {
@@ -44,6 +46,7 @@ const fallbackArticles = [
     category_name: '产品评测',
     author: '硬件实验室',
     views: 3201,
+    tags: [],
     published_date: '2026-07-15T09:00:00Z'
   },
   {
@@ -55,21 +58,62 @@ const fallbackArticles = [
     category_name: '技术科普',
     author: '音频研究所',
     views: 1567,
+    tags: [],
     published_date: '2026-07-12T16:00:00Z'
+  },
+  {
+    id: 5,
+    code: 'art_005',
+    title: '折叠屏走向成熟：这一年值得换机吗',
+    description: '从铰链、屏幕到软件适配，盘点折叠屏的进步与仍存在的短板',
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80',
+    category_name: '选购指南',
+    author: '硬件实验室',
+    views: 1988,
+    tags: [],
+    published_date: '2026-07-08T11:20:00Z'
   }
 ];
 
 const finalArticles = computed(() => {
   return displayArticles.value.length > 0 ? displayArticles.value : fallbackArticles;
 });
+
+/** 轮播取前 3 篇，其余以后以索引列表展示 */
+const carouselPosts = computed<BlogPost[]>(() =>
+  finalArticles.value.slice(0, 3).map((article: any) => ({
+    id: article.id,
+    code: article.code || String(article.id),
+    title: article.title,
+    excerpt: article.description,
+    category: article.category_name,
+    image: article.image,
+    date: formatDate(article.published_date),
+    author: {
+      name: article.author || article.user?.nickname || '佚名',
+      role: '',
+      avatar: article.user?.avatar || ''
+    }
+  }))
+);
+
+/** 标签配色与文章详情页底部保持一致：文字实色 + 33% 描边 + 8% 底色 */
+const tagStyle = (color?: string) => {
+  const resolved = color || '#6B7280';
+  return {
+    color: resolved,
+    borderColor: `${resolved}55`,
+    backgroundColor: `${resolved}14`
+  };
+};
 </script>
 
 <template>
-  <section class="py-8 md:py-16 bg-canvas content-visibility-auto">
+  <section class="py-14 md:py-16 bg-canvas content-visibility-auto">
     <div class="section-container">
-      <!-- 标题区 -->
+      <!-- 标题区：移动端把「查看全部」浮到眉题右侧，桌面端保持原布局 -->
       <UiSectionHeader
-        class="mb-14"
+        class="relative mb-6 max-md:[&>div:last-child]:absolute max-md:[&>div:last-child]:right-0 max-md:[&>div:last-child]:top-0 md:mb-14"
         tone="muted"
         label="资讯中心"
         title="最新资讯"
@@ -78,7 +122,7 @@ const finalArticles = computed(() => {
         <template #actions>
           <NuxtLink
             to="/blog"
-            class="inline-flex items-center gap-1.5 text-sm font-medium text-fg hover:opacity-60 transition-opacity shrink-0"
+            class="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-fg transition-opacity hover:opacity-60 max-md:h-8"
           >
             查看全部
             <div class="i-carbon-arrow-right" />
@@ -86,101 +130,112 @@ const finalArticles = computed(() => {
         </template>
       </UiSectionHeader>
 
-      <!-- 左右布局：左大卡片 + 右3小卡片 -->
+      <!-- 左右布局：左侧 Hero 轮播 + 右侧索引列表 -->
       <div class="grid lg:grid-cols-2 gap-5">
-        <!-- 左侧：大卡片 -->
-        <NuxtLink
-          :to="`/blog/${finalArticles[0]?.code || finalArticles[0]?.id}`"
-          class="group relative block rounded-3xl shadow-lg shadow-gray-200/80 dark:shadow-black/10 transition-shadow duration-300 hover:shadow-xl hover:shadow-gray-200/80 dark:hover:shadow-black/20"
-        >
-          <div
-            class="relative h-full min-h-[420px] md:min-h-[500px] rounded-3xl overflow-hidden bg-surface-muted border-1 border-line"
-          >
-            <UiImage
-              :src="finalArticles[0]?.image"
-              :alt="finalArticles[0]?.title"
-              class="w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
-            />
+        <!-- 左侧：尺寸由本页控制（与右列同高），字号用 compact 半栏排版 -->
+        <BlogHeroCarousel
+          :posts="carouselPosts"
+          size="compact"
+          class="aspect-[4/3] md:aspect-[16/11] rounded-3xl"
+        />
 
-            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-              <span
-                class="inline-block px-3 py-1 rounded-full text-[11px] font-medium bg-white/15 text-white/90 backdrop-blur-sm mb-4"
+        <!-- 右侧：轮播之外的资讯。移动端为细分隔线索引，桌面端为独立卡片 -->
+        <div class="flex flex-col gap-0 md:gap-5">
+          <template v-for="(article, idx) in finalArticles.slice(3)" :key="article.id">
+            <div v-if="idx > 0" class="h-px bg-line/70 md:hidden" aria-hidden="true" />
+            <NuxtLink
+              :to="`/blog/${article.code || article.id}`"
+              class="group grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3.5 py-4 active:opacity-70 md:flex md:flex-1 md:gap-5 md:rounded-2xl md:bg-surface-muted md:p-4 md:transition-colors md:duration-300 md:hover:bg-elevated md:active:opacity-100"
+            >
+              <!-- 缩略图 -->
+              <div
+                class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-muted md:h-32 md:w-40"
               >
-                {{ finalArticles[0]?.category_name || '资讯' }}
-              </span>
-              <h3
-                class="text-xl md:text-2xl font-semibold text-white mb-3 group-hover:opacity-80 transition-opacity line-clamp-2"
-              >
-                {{ finalArticles[0]?.title }}
-              </h3>
-              <p class="text-sm text-white/60 mb-4 line-clamp-2">
-                {{ finalArticles[0]?.description }}
-              </p>
-              <div class="flex items-center gap-4 text-xs text-white/40">
-                <span class="flex items-center gap-1">
-                  <div class="i-carbon-calendar" />
-                  {{ formatDate(finalArticles[0]?.published_date || '') }}
-                </span>
-                <span class="flex items-center gap-1">
-                  <div class="i-carbon-view" />
-                  {{ finalArticles[0]?.views || 0 }}
-                </span>
+                <UiImage
+                  :src="article.image"
+                  :alt="article.title"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
-            </div>
-          </div>
-        </NuxtLink>
 
-        <!-- 右侧：3个小卡片（上下排列） -->
-        <div class="flex flex-col gap-5">
-          <NuxtLink
-            v-for="article in finalArticles.slice(1)"
-            :key="article.id"
-            :to="`/blog/${article.code || article.id}`"
-            class="group flex gap-5 p-4 rounded-2xl bg-surface-muted transition-colors duration-300 hover:bg-elevated flex-1"
-          >
-            <!-- 缩略图 -->
-            <div class="shrink-0 w-32 h-28 md:w-40 md:h-32 rounded-xl overflow-hidden">
-              <UiImage
-                :src="article.image"
-                :alt="article.title"
-                class="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
+              <!-- 内容：移动端标题与描述在前，标签与元信息收到底部 -->
+              <div class="flex min-w-0 flex-col py-0.5 md:flex-1 md:justify-between">
+                <div>
+                  <h3
+                    class="mb-1.5 text-[15px] font-semibold leading-snug text-fg transition-opacity group-hover:opacity-70 line-clamp-2 md:text-[15px]"
+                  >
+                    {{ article.title }}
+                  </h3>
+                  <p
+                    class="text-xs leading-[1.6] text-fg-subtle line-clamp-2 md:leading-4 md:block"
+                  >
+                    {{ article.description }}
+                  </p>
+                </div>
 
-            <!-- 内容 -->
-            <div class="flex flex-col justify-between min-w-0 flex-1 py-0.5">
-              <div>
-                <span
-                  class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-elevated text-fg-muted mb-2"
+                <!-- 桌面端：标签与元信息置于卡片底部 -->
+                <div
+                  class="mt-2 hidden items-center justify-between gap-3 text-[11px] text-fg-subtle md:mt-0 md:flex"
                 >
-                  {{ article.category_name || '资讯' }}
-                </span>
-                <h3
-                  class="text-sm md:text-[15px] font-semibold text-fg group-hover:opacity-70 transition-opacity line-clamp-2 mb-1.5"
+                  <div
+                    v-if="article.tags?.length"
+                    class="flex min-w-0 flex-wrap items-center gap-1.5"
+                  >
+                    <div class="i-carbon-tag h-4 w-4 shrink-0 text-fg-subtle" aria-hidden="true" />
+                    <span
+                      v-for="tag in article.tags"
+                      :key="tag.id"
+                      class="rounded-full border px-2.5 py-0.5 text-[11px] font-medium"
+                      :style="tagStyle(tag.color)"
+                    >
+                      {{ tag.name }}
+                    </span>
+                  </div>
+                  <div class="ml-auto flex shrink-0 items-center gap-3">
+                    <span class="flex items-center gap-1">
+                      <div class="i-carbon-calendar" />
+                      {{ formatDate(article.published_date) }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <div class="i-carbon-view" />
+                      {{ article.views || 0 }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 移动端底部：标签靠左，时间与浏览量靠右 -->
+              <div class="col-span-2 mt-2.5 flex items-start justify-between gap-3 md:hidden">
+                <div
+                  v-if="article.tags?.length"
+                  class="flex min-w-0 flex-wrap items-center gap-1.5"
                 >
-                  {{ article.title }}
-                </h3>
-                <p class="text-xs text-fg-subtle line-clamp-1 hidden md:block">
-                  {{ article.description }}
-                </p>
+                  <div class="i-carbon-tag h-4 w-4 shrink-0 text-fg-subtle" aria-hidden="true" />
+                  <span
+                    v-for="tag in article.tags"
+                    :key="tag.id"
+                    class="rounded-full border px-2.5 py-0.5 text-[11px] font-medium"
+                    :style="tagStyle(tag.color)"
+                  >
+                    {{ tag.name }}
+                  </span>
+                </div>
+                <div
+                  class="ml-auto flex shrink-0 items-center gap-2.5 pt-0.5 text-[11px] text-fg-subtle"
+                >
+                  <span class="flex items-center gap-1">
+                    <div class="i-carbon-calendar" />
+                    {{ formatDate(article.published_date) }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <div class="i-carbon-view" />
+                    {{ article.views || 0 }}
+                  </span>
+                </div>
               </div>
-              <div class="flex items-center gap-3 text-[11px] text-fg-subtle">
-                <span class="flex items-center gap-1">
-                  <div class="i-carbon-calendar" />
-                  {{ formatDate(article.published_date) }}
-                </span>
-                <span class="flex items-center gap-1">
-                  <div class="i-carbon-view" />
-                  {{ article.views || 0 }}
-                </span>
-              </div>
-            </div>
-          </NuxtLink>
+            </NuxtLink>
+          </template>
         </div>
       </div>
     </div>

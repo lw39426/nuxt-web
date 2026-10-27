@@ -36,8 +36,6 @@ const articles = computed(() => homeData.value?.articles || []);
 
 // const bgImage = computed(() => '/futuristic-moon-background.webp');
 /** 首页 Hero 背景图（banner） */
-// const bgImage = computed(() => '/hero01.jpeg');
-// const bgImage = computed(() => '/hero01.png');
 const bgImage = computed(() => '/hero02.jpeg');
 
 const aiQuestion = ref('');
@@ -57,9 +55,15 @@ const askAI = (question?: string) => {
 <template>
   <main>
     <!-- ========== 1. Hero Section ========== -->
-    <section class="relative h-screen !h-svh">
+    <!-- 移动端：占位 60 + 区块 calc(100svh-60) = 恰好一屏，内容垂直居中；
+         桌面保留原布局（h-svh + 顶部 pt-24） -->
+    <section
+      class="relative flex min-h-[calc(100svh_-_60px)] items-center md:h-svh md:min-h-0 md:items-start"
+    >
       <!-- 背景图 -->
-      <picture class="bg-image-hero top-[-5rem] absolute w-full h-full">
+      <picture
+        class="bg-image-hero absolute -top-[60px] h-[calc(100%_+_60px)] w-full md:-top-20 md:h-full"
+      >
         <img
           class="w-full h-full object-cover"
           loading="eager"
@@ -71,13 +75,15 @@ const askAI = (question?: string) => {
       </picture>
 
       <!-- 英雄标题板块 -->
-      <div class="z-10 section-container text-center">
-        <h3
-          class="text-5xl pt-[15rem] md:pt-24 md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 font-display drop-shadow-md"
-          v-html="'YouMi <br /> 每一个角色，都值得被认真看见'"
-        ></h3>
+      <div class="relative z-10 section-container w-full pb-8 text-center md:pb-0 md:pt-24">
+        <h3 class="text-white font-bold tracking-tight font-display drop-shadow-md">
+          <span class="block text-[2.5rem] leading-[1.1] md:text-6xl md:leading-tight">YouMi</span>
+          <span class="mt-2 block text-[1.5rem] leading-[1.3] md:mt-0 md:text-6xl md:leading-tight">
+            每一个角色，都值得被认真看见
+          </span>
+        </h3>
         <p
-          class="text-lg md:text-xl text-[#bfaeed] max-w-2xl mx-auto mb-12 md:mb-12 font-medium drop-shadow-sm"
+          class="mx-auto mt-4 max-w-[36ch] text-[15px] leading-[1.7] font-medium text-[#bfaeed] drop-shadow-sm md:mt-6 md:max-w-2xl md:text-xl"
         >
           It is wonderful, and at the same time it is also terrible. Please be more tolerant, thank
           you very much.
@@ -85,17 +91,17 @@ const askAI = (question?: string) => {
 
         <!-- 毛玻璃搜索 Input Form -->
         <div
-          class="max-w-md mx-auto bg-white/20 backdrop-blur-md p-1.5 rounded-full border border-white/30 flex mb-20 shadow-lg"
+          class="mx-auto mt-7 flex h-12 max-w-md rounded-full border border-white/30 bg-white/20 p-1 shadow-lg backdrop-blur-md md:mt-12 md:h-auto md:p-1.5"
         >
           <input
             v-model="aiQuestion"
             type="text"
             placeholder="你想了解什么？"
-            class="flex-1 bg-transparent border-none outline-none text-fg placeholder-fg-subtle px-4 text-sm"
+            class="min-w-0 flex-1 bg-transparent border-none outline-none text-fg placeholder:text-fg-subtle px-4 text-base md:text-sm"
             @keydown.enter.prevent="askAI()"
           />
           <button
-            class="bg-white text-black/70 px-6 py-2 rounded-full text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:bg-gray-100"
+            class="h-full shrink-0 rounded-full bg-white text-black/70 px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:bg-gray-100 md:px-6 md:py-2"
             :disabled="!canAskAI"
             @click="askAI()"
           >

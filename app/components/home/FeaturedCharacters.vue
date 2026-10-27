@@ -46,7 +46,7 @@ onMounted(() => {
 
 <template>
   <section
-    class="relative py-24 md:py-32 bg-canvas-elevated overflow-hidden content-visibility-auto"
+    class="relative py-14 md:py-32 bg-canvas-elevated overflow-hidden content-visibility-auto"
   >
     <!-- 背景装饰渐变 -->
     <div
@@ -59,7 +59,7 @@ onMounted(() => {
     <div class="section-container relative z-10">
       <!-- 标题区 -->
       <UiSectionHeader
-        class="mb-6"
+        class="mb-4 md:mb-6"
         tone="accent"
         label="角色百科"
         title="精选角色卡片墙"
@@ -78,9 +78,13 @@ onMounted(() => {
       <div
         v-if="characters.length > 0"
         ref="wallRef"
-        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
+        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8"
       >
-        <div v-for="character in characters" :key="character.id" class="character-card-item">
+        <div
+          v-for="character in characters"
+          :key="character.code ?? character.id"
+          class="character-card-item"
+        >
           <ProductCard :product="character" />
         </div>
       </div>
@@ -96,7 +100,7 @@ onMounted(() => {
       </div>
 
       <!-- 查看更多 -->
-      <div class="text-center mt-14">
+      <div class="text-center mt-10 md:mt-14">
         <NuxtLink
           to="/products"
           class="inline-flex items-center gap-2 px-8 py-3 bg-surface border border-line rounded-full text-sm font-medium text-fg hover:bg-surface-muted transition-all duration-300"
