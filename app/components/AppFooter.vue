@@ -65,8 +65,8 @@ const columns: FooterColumn[] = [
           <p class="footer-desc">面向动漫 / 影视爱好者的角色百科与沉浸式浏览平台。</p>
         </div>
 
-        <!-- 链接列 -->
-        <div class="flex flex-wrap gap-24 lg:gap-24">
+        <!-- 链接列：移动端三列均分，md+ 恢复左对齐大间距 -->
+        <div class="grid grid-cols-3 gap-6 md:flex md:gap-24">
           <div v-for="column in columns" :key="column.title">
             <h3 class="footer-title">
               {{ column.title }}
