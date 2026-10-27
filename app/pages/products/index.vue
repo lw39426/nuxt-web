@@ -42,7 +42,7 @@ useSeoMeta({
       @clear-filters="clearFilters"
     />
 
-    <div class="bg-canvas py-12 md:py-16">
+    <div class="bg-canvas py-8 md:py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ProductCatalogResults
           :series="series"

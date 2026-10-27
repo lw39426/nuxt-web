@@ -2,7 +2,7 @@
   <div class="group relative flex flex-col h-full">
     <!-- Image Container -->
     <div
-      class="relative w-full h-[160px] sm:h-[256px] aspect-[4/5] overflow-hidden bg-surface-muted rounded-xl"
+      class="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-surface-muted sm:aspect-auto sm:h-[256px]"
     >
       <NuxtLink :to="productDetailPath" class="block w-full h-full mx-auto">
         <UiImage
@@ -12,7 +12,7 @@
           :dark-fallback="'/images/pro_loading_dark.svg'"
           loading="lazy"
           decoding="async"
-          class="w-full h-full object-contain p-8 sm:p-8"
+          class="w-full h-full object-contain p-4 sm:p-8"
         />
       </NuxtLink>
 

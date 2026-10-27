@@ -1,15 +1,15 @@
 <template>
-  <div v-if="series.length > 0" class="space-y-16 md:space-y-24">
+  <div v-if="series.length > 0" class="space-y-12 md:space-y-24">
     <div v-for="(item, index) in series" :key="item.categoryId">
-      <div class="mb-12">
-        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-fg">
+      <div class="mb-8 md:mb-12">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-fg">
           {{ item.category }}
         </h2>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-8">
           <button
             type="button"
-            class="col-span-2 md:col-span-3 lg:col-span-3 group relative rounded-2xl overflow-hidden cursor-pointer isolate transform-gpu min-h-[320px] md:min-h-[280px] lg:min-h-[420px] text-left"
+            class="col-span-2 md:col-span-3 lg:col-span-3 group relative rounded-2xl overflow-hidden cursor-pointer isolate transform-gpu min-h-[240px] md:min-h-[280px] lg:min-h-[420px] text-left"
             :aria-label="`查看 ${item.category} 分类`"
             @click="emit('select-category', item.categoryId)"
           >
@@ -57,13 +57,13 @@
         </div>
       </div>
 
-      <div v-if="index < series.length - 1" class="mt-16 md:mt-24 border-t border-line" />
+      <div v-if="index < series.length - 1" class="mt-12 md:mt-24 border-t border-line" />
     </div>
   </div>
 
   <div
     v-else-if="loading"
-    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8"
     aria-busy="true"
   >
     <div v-for="i in 8" :key="i" class="bg-surface rounded-2xl p-4">

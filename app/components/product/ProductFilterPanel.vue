@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-canvas-elevated pb-8">
+  <div class="bg-canvas-elevated pb-4 md:pb-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="relative" role="group" aria-label="按作品分类筛选">
-        <div class="flex justify-between overflow-x-auto pb-4 no-scrollbar gap-8 md:gap-0">
+        <div class="flex justify-between overflow-x-auto pb-4 no-scrollbar gap-2 md:gap-0">
           <!-- 分类-全部 -->
           <button
             type="button"
-            class="flex flex-col items-center min-w-[80px] cursor-pointer group/item space-y-3 pb-2 border-b-4 bg-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            class="flex flex-col items-center min-w-[64px] md:min-w-[80px] cursor-pointer group/item space-y-3 pb-2 border-b-4 bg-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             :class="
               selectedCategoryId === null
                 ? 'border-accent'
@@ -16,19 +16,19 @@
             @click="emit('select-category', null)"
           >
             <span
-              class="h-[78px] w-[78px] p-2 flex items-end justify-center text-fg-muted group-hover/item:-translate-y-1 transition-transform duration-300 ease-out"
+              class="h-[64px] w-[64px] p-2 md:h-[78px] md:w-[78px] flex items-end justify-center text-fg-muted group-hover/item:-translate-y-1 transition-transform duration-300 ease-out"
               aria-hidden="true"
             >
               <span class="i-carbon-grid text-4xl" />
             </span>
-            <span class="text-xs font-medium text-fg">全部</span>
+            <span class="text-[10px] md:text-xs font-medium text-fg">全部</span>
           </button>
           <!-- 分类-后端分类列表项 -->
           <button
             v-for="category in categories"
             :key="category.id"
             type="button"
-            class="flex flex-col items-center min-w-[80px] cursor-pointer group/item space-y-3 pb-2 border-b-4 bg-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            class="flex flex-col items-center min-w-[64px] md:min-w-[80px] cursor-pointer group/item space-y-3 pb-2 border-b-4 bg-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             :class="
               selectedCategoryId === category.id
                 ? 'border-accent'
@@ -38,16 +38,18 @@
             @click="emit('select-category', category.id)"
           >
             <div
-              class="h-[78px] p-2 w-auto flex items-end justify-center group-hover/item:-translate-y-1 transition-transform duration-300 ease-out"
+              class="h-[64px] w-[64px] p-1 md:h-[78px] md:w-auto md:p-2 flex items-end justify-center group-hover/item:-translate-y-1 transition-transform duration-300 ease-out"
             >
               <UiImage
                 :src="category.image"
                 :alt="category.name"
-                class="h-full w-auto object-contain"
+                class="h-full w-full md:w-auto object-contain"
                 loading="lazy"
               />
             </div>
-            <span class="text-xs font-medium text-fg">{{ category.name }}</span>
+            <span class="max-w-full text-[10px] md:text-xs font-medium text-fg truncate">{{
+              category.name
+            }}</span>
           </button>
         </div>
       </div>

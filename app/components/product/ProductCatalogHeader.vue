@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-canvas-elevated pt-8">
+  <!-- overflow-hidden：裁剪装饰光晕，避免移动端被撑出横向滚动 -->
+  <div class="bg-canvas-elevated pt-8 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div
         class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-4 md:mb-16"
