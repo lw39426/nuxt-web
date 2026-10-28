@@ -47,6 +47,13 @@ const { data: relatedData } = await useAsyncData(
 
 const relatedPosts = computed<BlogPost[]>(() => (relatedData.value ?? []).map(articleToBlogPost));
 
+/** 面包屑：首页 / 博客 / 文章标题 */
+const breadcrumbItems = computed(() => [
+  { label: '首页', to: '/' },
+  { label: '博客', to: '/blog' },
+  { label: post.value?.title || '文章详情' }
+]);
+
 /** 安全格式化日期（无效/缺失时返回空串） */
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '';
@@ -96,17 +103,12 @@ const authorName = computed(() => post.value?.author || post.value?.user?.nickna
 // 计算属性: 作者头像（可能为空，为空时模板降级显示首字母）
 const authorAvatar = computed(() => post.value?.user?.avatar || '');
 
-// 计算属性: 评论总数（详情接口的 comment_statistics 优先，其次 comment_count）
-const totalComments = computed(
-  () => post.value?.comment_statistics?.total_comments ?? post.value?.comment_count ?? 0
-);
-
 // 计算属性: 阅读时长估算
 const readTime = computed(() => {
   if (!post.value?.content) return '';
   const text = post.value.content.replace(/<[^>]*>/g, '');
   const minutes = Math.max(1, Math.ceil(text.length / 500));
-  return `${minutes} min read`;
+  return `约 ${minutes} 分钟阅读`;
 });
 
 // ==================== SEO：动态 meta ====================
@@ -170,9 +172,9 @@ useHead(() => ({
 
 <template>
   <div class="min-h-screen bg-canvas pb-20">
-    <!-- Back Button -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-      <NuxtLink to="/blog" class="inline-flex items-center gap-2 group">
+    <!-- 返回入口：移动端显示返回按钮，sm+ 显示面包屑（避免重复导航） -->
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <NuxtLink to="/blog" class="sm:hidden inline-flex items-center gap-2 group">
         <div
           class="w-8 h-8 rounded-full bg-fg text-canvas flex items-center justify-center transition-transform group-hover:-translate-x-1"
         >
@@ -180,6 +182,7 @@ useHead(() => ({
         </div>
         <span class="font-medium text-fg">所有故事</span>
       </NuxtLink>
+      <AppBreadcrumb class="hidden sm:flex" :items="breadcrumbItems" />
     </div>
 
     <!-- Loading State -->
@@ -204,41 +207,52 @@ useHead(() => ({
 
     <!-- Article Content -->
     <template v-else>
-      <!-- Article Header -->
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-12 text-center">
-        <h1 class="text-3xl md:text-5xl font-bold text-fg mb-8 leading-tight">
+      <!-- Article Header：与正文同栏的左对齐编辑部式排版 -->
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 md:pt-10">
+        <span
+          v-if="post.category_name"
+          class="block text-xs font-bold uppercase tracking-[0.18em] text-accent mb-3"
+        >
+          {{ post.category_name }}
+        </span>
+        <h1
+          class="text-[26px] md:text-4xl lg:text-[44px] font-bold text-fg mb-6 md:mb-4 leading-[1.25]"
+        >
           {{ post.title }}
         </h1>
         <div
-          class="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 mb-6"
+          class="flex flex-wrap justify-between items-center gap-x-5 gap-y-1.5 text-[13px] md:text-sm text-fg-muted mb-4 md:mb-4"
         >
-          <span class="uppercase tracking-wider">{{ post.category_name }}</span>
-          <span class="text-fg-subtle">•</span>
-          <span class="text-fg-muted">{{ formattedDate }}</span>
-          <span class="text-fg-subtle">•</span>
-          <span class="text-fg-muted">{{ readTime }}</span>
+          <span v-if="formattedDate" class="inline-flex items-center gap-1.5">
+            <span class="i-carbon-calendar text-fg-subtle" aria-hidden="true" />
+            {{ formattedDate }}
+          </span>
+          <span v-if="readTime" class="inline-flex items-center gap-1.5">
+            <span class="i-carbon-time text-fg-subtle" aria-hidden="true" />
+            {{ readTime }}
+          </span>
         </div>
-        <div class="flex items-center justify-center gap-3 mb-12">
+        <!-- 作者行：头像 + 姓名 + 带图标的互动数据 -->
+        <div class="flex items-center gap-3 pb-4 mb-4 border-b border-line">
           <!-- 头像缺失或加载失败时降级显示姓名首字母 -->
           <UiImage
             :src="authorAvatar"
             :alt="authorName"
-            class="h-12 w-12 rounded-full object-cover"
+            class="h-11 w-11 md:h-12 md:w-12 rounded-full object-cover"
             variant="avatar"
           >
             <template #fallback>
-              <div class="h-12 w-12 rounded-full bg-surface-muted flex items-center justify-center">
+              <div
+                class="h-8 w-8 md:h-8 md:w-8 rounded-full bg-surface-muted flex items-center justify-center"
+              >
                 <span class="text-lg font-bold text-fg-muted">
                   {{ authorName.charAt(0) }}
                 </span>
               </div>
             </template>
           </UiImage>
-          <div class="text-left">
-            <div class="font-bold text-fg">{{ authorName }}</div>
-            <div class="text-sm text-fg-muted">
-              浏览 {{ post.views ?? 0 }} · 赞 {{ post.likes ?? 0 }} · 评论 {{ totalComments }}
-            </div>
+          <div class="min-w-0">
+            <div class="text-[15px] md:text-base font-bold text-fg">{{ authorName }}</div>
           </div>
         </div>
       </div>
