@@ -5,21 +5,14 @@
     </div>
     <div v-else-if="product" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <!-- Breadcrumbs 面包屑部分 -->
-      <nav class="hidden sm:flex text-sm text-fg-muted mb-8">
-        <ol class="flex items-center space-x-2">
-          <li>
-            <NuxtLink to="/" class="hover:text-fg">首页</NuxtLink>
-          </li>
-          <li><span class="mx-2">/</span></li>
-          <li>
-            <NuxtLink to="/products" class="hover:text-fg">角色图鉴</NuxtLink>
-          </li>
-          <li><span class="mx-2">/</span></li>
-          <li class="text-fg font-medium truncate">
-            {{ product?.name }}
-          </li>
-        </ol>
-      </nav>
+      <AppBreadcrumb
+        class="hidden sm:flex mb-8"
+        :items="[
+          { label: '首页', to: '/' },
+          { label: '角色图鉴', to: '/products' },
+          { label: product?.name || '' }
+        ]"
+      />
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-20">
         <!-- Gallery (Left) 角色立绘 3D 翻转卡片区域 -->
