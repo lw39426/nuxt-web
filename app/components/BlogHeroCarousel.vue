@@ -1,9 +1,19 @@
 <script setup lang="ts">
-import type { BlogPost } from '~/types/blog';
+import type { Banner } from '~/composables/api/home';
+import { NuxtLink } from '#components';
+
+/**
+ * 轮播数据契约：字段名照抄 Banner 接口，真实响应可直接传入（结构兼容，多余字段不影响赋值）。
+ * banner 接口后续新增展示字段时，在这里补字段名 + 模板加一处消费即可。
+ */
+type CarouselItem = Pick<
+  Banner,
+  'id' | 'title' | 'description' | 'image_url' | 'link_type' | 'link_target' | 'created_at'
+>;
 
 const props = withDefaults(
   defineProps<{
-    posts: BlogPost[];
+    posts: CarouselItem[];
     /** hero：桌面端大号排版（博客页全宽）；compact：半栏小号排版 */
     size?: 'hero' | 'compact';
   }>(),
@@ -11,7 +21,13 @@ const props = withDefaults(
 );
 
 /** 窗口式轨道中的一格：slot 0 / 1 / 2 对应上一张 / 当前 / 下一张 */
-type Slide = { post: BlogPost; slot: 0 | 1 | 2 };
+type Slide = { post: CarouselItem; slot: 0 | 1 | 2 };
+
+/** 跳转链接：空串表示不可跳转（link_type=NONE 或未配 link_target），模板据此降级为静态容器 */
+const postLink = (post: CarouselItem): string => {
+  const target = post.link_target?.trim() || '';
+  return !target || post.link_type?.toLowerCase() === 'none' ? '' : target;
+};
 
 /** 当前逻辑索引，恒在 0 ~ posts.length-1；循环靠取模，不靠克隆边缘 */
 const index = ref(0);
@@ -282,26 +298,28 @@ onUnmounted(() => {
       :style="trackStyle"
       @transitionend="onTrackTransitionEnd"
     >
-      <NuxtLink
+      <!-- 不可跳转的 banner 渲染为静态容器，避免空链接把用户带回列表页 -->
+      <component
+        :is="postLink(slide.post) === '' ? 'div' : NuxtLink"
         v-for="slide in visibleSlides"
         :key="slide.slot"
-        :to="`/blog/${slide.post.code}`"
+        v-bind="postLink(slide.post) === '' ? undefined : { to: postLink(slide.post) }"
         class="relative w-full shrink-0"
         :aria-hidden="slide.slot === 1 ? undefined : 'true'"
         :tabindex="slide.slot === 1 ? undefined : -1"
-        :aria-label="`第 ${((index + slide.slot - 1 + posts.length) % posts.length) + 1} 篇`"
+        :aria-label="`第 ${((index + slide.slot - 1 + posts.length) % posts.length) + 1} 项`"
       >
         <!-- 底层背景图 -->
         <UiImage
-          :src="slide.post.image"
-          :alt="slide.post.title"
+          :src="slide.post.image_url || '/images/placeholder.svg'"
+          :alt="slide.post.title || '未命名'"
           class="absolute inset-0 w-full h-full object-cover"
         />
         <!-- 叠加层: 渐变遮罩（底部深色向上渐变透明） -->
         <div
           class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
         ></div>
-        <!-- 叠加层: 文章内容（多篇时底部让位给指示点） -->
+        <!-- 叠加层: 标题与描述（多项时底部让位给指示点） -->
         <div
           class="absolute bottom-0 left-0 w-full"
           :class="[
@@ -314,7 +332,7 @@ onUnmounted(() => {
               size === 'hero' ? 'text-xs md:text-sm mb-1.5 md:mb-3' : 'text-xs mb-1.5 md:mb-2'
             "
           >
-            <span class="text-gray-300 font-medium">{{ slide.post.date }}</span>
+            <span class="text-gray-300 font-medium">{{ formatDate(slide.post.created_at) }}</span>
           </div>
           <h1
             class="font-bold text-white leading-tight group-hover:text-blue-200 transition-colors line-clamp-2"
@@ -324,8 +342,9 @@ onUnmounted(() => {
                 : 'mb-2 md:mb-3 text-lg md:text-2xl'
             "
           >
-            {{ slide.post.title }}
+            {{ slide.post.title || '未命名' }}
           </h1>
+          <!-- description 后台未填时接口返回 null，为空即整段隐藏 -->
           <p
             class="text-gray-300 line-clamp-2"
             :class="
@@ -334,23 +353,10 @@ onUnmounted(() => {
                 : 'mb-3 md:mb-4 text-[13px] md:text-sm'
             "
           >
-            {{ slide.post.excerpt }}
+            {{ slide.post.description || '' }}
           </p>
-          <div class="flex items-center gap-2.5 md:gap-3">
-            <UiImage
-              :src="slide.post.author?.avatar"
-              :alt="slide.post.author?.name || ''"
-              class="rounded-full border-2 border-white/20 object-cover"
-              :class="size === 'hero' ? 'h-7 w-7 md:h-10 md:w-10' : 'h-7 w-7 md:h-8 md:w-8'"
-              variant="avatar"
-            />
-            <div class="flex flex-col">
-              <span class="text-sm font-bold text-white">{{ slide.post.author?.name || '' }}</span>
-              <span class="text-xs text-gray-400">{{ slide.post.author?.role }}</span>
-            </div>
-          </div>
         </div>
-      </NuxtLink>
+      </component>
     </div>
 
     <!-- 左右切换箭头（悬停容器时浮现）。垂直居中用 inset-y-0 + items-center，理由同指示点 -->

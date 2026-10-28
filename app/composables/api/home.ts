@@ -2,17 +2,33 @@ import type { Product } from '~/types/product'
 import type { Article } from '~/types/blog'
 import type { Pagination } from '~/types/api'
 
-/** Banner 对象 */
+/** Banner 对象（字段名与 GET /banners 响应逐项对齐，按字母序排列，便于与接口报文比对） */
 export interface Banner {
-  id: number
-  title: string
-  image_url: string
-  placement_key: string
-  link_type: string
-  link_target: string
+  /** 投放端：all / web / miniapp 等 */
   client_type: string
+  /** 创建时间 ISO8601 */
+  created_at: string
+  /** 描述；可为空 */
+  description: string | null
+  /** 投放结束时间；null = 不限 */
+  end_time: string | null
+  id: number
+  image_url: string
+  /** 跳转目标：站内路由或外链原样字符串；空串 = 不跳转 */
+  link_target: string
+  /** 跳转类型：none / webpage / article / product 等，接口大小写不统一，比较时忽略大小写 */
+  link_type: string
+  /** 广告位标识，如 blog_top_banner */
+  placement_key: string
+  /** 同位排序，小者靠前 */
   sort_order: number
+  /** 投放开始时间；null = 立即生效 */
+  start_time: string | null
+  /** 上下架状态 */
   status: boolean
+  title: string
+  /** 更新时间 ISO8601 */
+  updated_at: string
 }
 
 /** 公告对象 */

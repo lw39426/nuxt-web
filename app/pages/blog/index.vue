@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { BlogPost, Article, ArticleCategory, ArticleTag } from '~/types/blog';
+import type { Banner } from '~/composables/api/home';
 import { useArticleApi } from '~/composables/api/article';
+import { useHomeApi } from '~/composables/api/home';
 import { useIntersectionObserver } from '@vueuse/core';
 
 const {
@@ -9,6 +11,7 @@ const {
   tags: fetchTags,
   search: searchArticles
 } = useArticleApi();
+const { getBanners } = useHomeApi();
 
 /**
  * 博客列表页 SEO 元信息
@@ -102,17 +105,16 @@ const loadMoreTrigger = ref<HTMLElement | null>(null);
 /** 空数据状态：非加载中且无文章 */
 const isEmpty = computed(() => !isLoading.value && displayedPosts.value.length === 0);
 
-/** Hero 轮播数据：独立于筛选，始终展示最新 5 篇 */
-const heroPosts = ref<BlogPost[]>([]);
+/** Hero 轮播数据：banner 接口原始响应，字段不做裁剪，组件直接消费 */
+const heroPosts = ref<Banner[]>([]);
 
-/** 加载 Hero 轮播数据（仅首次进入页面请求一次，失败静默由占位兜底） */
+/** 加载 Hero 轮播数据：走 banner 接口（blog_top_banner 位，web 端），失败静默由占位兜底 */
 const loadHeroPosts = async () => {
   try {
-    const data = await list({ page: 1, pageSize: 5 });
-    const articles = Array.isArray(data?.articles) ? data.articles : [];
-    heroPosts.value = articles.map(articleToBlogPost);
+    const data = await getBanners({ placement_key: 'blog_top_banner', client_type: 'web' });
+    heroPosts.value = Array.isArray(data?.banners) ? data.banners : [];
   } catch (err) {
-    console.error('Failed to load hero posts:', err);
+    console.error('Failed to load hero banners:', err);
   }
 };
 
@@ -227,7 +229,7 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-canvas pb-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
-      <!-- 头部宣传区域：独立轮播板块（最新 5 篇，不随筛选变化）。
+      <!-- 头部宣传区域：独立轮播板块（banner 接口 blog_top_banner 位，不随筛选变化）。
            尺寸/圆角/间距由页面控制，全宽下桌面端封顶 60% 屏高 -->
       <BlogHeroCarousel
         :posts="heroPosts"

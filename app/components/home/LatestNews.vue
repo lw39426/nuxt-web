@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Article, BlogPost } from '~/types/blog';
+import type { Article } from '~/types/blog';
 import { formatDate } from '~/utils/format';
 
 interface Props {
@@ -79,21 +79,19 @@ const finalArticles = computed(() => {
   return displayArticles.value.length > 0 ? displayArticles.value : fallbackArticles;
 });
 
-/** 轮播取前 3 篇，其余以后以索引列表展示 */
-const carouselPosts = computed<BlogPost[]>(() =>
+/**
+ * 轮播取前 3 篇，其余以后以索引列表展示。
+ * 字段按轮播组件的 Banner 契约命名：图片走 image_url，跳详情把完整路径写进 link_target
+ */
+const carouselPosts = computed(() =>
   finalArticles.value.slice(0, 3).map((article: any) => ({
     id: article.id,
-    code: article.code || String(article.id),
     title: article.title,
-    excerpt: article.description,
-    category: article.category_name,
-    image: article.image,
-    date: formatDate(article.published_date),
-    author: {
-      name: article.author || article.user?.nickname || '佚名',
-      role: '',
-      avatar: article.user?.avatar || ''
-    }
+    description: article.description,
+    image_url: article.image,
+    link_type: 'ARTICLE',
+    link_target: `/blog/${article.code || article.id}`,
+    created_at: formatDate(article.published_date)
   }))
 );
 
@@ -136,7 +134,7 @@ const tagStyle = (color?: string) => {
         <BlogHeroCarousel
           :posts="carouselPosts"
           size="compact"
-          class="aspect-[4/3] md:aspect-[16/11] rounded-3xl"
+          class="aspect-[4/3] md:aspect-[16/8] lg:aspect-[16/11] rounded-3xl"
         />
 
         <!-- 右侧：轮播之外的资讯。移动端为细分隔线索引，桌面端为独立卡片 -->
@@ -149,7 +147,7 @@ const tagStyle = (color?: string) => {
             >
               <!-- 缩略图 -->
               <div
-                class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-muted md:h-22 md:w-30"
+                class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-muted md:h-26 md:w-36 lg:h-20 lg:w-24"
               >
                 <UiImage
                   :src="article.image"
