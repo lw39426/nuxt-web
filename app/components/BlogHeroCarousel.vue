@@ -313,6 +313,9 @@ onUnmounted(() => {
         <UiImage
           :src="slide.post.image_url || '/images/placeholder.svg'"
           :alt="slide.post.title || '未命名'"
+          :loading="slide.slot === 1 ? 'eager' : 'lazy'"
+          :fetchpriority="slide.slot === 1 ? 'high' : 'auto'"
+          decoding="async"
           class="absolute inset-0 w-full h-full object-cover"
         />
         <!-- 叠加层: 渐变遮罩（底部深色向上渐变透明） -->
@@ -323,7 +326,7 @@ onUnmounted(() => {
         <div
           class="absolute bottom-0 left-0 w-full"
           :class="[
-            size === 'hero' ? 'p-4 md:p-12 md:w-2/3' : 'p-4 md:p-6 md:w-5/6',
+            size === 'hero' ? 'p-4 md:p-12' : 'p-4 md:p-6 md:w-5/6',
             interactive ? 'pb-10' : ''
           ]"
         >
@@ -335,7 +338,7 @@ onUnmounted(() => {
             <span class="text-gray-300 font-medium">{{ formatDate(slide.post.created_at) }}</span>
           </div>
           <h1
-            class="font-bold text-white leading-tight group-hover:text-blue-200 transition-colors line-clamp-2"
+            class="font-bold md:w-3/4 text-white leading-tight group-hover:text-blue-200 transition-colors line-clamp-2"
             :class="
               size === 'hero'
                 ? 'mb-2 md:mb-4 text-lg md:text-4xl lg:text-5xl'

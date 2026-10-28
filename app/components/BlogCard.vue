@@ -17,6 +17,8 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
       <UiImage
         :src="blogPost.image"
         :alt="blogPost.title"
+        loading="lazy"
+        decoding="async"
         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
     </div>
@@ -45,6 +47,8 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
         <UiImage
           :src="authorAvatar"
           :alt="authorName"
+          loading="lazy"
+          decoding="async"
           class="h-8 w-8 rounded-full object-cover"
           variant="avatar"
         >

@@ -71,6 +71,15 @@ const keyword = ref('');
 /** 已提交生效的关键词（区别于输入框实时值，避免每次按键都请求） */
 const activeKeyword = ref('');
 
+// 支持从详情页标签跳转带入 ?tag=xxx 与 ?keyword=xxx；放在 setup 顶层，SSR 首屏同样生效
+const qTag = route.query.tag;
+if (typeof qTag === 'string' && qTag) activeTag.value = qTag;
+const qKeyword = route.query.keyword;
+if (typeof qKeyword === 'string' && qKeyword) {
+  keyword.value = qKeyword;
+  activeKeyword.value = qKeyword;
+}
+
 // 加载分类
 const loadCategories = async () => {
   try {
@@ -102,8 +111,18 @@ const currentPage = ref(1);
 const pageSize = 10;
 const loadMoreTrigger = ref<HTMLElement | null>(null);
 
-/** 空数据状态：非加载中且无文章 */
-const isEmpty = computed(() => !isLoading.value && displayedPosts.value.length === 0);
+/** 是否已完成首次列表请求（含失败）：用于区分“尚未加载”与“确实没有文章” */
+const hasLoadedOnce = ref(false);
+
+/** 空数据状态：首次请求结束、非加载中且无文章 */
+const isEmpty = computed(
+  () => hasLoadedOnce.value && !isLoading.value && displayedPosts.value.length === 0
+);
+
+/** 首屏骨架：首次请求结束前一直展示，避免 SSR 直出“暂无文章”再跳成列表 */
+const showInitialSkeleton = computed(
+  () => !hasLoadedOnce.value && displayedPosts.value.length === 0
+);
 
 /** Hero 轮播数据：banner 接口原始响应，字段不做裁剪，组件直接消费 */
 const heroPosts = ref<Banner[]>([]);
@@ -117,6 +136,64 @@ const loadHeroPosts = async () => {
     console.error('Failed to load hero banners:', err);
   }
 };
+
+/**
+ * 首屏数据 SSR 预取：banner、分类、标签、文章列表并发请求，
+ * 让 HTML 直接带内容，避免「先进占位、再等接口二次填充」。
+ * 非关键请求失败降级为空；文章列表失败整体返回 null，交给客户端重试。
+ */
+const { data: initialData } = await useAsyncData('blog-index', async () => {
+  const firstPageParams = {
+    page: 1,
+    pageSize,
+    tag: activeTag.value ?? undefined
+  };
+
+  const [banners, categories, tags, articles] = await Promise.all([
+    getBanners({ placement_key: 'blog_top_banner', client_type: 'web' }).catch((err) => {
+      console.error('Failed to load hero banners:', err);
+      return null;
+    }),
+    fetchCategories().catch((err) => {
+      console.error('Failed to load categories:', err);
+      return [];
+    }),
+    fetchTags(2).catch((err) => {
+      console.error('Failed to load tags:', err);
+      return [];
+    }),
+    (activeKeyword.value
+      ? searchArticles({ ...firstPageParams, keyword: activeKeyword.value })
+      : list(firstPageParams)
+    ).catch((err) => {
+      console.error('Failed to load articles:', err);
+      return null;
+    })
+  ] as const);
+
+  if (!articles) return null;
+  return { banners, categories, tags, articles };
+});
+
+// 用预取结果初始化状态；hydration 时从 payload 复用，两端渲染一致
+const initial = initialData.value;
+categoryList.value = Array.isArray(initial?.categories) ? initial.categories : [];
+tagList.value = Array.isArray(initial?.tags) ? initial.tags : [];
+heroPosts.value = Array.isArray(initial?.banners?.banners) ? initial.banners.banners : [];
+
+if (initial?.articles) {
+  const articles = Array.isArray(initial.articles.articles) ? initial.articles.articles : [];
+  displayedPosts.value = articles.map(articleToBlogPost);
+  hasLoadedOnce.value = true;
+
+  const pagination = initial.articles.pagination;
+  if (pagination) {
+    hasMore.value = pagination.page < pagination.pages;
+    currentPage.value = pagination.page + 1;
+  } else {
+    hasMore.value = false;
+  }
+}
 
 /** 加载文章列表（reset=true 时回到第一页；有关键词时走搜索接口） */
 const loadArticles = async (reset = false) => {
@@ -166,6 +243,7 @@ const loadArticles = async (reset = false) => {
     hasMore.value = false;
   } finally {
     isLoading.value = false;
+    hasLoadedOnce.value = true;
   }
 };
 
@@ -208,17 +286,9 @@ useIntersectionObserver(
   }
 );
 
-// 初始加载
+// 首屏数据已由 useAsyncData 预取；仅在预取失败时退回客户端加载
 onMounted(() => {
-  // 支持从详情页标签跳转带入 ?tag=xxx 与 ?keyword=xxx
-  const qTag = route.query.tag;
-  if (typeof qTag === 'string' && qTag) activeTag.value = qTag;
-  const qKeyword = route.query.keyword;
-  if (typeof qKeyword === 'string' && qKeyword) {
-    keyword.value = qKeyword;
-    activeKeyword.value = qKeyword;
-  }
-
+  if (initialData.value) return;
   loadCategories();
   loadTags();
   loadHeroPosts();
@@ -301,8 +371,28 @@ onMounted(() => {
         </UButton>
       </div>
 
+      <!-- 首屏加载骨架：与 BlogCard 同构占位，避免白屏等待 -->
+      <div
+        v-if="showInitialSkeleton"
+        class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20"
+        aria-hidden="true"
+      >
+        <div v-for="i in 6" :key="i" class="flex flex-col gap-4 animate-pulse">
+          <div class="aspect-[16/9] w-full rounded-2xl bg-surface-muted"></div>
+          <div class="flex flex-col gap-3">
+            <div class="h-3 w-16 rounded bg-surface-muted"></div>
+            <div class="h-6 w-4/5 rounded bg-surface-muted"></div>
+            <div class="h-4 w-full rounded bg-surface-muted"></div>
+            <div class="pt-2 flex items-center gap-3">
+              <div class="h-8 w-8 rounded-full bg-surface-muted"></div>
+              <div class="h-3 w-24 rounded bg-surface-muted"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 空数据状态 -->
-      <div v-if="isEmpty" class="text-center py-20 text-fg-subtle">
+      <div v-else-if="isEmpty" class="text-center py-20 text-fg-subtle">
         <div class="text-5xl flex items-center justify-center gap-2 mb-4">
           <div class="i-carbon-blog w-12 h-12"></div>
         </div>
@@ -319,7 +409,11 @@ onMounted(() => {
       </div>
 
       <!-- 加载更多触发器 / 底部状态 -->
-      <div v-if="!isEmpty" ref="loadMoreTrigger" class="flex justify-center mt-12 py-8">
+      <div
+        v-if="!isEmpty && !showInitialSkeleton"
+        ref="loadMoreTrigger"
+        class="flex justify-center mt-12 py-8"
+      >
         <div v-if="isLoading" class="flex items-center gap-2 text-fg-muted">
           <div class="i-carbon-circle-dash w-6 h-6 animate-spin"></div>
           <span>加载中...</span>
