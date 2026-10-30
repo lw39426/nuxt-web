@@ -19,8 +19,8 @@ onMounted(restoreSkin);
   <div class="profile-skin-scope bg-surfaceMuted dark:bg-canvas min-h-screen">
     <!-- 暗黑下页面底用 canvas（更深），与卡片 surface 拉开层次，避免整片糊在一起 -->
     <!-- profile-skin-scope：把 Nuxt UI primary 色映射到当前皮肤主色（仅个人中心生效） -->
-    <div class="section-container py-6 sm:py-8">
-      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+    <div class="section-container profile-container py-4 sm:py-6 lg:py-8">
+      <div class="flex flex-col lg:flex-row gap-5 lg:gap-8">
         <!-- 侧边栏 -->
         <aside class="w-full lg:w-60 shrink-0">
           <div class="lg:sticky lg:top-24">
@@ -46,6 +46,24 @@ onMounted(restoreSkin);
 </template>
 
 <style scoped>
+@media (max-width: 639px) {
+  .profile-container {
+    padding-inline: 1rem;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+  main :deep(h1) {
+    font-size: 1.25rem;
+  }
+  main :deep(.mb-8:has(> h1)) {
+    margin-bottom: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: none !important;
+  }
+}
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition:

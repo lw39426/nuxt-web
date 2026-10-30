@@ -39,7 +39,7 @@ defineEmits<{ action: [] }>();
 
 <template>
   <div
-    class="flex items-center justify-between gap-4 px-6 py-4 border-b border-line last:border-b-0 transition-colors"
+    class="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-line last:border-b-0 transition-colors"
     :class="hoverable ? 'hover:bg-surface-muted/50' : ''"
   >
     <div class="flex items-center gap-3 min-w-0">
@@ -59,7 +59,7 @@ defineEmits<{ action: [] }>();
         <button
           v-if="actionText"
           type="button"
-          class="text-sm hover:scale-95 transition-transform duration-100"
+          class="min-h-11 min-w-11 px-2 rounded-lg text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current hover:scale-95 transition-transform duration-100"
           :class="actionClass"
           @click="$emit('action')"
         >

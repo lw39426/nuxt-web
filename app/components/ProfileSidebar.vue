@@ -3,6 +3,14 @@ import { useAuthStore } from '~/stores/auth';
 
 const authStore = useAuthStore();
 const route = useRoute();
+const showSettings = shallowRef(false);
+
+watch(
+  () => route.path,
+  () => {
+    showSettings.value = false;
+  }
+);
 
 interface MenuItem {
   name: string;
@@ -44,60 +52,122 @@ const handleLogout = () => {
 <template>
   <div class="flex flex-col h-full">
     <!-- 用户信息区：头像底色引用皮肤实底渐变 -->
-    <div class="flex items-center gap-3 px-5 py-5 mb-2">
+    <div class="flex items-center gap-3 px-4 py-4 lg:px-5 lg:py-5 lg:mb-2">
       <div
-        class="avatar h-14 w-14 rounded-full flex items-center justify-center text-canvas font-bold text-xl shrink-0"
+        class="avatar h-11 w-11 lg:h-14 lg:w-14 rounded-full flex items-center justify-center text-canvas font-bold text-xl shrink-0"
       >
         {{ avatarLetter }}
       </div>
-      <div class="min-w-0">
+      <div class="min-w-0 flex-1">
         <p class="font-semibold text-fg text-base truncate">{{ displayName }}</p>
         <p class="text-xs text-fg-muted mt-0.5">普通会员</p>
       </div>
+      <button
+        type="button"
+        class="settings-toggle lg:hidden"
+        :aria-expanded="showSettings"
+        aria-controls="profile-settings"
+        @click="showSettings = !showSettings"
+      >
+        <span class="i-carbon-settings w-4 h-4" aria-hidden="true" />
+        设置
+        <span
+          :class="showSettings ? 'i-carbon-chevron-up' : 'i-carbon-chevron-down'"
+          aria-hidden="true"
+        />
+      </button>
     </div>
 
     <!-- 导航菜单：选中态引用皮肤色 -->
-    <nav class="flex-1 px-3 space-y-1">
+    <nav class="profile-nav flex-1" aria-label="个人中心导航">
       <NuxtLink
         v-for="item in menuItems"
         :key="item.path"
         :to="item.path"
         class="nav-item"
         :class="{ 'nav-item--on': isActive(item.path) }"
+        :aria-current="isActive(item.path) ? 'page' : undefined"
       >
         <!-- 选中态指示器 -->
         <span v-if="isActive(item.path)" class="nav-indicator" />
-        <span :class="[item.icon, 'w-5 h-5']" />
+        <span :class="[item.icon, 'w-5 h-5 shrink-0']" aria-hidden="true" />
         {{ item.name }}
       </NuxtLink>
     </nav>
 
-    <!-- 皮肤快切：紧凑色卡（与悬浮菜单共享同一状态） -->
-    <div class="px-4 pt-3 mx-3 mb-1 skin-block">
-      <div class="skin-block-label">皮肤</div>
-      <ProfileSkinSwitcher compact />
-    </div>
+    <div id="profile-settings" :class="showSettings ? 'block' : 'hidden lg:block'">
+      <!-- 皮肤快切：紧凑色卡（与悬浮菜单共享同一状态） -->
+      <div class="px-4 pt-3 mx-3 mb-1 skin-block">
+        <div class="skin-block-label">皮肤</div>
+        <ProfileSkinSwitcher compact />
+      </div>
 
-    <!-- 底部帮助与退出 -->
-    <div class="px-3 pb-4 mt-1 space-y-1">
-      <NuxtLink
-        class="flex items-center gap-3 px-4 h-11 rounded-xl text-xs text-fg-subtle hover:text-fg-muted transition-colors"
-      >
-        <span class="i-carbon-help w-4 h-4" />
-        帮助与反馈
-      </NuxtLink>
-      <button
-        class="flex items-center gap-3 px-4 h-11 rounded-xl text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 w-full transition-colors"
-        @click="handleLogout"
-      >
-        <span class="i-carbon-logout w-5 h-5" />
-        退出登录
-      </button>
+      <!-- 底部帮助与退出 -->
+      <div class="px-3 pb-4 mt-1 space-y-1">
+        <NuxtLink
+          class="flex items-center gap-3 px-4 h-11 rounded-xl text-xs text-fg-subtle hover:text-fg-muted transition-colors"
+        >
+          <span class="i-carbon-help w-4 h-4" />
+          帮助与反馈
+        </NuxtLink>
+        <button
+          class="flex items-center gap-3 px-4 h-11 rounded-xl text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 w-full transition-colors"
+          @click="handleLogout"
+        >
+          <span class="i-carbon-logout w-5 h-5" />
+          退出登录
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.profile-nav {
+  padding: 0 0.75rem;
+}
+.nav-item + .nav-item {
+  margin-top: 0.25rem;
+}
+.settings-toggle {
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  color: var(--fg-muted);
+  font-size: 0.8125rem;
+  border-radius: 0.75rem;
+}
+.nav-item:focus-visible,
+.settings-toggle:focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}
+@media (max-width: 1023px) {
+  .settings-toggle {
+    display: flex;
+  }
+  .profile-nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.375rem;
+    padding: 0 0.75rem 0.75rem;
+  }
+  .profile-nav .nav-item {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.375rem;
+    height: auto;
+    min-height: 64px;
+    margin: 0;
+    padding: 0.5rem 0.125rem;
+    font-size: 0.75rem;
+  }
+  .nav-indicator {
+    display: none;
+  }
+}
 /* 头像：皮肤实底渐变 + 主色投影 */
 .avatar {
   background: var(--skin-solid);

@@ -12,9 +12,11 @@
 
     <!-- Floating Menu悬浮菜单 -->
     <ClientOnly>
-      <AppFloatingMenu v-if="!$route.meta.hideFloatingMenu" />
-      <!-- 回到顶部：独立半圆图标按钮，位于悬浮菜单下方 -->
-      <AppBackToTop v-if="!$route.meta.hideFloatingMenu" />
+      <div :class="{ 'profile-mobile-utility': $route.path.startsWith('/profile') }">
+        <AppFloatingMenu v-if="!$route.meta.hideFloatingMenu" />
+        <!-- 回到顶部：独立半圆图标按钮，位于悬浮菜单下方 -->
+        <AppBackToTop v-if="!$route.meta.hideFloatingMenu" />
+      </div>
     </ClientOnly>
 
     <!-- 全局悬浮对比栏（加入对比角色后出现） -->
@@ -26,6 +28,7 @@
       to="/ai-page"
       target="_blank"
       class="fixed right-4 bottom-40 z-50 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center group md:right-6 md:bottom-62"
+      :class="{ 'profile-mobile-utility': $route.path.startsWith('/profile') }"
       title="小星AI专属陪伴"
     >
       <span class="i-lucide-sparkles text-2xl animate-pulse"></span>
@@ -45,6 +48,12 @@
 const isDev = import.meta.dev;
 </script>
 <style scoped>
+@media (max-width: 1023px) {
+  .profile-mobile-utility {
+    display: none;
+  }
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

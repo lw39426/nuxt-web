@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PageHeader from '~/components/ui/PageHeader.vue';
 import { useUserApi } from '~/composables/api/user';
 import { useCheckinApi } from '~/composables/api/checkin';
 import { getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date';
@@ -157,7 +158,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="account-page">
     <PageHeader title="个人资料" subtitle="管理您的账户信息和偏好设置" />
 
     <div v-if="isLoading" class="flex justify-center py-20">
@@ -202,10 +203,10 @@ onMounted(() => {
         </template>
 
         <!-- 资料内容区 -->
-        <div class="p-6 sm:p-8">
-          <div class="flex flex-col lg:flex-row gap-10">
+        <div class="p-4 sm:p-8">
+          <div class="flex flex-col lg:flex-row gap-5 sm:gap-10">
             <!-- 头像区 -->
-            <div class="flex flex-col items-center shrink-0 lg:pt-2">
+            <div class="flex items-center gap-4 sm:flex-col sm:gap-0 shrink-0 lg:pt-2">
               <button
                 type="button"
                 class="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-skin focus-visible:ring-offset-2 focus-visible:ring-offset-surface transition-transform duration-200"
@@ -215,12 +216,12 @@ onMounted(() => {
                 @click="handleChangeAvatar"
               >
                 <div
-                  class="w-22 h-22 sm:w-28 sm:h-28 rounded-full bg-skin-solid flex items-center justify-center font-bold text-5xl ring-4 ring-surface"
+                  class="w-14 h-14 sm:w-28 sm:h-28 rounded-full bg-skin-solid flex items-center justify-center font-bold text-2xl sm:text-5xl ring-4 ring-surface"
                 >
                   {{ form.nickname?.charAt(0) || form.username?.charAt(0) || '用' }}
                 </div>
                 <span
-                  class="absolute bottom-1 right-1 w-9 h-9 bg-surface rounded-full border-2 border-line shadow-md flex items-center justify-center transition-all duration-200"
+                  class="absolute bottom-0 right-0 w-6 h-6 sm:bottom-1 sm:right-1 sm:w-9 sm:h-9 bg-surface rounded-full border-2 border-line shadow-md flex items-center justify-center transition-all duration-200"
                   :class="isEditing ? 'group-hover:bg-skin-soft group-hover:border-skin' : ''"
                 >
                   <span
@@ -229,16 +230,14 @@ onMounted(() => {
                   />
                 </span>
               </button>
-              <p class="text-sm text-fg-muted mt-4">
-                {{ '编辑资料后可更换头像' }}
-              </p>
+              <p class="text-xs sm:text-sm text-fg-muted sm:mt-4">头像上传即将开放</p>
             </div>
 
             <!-- 信息网格：使用相对定位 + 绝对定位层叠，避免 CLS 布局跳动 -->
             <div class="flex-1 min-w-0 relative">
               <!-- 展示模式层 -->
               <div
-                class="info-layer grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6"
+                class="info-layer info-layer--display grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6"
                 :class="{ 'opacity-0 invisible': isEditing }"
               >
                 <div class="form-field-wrap">
@@ -298,10 +297,15 @@ onMounted(() => {
                   </div>
                 </div>
                 <div class="form-field-wrap">
-                  <label class="form-field-label">
+                  <label for="profile-nickname" class="form-field-label">
                     <span class="text-red-500 mr-0.5">*</span>昵称
                   </label>
-                  <UInput v-model="form.nickname" placeholder="请输入昵称" variant="none" />
+                  <UInput
+                    id="profile-nickname"
+                    v-model="form.nickname"
+                    placeholder="请输入昵称"
+                    variant="none"
+                  />
                 </div>
                 <div class="form-field-wrap">
                   <label class="form-field-label">手机号</label>
@@ -321,6 +325,7 @@ onMounted(() => {
                   <label class="form-field-label">性别</label>
                   <USelect
                     v-model="form.gender"
+                    aria-label="性别"
                     :items="genderOptions"
                     placeholder="请选择性别"
                     variant="none"
@@ -335,6 +340,7 @@ onMounted(() => {
                       :variant="undefined"
                       color="neutral"
                       trailing-icon="i-carbon-calendar"
+                      aria-label="选择生日"
                       class="w-full justify-between font-normal"
                       :ui="{ trailingIcon: 'ms-auto text-fg-muted' }"
                     >
@@ -355,6 +361,7 @@ onMounted(() => {
                   <label class="form-field-label">个人简介</label>
                   <UTextarea
                     v-model="form.description"
+                    aria-label="个人简介"
                     placeholder="请输入个人简介，介绍一下自己吧~"
                     :rows="3"
                     variant="none"
@@ -391,9 +398,9 @@ onMounted(() => {
           icon-bg="bg-skin-soft"
           icon-color="text-skin"
           title="手机号"
-          :subtitle="`已绑定 · ${form.phone || '138****8888'}`"
+          :subtitle="form.phone ? `已绑定 · ${form.phone}` : '未绑定'"
           subtitle-class="text-skin"
-          action-text="更换"
+          :action-text="form.phone ? '更换' : '绑定'"
           action-class="text-fg-muted"
           @action="handleBindClick('phone')"
         />
@@ -480,6 +487,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   width: 100%;
+  overflow-wrap: anywhere;
   min-height: 42px;
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
@@ -583,5 +591,56 @@ onMounted(() => {
 .form-field-wrap--area :deep([data-slot='base']) {
   min-height: 90px;
   line-height: 1.625;
+}
+/* 手机端让当前模式自然撑开，长文本和输入控件不会覆盖下一张卡片。 */
+@media (max-width: 639px) {
+  .info-layer {
+    gap: 1rem;
+  }
+  .info-layer.invisible {
+    display: none;
+  }
+  .info-layer.absolute {
+    position: static;
+  }
+  .info-layer--display {
+    gap: 0;
+  }
+  .info-layer--display .form-field-wrap {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 1rem;
+    min-height: 48px;
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .info-layer--display .form-field-wrap:last-child {
+    border-bottom: 0;
+  }
+  .info-layer--display .form-field-label {
+    flex: 0 0 4rem;
+    margin: 0;
+  }
+  .info-layer--display .form-field-display {
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+  .account-page :deep(button[data-slot='base']),
+  .form-field-wrap :deep([data-slot='base']) {
+    min-height: 44px;
+  }
+  .form-field-wrap :deep(input),
+  .form-field-wrap :deep(textarea) {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .info-layer {
+    transition: none;
+  }
 }
 </style>

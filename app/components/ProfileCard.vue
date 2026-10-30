@@ -21,7 +21,7 @@ withDefaults(defineProps<Props>(), {
   <div class="bg-surface ring-1 ring-line rounded-2xl shadow-sm overflow-hidden">
     <div
       v-if="title || $slots.header || $slots.actions"
-      class="flex items-center justify-between gap-3 px-6 py-5"
+      class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-5"
       :class="bordered ? 'border-b border-line' : ''"
     >
       <div class="flex items-center gap-3 min-w-0">
