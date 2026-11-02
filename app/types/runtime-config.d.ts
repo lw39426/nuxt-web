@@ -2,6 +2,7 @@ declare module 'nuxt/schema' {
   interface RuntimeConfig {
     apiSecretBase: string
     apiTimeout: number
+    priceSwitchDefault: boolean
   }
 
   interface PublicRuntimeConfig {

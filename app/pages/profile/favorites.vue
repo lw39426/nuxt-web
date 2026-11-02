@@ -6,6 +6,8 @@ import { useFavoriteStore } from '~/stores/favorite';
 
 const { list, remove } = useFavoriteApi();
 const favoriteStore = useFavoriteStore();
+/** 价格展示开关：关闭时隐藏收藏商品价格 */
+const { priceEnabled } = usePriceSwitch();
 
 const isLoading = ref(true);
 const error = ref(false);
@@ -200,7 +202,9 @@ onMounted(loadFavorites);
           >
             {{ item.item_title }}
           </p>
-          <p class="text-lg font-bold text-fg mt-2">¥{{ item.price || '0.00' }}</p>
+          <p v-if="priceEnabled" class="text-lg font-bold text-fg mt-2">
+            ¥{{ item.price || '0.00' }}
+          </p>
         </div>
       </div>
     </div>

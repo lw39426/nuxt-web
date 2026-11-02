@@ -16,6 +16,8 @@ interface GroupedHistory {
 
 const isLoading = ref(true);
 const error = ref(false);
+/** 价格展示开关：关闭时隐藏浏览历史中的价格 */
+const { priceEnabled } = usePriceSwitch();
 
 const historyData = ref<HistoryItem[]>([
   {
@@ -152,7 +154,7 @@ onMounted(loadHistory);
               >
                 {{ item.title }}
               </p>
-              <p class="text-base font-bold text-fg mt-1">¥{{ item.price.toLocaleString() }}</p>
+              <p v-if="priceEnabled" class="text-base font-bold text-fg mt-1">¥{{ item.price }}</p>
             </div>
             <div class="text-right shrink-0">
               <span class="text-xs text-fg-subtle" :title="item.viewedAt">

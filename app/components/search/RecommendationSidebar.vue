@@ -13,6 +13,8 @@ const emit = defineEmits<{
 const products: RecommendationProduct[] = RECOMMEND_PRODUCTS;
 /** 热门标签 */
 const tags: string[] = HOT_TAGS;
+/** 价格展示开关：关闭时隐藏推荐商品价格 */
+const { priceEnabled } = usePriceSwitch();
 </script>
 
 <template>
@@ -40,7 +42,7 @@ const tags: string[] = HOT_TAGS;
           >
             {{ item.name }}
           </p>
-          <p class="mt-0.5 text-sm">
+          <p v-if="priceEnabled" class="mt-0.5 text-sm">
             <span class="font-bold text-fg">¥{{ item.price }}</span>
             <span v-if="item.originalPrice" class="ml-1.5 text-xs text-fg-subtle line-through">
               ¥{{ item.originalPrice }}

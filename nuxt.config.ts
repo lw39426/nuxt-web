@@ -147,6 +147,7 @@ export default defineNuxtConfig({
     apiSecretBase: process.env.NUXT_API_SECRET_BASE || 'http://127.0.0.1:5050/api/v1',
     // 仅服务端可用：BFF 请求 Flask 的超时时间（毫秒）
     apiTimeout: envNumber('NUXT_API_TIMEOUT', 8000),
+    priceSwitchDefault: false,
     public: {
       // 站点正式域名（供客户端读取，与 site.url 保持同源）
       siteUrl,
@@ -197,6 +198,10 @@ export default defineNuxtConfig({
     // 首页聚合数据：1 分钟 SWR 缓存，降低后端压力并加速返回
     '/api/v1/home/data': {
       cache: { maxAge: 60, staleMaxAge: 600, swr: true }
+    },
+    // 价格开关：30 秒 SWR 缓存，兼顾生效及时性与后端压力
+    '/api/v1/site/price-switch': {
+      cache: { maxAge: 30, staleMaxAge: 300, swr: true }
     },
     // 私有页面：禁止搜索引擎索引（X-Robots-Tag + meta robots）
     // 等价于输出 <meta name="robots" content="noindex, nofollow"> 和 X-Robots-Tag 响应头

@@ -49,6 +49,8 @@ const productSuggestions = computed(() =>
 const articleSuggestions = computed(() =>
   decoratedSuggestions.value.filter((d) => d.item.type === 'article')
 );
+/** 价格展示开关：关闭时隐藏搜索直达卡片价格 */
+const { priceEnabled } = usePriceSwitch();
 </script>
 
 <template>
@@ -74,7 +76,7 @@ const articleSuggestions = computed(() =>
           <p class="mt-0.5 text-[13px] text-fg-muted truncate">{{ direct.description }}</p>
         </div>
         <div class="shrink-0 flex items-center gap-3">
-          <div class="text-right">
+          <div v-if="priceEnabled" class="text-right">
             <p class="text-base font-bold text-fg">¥{{ direct.price }}</p>
             <p v-if="direct.originalPrice" class="text-xs text-fg-subtle line-through">
               ¥{{ direct.originalPrice }}

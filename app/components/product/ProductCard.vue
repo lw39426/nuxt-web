@@ -87,8 +87,8 @@
         {{ product.description }}
       </p>
 
-      <!-- 价格 -->
-      <div class="mb-2 flex items-baseline gap-2">
+      <!-- 价格（价格开关关闭时不展示） -->
+      <div v-if="priceEnabled" class="mb-2 flex items-baseline gap-2">
         <span class="text-sm sm:text-base font-bold text-fg">{{
           formatPriceFromCent(hasSale ? product.salePrice : product.price)
         }}</span>
@@ -150,6 +150,8 @@ const uiStore = useUiStore();
 const favoriteStore = useFavoriteStore();
 const compareStore = useCompareStore();
 const favoritePending = ref(false);
+/** 价格展示开关：关闭时隐藏卡片价格区块 */
+const { priceEnabled } = usePriceSwitch();
 /** 是否存在有效促销价（分） */
 const hasSale = computed(
   () => props.product.salePrice > 0 && props.product.salePrice < props.product.price

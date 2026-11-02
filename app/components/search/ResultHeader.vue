@@ -22,12 +22,19 @@ const emit = defineEmits<{
 /** 排序:v-model 双向绑定 */
 const sort = defineModel<SortKey>('sort', { default: 'relevance' });
 
-const sortOptions: { value: SortKey; label: string }[] = [
-  { value: 'relevance', label: '综合排序' },
-  { value: 'latest', label: '最新发布' },
-  { value: 'hottest', label: '热度最高' },
-  { value: 'price-asc', label: '价格从低到高' }
-];
+/** 价格展示开关：关闭时移除价格排序项 */
+const { priceEnabled } = usePriceSwitch();
+
+/** 排序选项：价格开关关闭时不提供“价格从低到高” */
+const sortOptions = computed<{ value: SortKey; label: string }[]>(() => {
+  const options: { value: SortKey; label: string }[] = [
+    { value: 'relevance', label: '综合排序' },
+    { value: 'latest', label: '最新发布' },
+    { value: 'hottest', label: '热度最高' },
+    { value: 'price-asc', label: '价格从低到高' }
+  ];
+  return priceEnabled.value ? options : options.filter((opt) => opt.value !== 'price-asc');
+});
 
 /** 切换排序时上抛 update 事件(v-model 已同步,显式 emit 便于父级监听) */
 function onChangeSort(value: SortKey) {

@@ -10,6 +10,9 @@ const selectedMemory = defineModel<string[]>('selectedMemory', { required: true 
 const brandSearch = defineModel<string>('brandSearch', { default: '' });
 const memorySearch = defineModel<string>('memorySearch', { default: '' });
 
+/** 价格展示开关：关闭时隐藏价格范围筛选 */
+const { priceEnabled } = usePriceSwitch();
+
 const filteredBrands = computed(() => {
   return props.brands.filter((b) => b.name.toLowerCase().includes(brandSearch.value.toLowerCase()));
 });
@@ -23,8 +26,8 @@ const filteredMemory = computed(() => {
 
 <template>
   <div class="space-y-10">
-    <!-- Price -->
-    <div>
+    <!-- Price（价格开关关闭时不展示） -->
+    <div v-if="priceEnabled">
       <h3 class="font-bold text-fg mb-6">价格范围</h3>
       <div class="space-y-6">
         <USlider v-model="priceRange[0]" :min="0" :max="2000" size="sm" color="neutral" tooltip />

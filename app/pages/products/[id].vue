@@ -122,8 +122,8 @@
               >
                 {{ product.description }}
               </p>
-              <!-- 价格 -->
-              <div class="flex items-baseline gap-3 mb-3">
+              <!-- 价格（价格开关关闭时不展示） -->
+              <div v-if="priceEnabled" class="flex items-baseline gap-3 mb-3">
                 <span class="text-2xl font-bold text-fg">{{
                   formatPriceFromCent(hasSale ? product.salePrice : product.price)
                 }}</span>
@@ -402,6 +402,8 @@ const uiStore = useUiStore();
 // 收藏态统一走全局缓存 store，与列表卡片跨页同步
 const favoriteStore = useFavoriteStore();
 const favoritePending = ref(false);
+/** 价格展示开关：关闭时隐藏详情页价格区块 */
+const { priceEnabled } = usePriceSwitch();
 
 const activeImage = ref('');
 // 3D 翻转卡片状态：false 显示立绘正面，true 显示档案背面

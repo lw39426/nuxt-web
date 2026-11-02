@@ -28,6 +28,9 @@ const ratingOptions: { value: number | null; label: string }[] = [
 
 const allTypesChecked = computed(() => filters.value.types.length === 0);
 
+/** 价格展示开关：关闭时整块隐藏价格区间筛选 */
+const { priceEnabled } = usePriceSwitch();
+
 function toggleType(value: 'product' | 'article') {
   const current = filters.value.types;
   // 全部勾选等价于「全部」，归一为空数组
@@ -134,8 +137,8 @@ function toggleTag(tag: string) {
       </div>
     </fieldset>
 
-    <!-- 模块 2：价格区间（输入框 + 可视化双滑块） -->
-    <fieldset>
+    <!-- 模块 2：价格区间（输入框 + 可视化双滑块），价格开关关闭时不展示 -->
+    <fieldset v-if="priceEnabled">
       <legend class="text-[13px] font-bold text-fg mb-2">价格区间</legend>
       <div class="flex items-center gap-2">
         <input

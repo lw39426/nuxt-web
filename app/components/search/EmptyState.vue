@@ -18,6 +18,8 @@ const emit = defineEmits<{
 
 /** 空结果推荐(4 个精简商品) */
 const recommends: RecommendationProduct[] = ZERO_RESULT_RECOMMENDS;
+/** 价格展示开关：关闭时隐藏推荐商品价格 */
+const { priceEnabled } = usePriceSwitch();
 </script>
 
 <template>
@@ -49,7 +51,7 @@ const recommends: RecommendationProduct[] = ZERO_RESULT_RECOMMENDS;
         </span>
         <div class="min-w-0 text-left">
           <p class="truncate text-[13px] font-medium text-fg">{{ item.name }}</p>
-          <p class="mt-0.5 text-sm">
+          <p v-if="priceEnabled" class="mt-0.5 text-sm">
             <span class="font-bold text-fg">¥{{ item.price }}</span>
             <span v-if="item.originalPrice" class="ml-1.5 text-xs text-fg-subtle line-through">
               ¥{{ item.originalPrice }}

@@ -18,6 +18,8 @@ const emit = defineEmits<{
 
 /** 收藏态(本地演示,不持久化) */
 const isFavorited = shallowRef(false);
+/** 价格展示开关：关闭时隐藏价格区 */
+const { priceEnabled } = usePriceSwitch();
 </script>
 
 <template>
@@ -49,7 +51,7 @@ const isFavorited = shallowRef(false);
         <h3 class="text-base font-semibold text-fg truncate">
           {{ product.name }}
         </h3>
-        <div class="shrink-0 text-right">
+        <div v-if="priceEnabled" class="shrink-0 text-right">
           <p class="text-xl font-bold text-fg">¥{{ product.price }}</p>
           <p v-if="product.originalPrice" class="text-xs text-fg-subtle line-through">
             ¥{{ product.originalPrice }}

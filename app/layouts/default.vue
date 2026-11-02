@@ -46,6 +46,9 @@
 <script setup lang="ts">
 // 仅在开发环境挂载 FPS 面板，生产构建会被 tree-shake 掉
 const isDev = import.meta.dev;
+
+// 首屏预取价格开关：SSR 阶段即确定价格显隐，避免客户端二次渲染出现价格闪现
+await prefetchPriceSwitch();
 </script>
 <style scoped>
 @media (max-width: 1023px) {
