@@ -24,7 +24,7 @@
 
     <!-- 小星AI入口 -->
     <NuxtLink
-      v-if="!$route.path.includes('/ai-page')"
+      v-if="!$route.meta.hideAiEntry && !$route.path.includes('/ai-page')"
       to="/ai-page"
       target="_blank"
       class="fixed right-4 bottom-40 z-50 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center group md:right-6 md:bottom-62"
