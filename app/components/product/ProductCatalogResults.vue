@@ -1,22 +1,34 @@
 <template>
-  <div v-if="series.length > 0" class="space-y-12 md:space-y-24">
-    <div v-for="(item, index) in series" :key="item.categoryId">
-      <div class="mb-8 md:mb-12">
-        <h2 class="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-fg">
-          {{ item.category }}
-        </h2>
+  <div v-if="series.length > 0" class="space-y-8 md:space-y-14">
+    <div v-for="item in series" :key="item.categoryId">
+      <section>
+        <div
+          v-if="hasCategoryFilter"
+          class="mb-4 flex flex-wrap items-baseline justify-between gap-2"
+        >
+          <h2 class="text-xl font-semibold text-fg">{{ item.category }}</h2>
+          <button
+            type="button"
+            class="min-h-10 cursor-pointer rounded-full border border-line px-3 text-xs text-fg-muted hover:bg-surface-muted"
+            @click="emit('show-all')"
+          >
+            查看全部系列
+          </button>
+        </div>
+        <h2 v-else class="sr-only">{{ item.category }}</h2>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-8">
           <button
+            v-if="!hasCategoryFilter"
             type="button"
-            class="col-span-2 md:col-span-3 lg:col-span-3 group relative rounded-2xl overflow-hidden cursor-pointer isolate transform-gpu min-h-[240px] md:min-h-[280px] lg:min-h-[420px] text-left"
+            class="col-span-2 md:col-span-3 lg:col-span-3 group relative rounded-2xl overflow-hidden cursor-pointer isolate transform-gpu min-h-[132px] sm:min-h-[180px] md:min-h-[260px] lg:min-h-[360px] text-left"
             :aria-label="`查看 ${item.category} 分类`"
             @click="emit('select-category', item.categoryId)"
           >
             <UiImage
               v-if="item.categoryImage"
               :src="item.categoryImage"
-              :alt="item.category"
+              alt=""
               class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div
@@ -36,16 +48,16 @@
               class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-transparent dark:ring-[#686868] pointer-events-none z-10"
             />
 
-            <div class="absolute inset-0 p-8 md:p-10 flex flex-col justify-end z-20">
-              <h2
-                class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 leading-tight group-hover:text-blue-200 transition-colors"
+            <div class="absolute inset-0 p-4 md:p-8 flex flex-col justify-end z-20">
+              <span
+                class="text-xl md:text-3xl lg:text-4xl font-bold text-white leading-tight group-hover:text-blue-200 transition-colors"
               >
                 {{ item.category }}
-              </h2>
+              </span>
               <div
-                class="mt-2 flex items-center text-blue-300 font-medium text-sm md:text-base opacity-90 group-hover:opacity-100 transition-opacity"
+                class="mt-1.5 flex items-center text-white font-medium text-xs md:text-sm opacity-90 group-hover:opacity-100 transition-opacity"
               >
-                探索{{ item.category }}分类系列
+                查看系列
                 <div
                   class="i-carbon-arrow-right ml-1 transition-transform group-hover:translate-x-1"
                 />
@@ -55,9 +67,7 @@
 
           <ProductCard v-for="product in item.products" :key="product.code" :product="product" />
         </div>
-      </div>
-
-      <div v-if="index < series.length - 1" class="mt-12 md:mt-24 border-t border-line" />
+      </section>
     </div>
   </div>
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+definePageMeta({ hideAiEntry: true });
 const {
   categories,
   selectedCategoryId,
@@ -26,7 +27,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="bg-canvas min-h-screen pb-20">
+  <div class="bg-canvas min-h-screen pt-4 pb-20">
     <ProductCatalogHeader :total-characters="totalCharacters" />
 
     <ProductFilterPanel
@@ -42,7 +43,7 @@ useSeoMeta({
       @clear-filters="clearFilters"
     />
 
-    <div class="bg-canvas py-8 md:py-16">
+    <div class="bg-canvas pt-4 md:pt-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ProductCatalogResults
           :series="series"
