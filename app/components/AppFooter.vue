@@ -23,7 +23,8 @@ const columns: FooterColumn[] = [
   {
     title: '关于',
     links: [
-      { label: '关于我们', to: '/about' },
+      { label: '关于网站', to: '/about-site' },
+      { label: '关于作者', to: '/about' },
       { label: 'AI 助手', to: '/ai-page' }
     ]
   },

@@ -42,7 +42,8 @@ const menuItems = [
   { name: '商品图鉴', href: '/products', icon: 'i-carbon-cube' },
   { name: '原神专栏', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
   { name: '文章', href: '/blog', icon: 'i-carbon-blog' },
-  { name: '关于我们', href: '/about', icon: 'i-carbon-group' }
+  { name: '关于网站', href: '/about-site', icon: 'i-lucide-info' },
+  { name: '作者', href: '/about', icon: 'i-carbon-group' }
 ];
 
 // 组件变量状态管理
