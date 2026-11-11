@@ -28,11 +28,6 @@ const demoMessages = [
     role: 'ai',
     content: '推荐蒙奇·D·路飞，四皇之一，橡胶果实能力者，人气评分 9.8。目前已觉醒尼卡形态。',
     hasProduct: true
-  },
-  {
-    role: 'ai',
-    content: '或者罗罗诺亚·索隆，草帽团剑士，三刀流高手，战力评分 9.2。正在修炼霸王色霸气。',
-    hasProduct: true
   }
 ];
 
@@ -119,7 +114,7 @@ const askAI = () => {
             <div
               class="flex items-center gap-3 border-b border-line bg-surface-muted px-4 py-4 md:gap-4 md:px-6 md:py-5"
             >
-              <div class="relative">
+              <!-- <div class="relative">
                 <div
                   class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/20"
                 >
@@ -128,7 +123,7 @@ const askAI = () => {
                 <span
                   class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 animate-pulse rounded-full border-2 border-surface bg-green-500"
                 />
-              </div>
+              </div> -->
               <div class="min-w-0">
                 <p class="text-base font-bold text-fg">小星 AI</p>
                 <p
@@ -151,10 +146,10 @@ const askAI = () => {
               >
                 <div
                   v-if="msg.role === 'ai'"
-                  class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-sm md:hidden"
+                  class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-600 to-pink-600 text-white shadow-sm md:hidden"
                   aria-hidden="true"
                 >
-                  <div class="i-carbon-chat-bot text-[13px]" />
+                  <!-- <div class="i-carbon-chat-bot text-[13px]" /> -->
                 </div>
                 <div
                   class="max-w-[85%] rounded-[20px] px-4 py-3 text-sm leading-relaxed shadow-sm md:px-5 md:py-3.5"

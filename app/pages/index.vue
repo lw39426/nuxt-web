@@ -34,21 +34,31 @@ const featuredCharacters = computed(() => homeData.value?.hot_products || []);
 const featuredTagName = computed(() => homeData.value?.featured?.tag_name || '精选角色');
 const articles = computed(() => homeData.value?.articles || []);
 
-// const bgImage = computed(() => '/futuristic-moon-background.webp');
-/** 首页 Hero 背景图（banner） */
-const bgImage = computed(() => '/hero02.jpeg');
+const heroImage = useTemplateRef<HTMLImageElement>('heroImage');
+const heroImageReady = shallowRef(false);
 
-const aiQuestion = ref('');
-const canAskAI = computed(() => aiQuestion.value.trim().length > 0);
+const revealHeroImage = async () => {
+  const image = heroImage.value;
+  if (!image || heroImageReady.value) return;
 
-const askAI = (question?: string) => {
-  const normalizedQuestion = (question ?? aiQuestion.value).trim();
-  if (!normalizedQuestion) return;
+  try {
+    await image.decode();
+    heroImageReady.value = true;
+  } catch {
+    // 图片无法加载时，手机端继续显示首屏底色。
+  }
+};
 
-  navigateTo({
-    path: '/ai-page',
-    query: { question: normalizedQuestion }
-  });
+onMounted(() => {
+  if (heroImage.value?.complete) void revealHeroImage();
+});
+
+const searchTerm = ref('');
+const canSearch = computed(() => searchTerm.value.trim().length > 0);
+
+const submitSearch = () => {
+  if (!canSearch.value) return;
+  return navigateTo({ path: '/search', query: { q: searchTerm.value.trim() } });
 };
 </script>
 
@@ -64,13 +74,17 @@ const askAI = (question?: string) => {
       <picture
         class="bg-image-hero absolute -top-[60px] h-[calc(100%_+_60px)] w-full md:-top-20 md:h-full"
       >
+        <source media="(width < 768px)" srcset="/hero02-mobile.webp" />
         <img
-          class="w-full h-full object-cover"
+          ref="heroImage"
+          class="hero-image block h-full w-full object-cover object-center"
+          :class="{ 'hero-image-ready': heroImageReady }"
           loading="eager"
           fetchpriority="high"
           decoding="async"
-          :src="bgImage"
-          alt="YouMi 角色百科"
+          src="/hero02.jpeg"
+          alt=""
+          @load="revealHeroImage"
         />
       </picture>
 
@@ -90,24 +104,26 @@ const askAI = (question?: string) => {
         </p>
 
         <!-- 毛玻璃搜索 Input Form -->
-        <div
+        <form
+          role="search"
           class="mx-auto mt-7 flex h-12 max-w-md rounded-full border border-white/30 bg-white/20 p-1 shadow-lg backdrop-blur-md md:mt-12 md:h-auto md:p-1.5"
+          @submit.prevent="submitSearch"
         >
           <input
-            v-model="aiQuestion"
-            type="text"
-            placeholder="你想了解什么？"
+            v-model="searchTerm"
+            type="search"
+            aria-label="站内搜索"
+            placeholder="搜索角色、商品或文章"
             class="min-w-0 flex-1 bg-transparent border-none outline-none text-fg placeholder:text-fg-subtle px-4 text-base md:text-sm"
-            @keydown.enter.prevent="askAI()"
           />
           <button
             class="h-full shrink-0 rounded-full bg-white text-black/70 px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:bg-gray-100 md:px-6 md:py-2"
-            :disabled="!canAskAI"
-            @click="askAI()"
+            type="submit"
+            :disabled="!canSearch"
           >
-            立即体验
+            搜索
           </button>
-        </div>
+        </form>
       </div>
     </section>
 
@@ -164,5 +180,25 @@ const askAI = (question?: string) => {
     rgba(0, 0, 0, 0.01) 97.7%,
     transparent 100%
   );
+}
+
+@media (width < 768px) {
+  .bg-image-hero {
+    background: linear-gradient(180deg, #cbd3f5 0%, #e7def7 45%, #f5e8f3 75%);
+  }
+
+  .hero-image {
+    opacity: 0;
+  }
+
+  .hero-image-ready {
+    opacity: 1;
+  }
+}
+
+@media (width < 768px) and (prefers-reduced-motion: no-preference) {
+  .hero-image {
+    transition: opacity 180ms ease-out;
+  }
 }
 </style>
