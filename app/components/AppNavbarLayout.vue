@@ -38,11 +38,11 @@ const handleLogout = () => {
 
 // 菜单配置
 const menuItems = [
-  { name: 'Home', href: '/', icon: 'i-carbon-home' },
-  { name: 'Products', href: '/products', icon: 'i-carbon-cube' },
-  { name: 'Blog', href: '/blog', icon: 'i-carbon-blog' },
-  { name: 'genshin', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
-  { name: 'About Us', href: '/about', icon: 'i-carbon-group' }
+  { name: '首页', href: '/', icon: 'i-carbon-home' },
+  { name: '商品图鉴', href: '/products', icon: 'i-carbon-cube' },
+  { name: '原神专栏', href: '/character/mondstadt', icon: 'i-carbon-pricing-consumption' },
+  { name: '文章', href: '/blog', icon: 'i-carbon-blog' },
+  { name: '关于我们', href: '/about', icon: 'i-carbon-group' }
 ];
 
 // 组件变量状态管理
@@ -142,7 +142,15 @@ onUnmounted(() => {
 <template>
   <!-- 占位元素：外层导航改为 fixed 后脱离文档流，此处在正常流中占据等高空间，
        将页面内容顶到导航下方（等效原 sticky 的占位行为）。强制胶囊态的沉浸式页面不占位。 -->
-  <div v-if="!route.meta.forceCapsule" class="h-[60px] md:h-[80px]" aria-hidden="true"></div>
+  <div
+    v-if="!route.meta.forceCapsule"
+    :class="
+      route.path === '/about' || route.path === '/profile' || route.path.startsWith('/profile/')
+        ? 'h-[70px] md:h-[90px]'
+        : 'h-[60px] md:h-[80px]'
+    "
+    aria-hidden="true"
+  />
 
   <!-- 哨兵元素：位于文档流顶部，滚出视口即视为「已滚动」，由 IntersectionObserver 监听 -->
   <div
@@ -152,7 +160,7 @@ onUnmounted(() => {
 
   <!-- 外层容器：始终 fixed 悬浮。脱离文档流后，导航壳的宽度/内边距过渡只重排自身，
        不触发整页 reflow —— 这是流畅切换的关键（参考 LongCat 的实现思路）。 -->
-  <div class="fixed top-0 left-0 right-0 z-50 w-full">
+  <div class="fixed top-[10px] left-0 right-0 z-50 w-full">
     <!-- 点击面板外关闭：只覆盖导航栏以下区域，不拦截栏内按钮。
          nav 因 translateZ(0) 是独立层叠上下文，面板的 z-10 无法越出它参与比较，
          故必须显式给 nav 指定高于遮罩 z-0 的层级，否则遮罩会盖住面板吃掉菜单点击 -->
@@ -197,18 +205,30 @@ onUnmounted(() => {
 
           <!-- 中间菜单 (桌面端显示) -->
           <div class="items-center justify-center gap-1 hidden md:flex">
-            <a
+            <NuxtLink
               v-for="item in menuItems"
               :key="item.name"
-              :href="item.href"
+              :to="item.href"
               class="px-3 py-1.5 text-sm font-medium text-fg-muted hover:text-fg hover:bg-surface-muted rounded-full transition-colors"
             >
               {{ item.name }}
-            </a>
+            </NuxtLink>
           </div>
 
           <!-- 右侧区域 -->
           <div class="flex items-center gap-2 shrink-0">
+            <NuxtLink
+              to="/search"
+              aria-label="站内搜索"
+              title="站内搜索"
+              class="grid h-11 w-11 shrink-0 place-items-center rounded-full text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-brand"
+              @click="
+                isMobileMenuOpen = false;
+                isDropdownOpen = false;
+              "
+            >
+              <span class="i-lucide-search h-5 w-5" aria-hidden="true" />
+            </NuxtLink>
             <!-- 未登录：登录按钮 -->
             <button
               v-if="!authStore.isAuthenticated"
@@ -240,29 +260,43 @@ onUnmounted(() => {
               ></span>
             </button>
 
-            <!-- 已登录：头像下拉菜单（移动端同样展示，保证登录态可见） -->
-            <div
-              v-else
-              ref="dropdownWrapperRef"
-              class="relative flex h-11 w-11 items-center justify-center md:h-8 md:w-8"
-            >
-              <button
-                type="button"
-                class="nav-avatar flex h-9 w-9 items-center justify-center rounded-full bg-skin-solid font-bold text-sm transition-all md:h-full md:w-full"
+            <template v-else>
+              <NuxtLink
+                to="/profile/account"
+                class="flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 md:hidden"
+                :aria-label="`进入个人中心（${displayName}）`"
                 :title="displayName"
-                aria-haspopup="menu"
-                :aria-expanded="isDropdownOpen"
-                aria-label="打开用户菜单"
-                @click="toggleDropdown"
+                @click="isMobileMenuOpen = false"
               >
-                {{ avatarLetter }}
-              </button>
-            </div>
+                <span
+                  class="nav-avatar flex h-9 w-9 items-center justify-center rounded-full bg-skin-solid text-sm font-bold"
+                  aria-hidden="true"
+                >
+                  {{ avatarLetter }}
+                </span>
+              </NuxtLink>
+              <div
+                ref="dropdownWrapperRef"
+                class="relative hidden h-8 w-8 items-center justify-center md:flex"
+              >
+                <button
+                  type="button"
+                  class="nav-avatar flex h-9 w-9 items-center justify-center rounded-full bg-skin-solid font-bold text-sm transition-all md:h-full md:w-full"
+                  :title="displayName"
+                  aria-haspopup="menu"
+                  :aria-expanded="isDropdownOpen"
+                  aria-label="打开用户菜单"
+                  @click="toggleDropdown"
+                >
+                  {{ avatarLetter }}
+                </button>
+              </div>
+            </template>
 
-            <!-- 移动端目录按钮：文字标签替代裸汉堡，命中区 44px -->
+            <!-- 移动端目录按钮：与搜索按钮使用相同尺寸 -->
             <button
               type="button"
-              class="md:hidden flex h-11 items-center gap-1.5 rounded-full px-3 text-[15px] font-medium text-fg backdrop-blur-sm transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+              class="grid h-11 w-11 shrink-0 place-items-center rounded-full text-fg-muted md:hidden transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
               :aria-expanded="isMobileMenuOpen"
               :aria-label="isMobileMenuOpen ? '关闭目录' : '打开目录'"
               aria-controls="mobile-nav-panel"
@@ -270,7 +304,7 @@ onUnmounted(() => {
             >
               <span
                 :class="isMobileMenuOpen ? 'i-carbon-close' : 'i-carbon-menu'"
-                class="text-[20px]"
+                class="h-5 w-5"
                 aria-hidden="true"
               />
             </button>
@@ -290,24 +324,30 @@ onUnmounted(() => {
         <div
           v-if="isMobileMenuOpen"
           id="mobile-nav-panel"
-          class="mobile-panel absolute top-full left-2 right-2 z-10 mt-1.5 flex flex-col gap-1 overflow-hidden rounded-[20px] border border-line bg-canvas px-4 md:hidden"
+          class="mobile-panel absolute top-full left-2 right-2 z-10 mt-1.5 flex flex-col gap-1 overflow-hidden rounded-[20px] border border-line bg-canvas p-3 md:hidden"
         >
-          <a
+          <NuxtLink
             v-for="item in menuItems"
             :key="item.name"
-            :href="item.href"
+            :to="item.href"
+            exact-active-class="bg-surface-muted !text-fg"
             class="flex h-11 items-center gap-3 rounded-xl px-2 text-[15px] font-medium text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg"
             @click="isMobileMenuOpen = false"
           >
             <div :class="[item.icon, 'h-5 w-5 shrink-0 text-fg-subtle']"></div>
             {{ item.name }}
-          </a>
+          </NuxtLink>
 
-          <div class="my-1 h-px bg-line"></div>
+          <div class="my-2 h-px bg-line"></div>
 
           <!-- 已登录：展示用户信息与个人中心入口 -->
           <template v-if="authStore.isAuthenticated">
-            <div class="flex items-center gap-3 px-2 py-2">
+            <NuxtLink
+              to="/profile/account"
+              class="flex min-h-11 items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+              :aria-label="`进入个人中心（${displayName}）`"
+              @click="isMobileMenuOpen = false"
+            >
               <div
                 class="nav-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-skin-solid text-sm font-bold"
               >
@@ -319,14 +359,6 @@ onUnmounted(() => {
                 </p>
                 <p class="text-xs text-fg-subtle">已登录</p>
               </div>
-            </div>
-            <NuxtLink
-              to="/profile"
-              class="flex h-11 items-center gap-3 rounded-xl px-2 text-[15px] font-medium text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg"
-              @click="isMobileMenuOpen = false"
-            >
-              <div class="i-carbon-user h-5 w-5 shrink-0 text-fg-subtle"></div>
-              个人中心
             </NuxtLink>
             <button
               type="button"
@@ -343,7 +375,7 @@ onUnmounted(() => {
 
           <!-- 未登录：登录 / 注册入口（并排，主次分明） -->
           <template v-else>
-            <div class="grid grid-cols-2 gap-2 p-1 py-2">
+            <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 class="h-11 rounded-xl bg-brand text-[15px] font-semibold text-on-brand transition active:scale-[0.98]"
@@ -352,7 +384,7 @@ onUnmounted(() => {
                   openAuthModal('login');
                 "
               >
-                Sign In
+                登录
               </button>
               <button
                 type="button"
@@ -362,7 +394,7 @@ onUnmounted(() => {
                   openAuthModal('register');
                 "
               >
-                Create Account
+                注册
               </button>
             </div>
           </template>
@@ -391,7 +423,7 @@ onUnmounted(() => {
     >
       <div
         v-if="isDropdownOpen"
-        class="rounded-xl bg-elevated shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-[100]"
+        class="hidden rounded-xl bg-elevated shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-[100] md:block"
         :style="dropdownStyle"
       >
         <div class="px-4 py-2 border-b border-line">
@@ -418,7 +450,11 @@ onUnmounted(() => {
     </Transition>
 
     <!-- 点击外部关闭的透明层 -->
-    <div v-if="isDropdownOpen" class="fixed inset-0 z-[99]" @click="isDropdownOpen = false" />
+    <div
+      v-if="isDropdownOpen"
+      class="fixed inset-0 z-[99] hidden md:block"
+      @click="isDropdownOpen = false"
+    />
   </Teleport>
 </template>
 

@@ -23,7 +23,7 @@ onMounted(restoreSkin);
       <div class="flex flex-col lg:flex-row gap-5 lg:gap-8">
         <!-- 侧边栏 -->
         <aside class="w-full lg:w-60 shrink-0">
-          <div class="lg:sticky lg:top-24">
+          <div class="lg:sticky lg:top-[106px]">
             <div class="bg-surface rounded-2xl shadow-sm overflow-hidden">
               <ProfileSidebar />
             </div>
