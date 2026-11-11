@@ -76,12 +76,12 @@ const askAI = (question?: string) => {
 
       <!-- 英雄标题板块 -->
       <div class="relative z-10 section-container w-full pb-8 text-center md:pb-0 md:pt-24">
-        <h3 class="text-white font-bold tracking-tight font-display drop-shadow-md">
+        <h1 class="text-white font-bold tracking-tight font-display drop-shadow-md">
           <span class="block text-[2.5rem] leading-[1.1] md:text-6xl md:leading-tight">YouMi</span>
           <span class="mt-2 block text-[1.5rem] leading-[1.3] md:mt-0 md:text-6xl md:leading-tight">
             每一个角色，都值得被认真看见
           </span>
-        </h3>
+        </h1>
         <p
           class="mx-auto mt-4 max-w-[36ch] text-[15px] leading-[1.7] font-medium text-[#bfaeed] drop-shadow-sm md:mt-6 md:max-w-2xl md:text-xl"
         >
