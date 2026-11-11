@@ -7,31 +7,31 @@ defineProps<{
 </script>
 
 <template>
-  <div class="relative w-full max-w-[1000px] pl-8 md:pl-0">
+  <div class="relative w-full max-w-[1000px]">
     <!-- 中心线 -->
     <div
-      class="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500/50 dark:via-purple-500/80 to-transparent md:-translate-x-1/2 origin-top timeline-line"
+      class="absolute left-2 md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-purple-500/50 dark:via-purple-500/80 to-transparent md:-translate-x-1/2 origin-top timeline-line"
     />
 
     <div
       v-for="(event, i) in events"
       :key="i"
-      class="relative flex w-full md:w-1/2 mb-16 md:mb-24 timeline-event"
+      class="relative flex w-full md:w-1/2 mb-6 last:mb-0 md:mb-24 md:last:mb-24 timeline-event"
       :class="
-        i % 2 === 0
-          ? 'md:justify-end md:pr-16 pl-12 pr-2 md:pl-0'
-          : 'md:ml-[50%] md:pl-16 pl-12 pr-2'
+        i % 2 === 0 ? 'md:justify-end md:pr-16 pl-7 md:pl-0' : 'md:ml-[50%] md:pl-16 pl-7 md:pr-2'
       "
     >
       <!-- 节点圆圈 -->
       <div
         class="absolute w-4 h-4 rounded-full bg-[#f4f4f6] dark:bg-[#050508] border-4 border-purple-500 dark:border-purple-400 top-8 z-10 transition-all duration-300 timeline-dot"
-        :class="i % 2 === 0 ? 'left-[10px] md:left-auto md:right-[-8px]' : 'left-[10px]'"
+        :class="
+          i % 2 === 0 ? 'left-[1px] md:left-auto md:right-[-8px]' : 'left-[1px] md:left-[10px]'
+        "
       />
 
       <!-- 卡片 -->
       <div
-        class="w-full max-w-[400px] p-6 md:p-8 rounded-3xl cursor-default bg-white/78 dark:bg-white/5 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-sm transition-all duration-400 hover:border-purple-500 dark:hover:border-purple-400 hover:-translate-y-1"
+        class="w-full max-w-[400px] p-4 md:p-8 rounded-3xl cursor-default bg-white/78 dark:bg-white/5 md:backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-sm transition-all duration-400 hover:border-purple-500 dark:hover:border-purple-400 hover:-translate-y-1"
       >
         <span
           class="font-['Space_Mono',monospace] text-[0.85rem] text-purple-600 dark:text-purple-400 tracking-[0.15em]"
@@ -39,11 +39,13 @@ defineProps<{
           {{ event.year }}
         </span>
         <h3
-          class="font-['Noto_Serif_SC',serif] text-xl font-bold my-3 text-gray-900 dark:text-gray-100"
+          class="font-['Noto_Serif_SC',serif] text-xl font-bold my-2 md:my-3 text-gray-900 dark:text-gray-100"
         >
           {{ event.title }}
         </h3>
-        <p class="text-black/60 dark:text-white/60 leading-[1.8] text-[1rem] font-light mb-6">
+        <p
+          class="text-black/60 dark:text-white/60 leading-[1.8] text-[1rem] font-light mb-3 md:mb-6"
+        >
           {{ event.desc }}
         </p>
         <span

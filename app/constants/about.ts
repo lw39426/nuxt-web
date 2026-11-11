@@ -26,6 +26,12 @@ export interface Work {
   color: string
 }
 
+export const aboutScrollMedia = {
+  desktop: '(min-width: 900px) and (min-height: 720px)',
+  compact: '(width < 900px) and (min-height: 600px)',
+  motion: '(prefers-reduced-motion: no-preference)'
+}
+
 export const stats: Stat[] = [
   { num: 2, unit: '年', label: '经验' },
   { num: 42, unit: '+', label: '项目' },
