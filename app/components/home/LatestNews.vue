@@ -134,6 +134,7 @@ const tagStyle = (color?: string) => {
         <BlogHeroCarousel
           :posts="carouselPosts"
           size="compact"
+          heading-tag="h3"
           class="aspect-[4/3] md:aspect-[16/8] lg:aspect-[16/11] rounded-3xl"
         />
 

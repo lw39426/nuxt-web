@@ -16,8 +16,9 @@ const props = withDefaults(
     posts: CarouselItem[];
     /** hero：桌面端大号排版（博客页全宽）；compact：半栏小号排版 */
     size?: 'hero' | 'compact';
+    headingTag?: 'h1' | 'h3';
   }>(),
-  { size: 'hero' }
+  { size: 'hero', headingTag: 'h1' }
 );
 
 /** 窗口式轨道中的一格：slot 0 / 1 / 2 对应上一张 / 当前 / 下一张 */
@@ -337,7 +338,8 @@ onUnmounted(() => {
           >
             <span class="text-gray-300 font-medium">{{ formatDate(slide.post.created_at) }}</span>
           </div>
-          <h1
+          <component
+            :is="headingTag"
             class="font-bold md:w-3/4 text-white leading-tight group-hover:text-blue-200 transition-colors line-clamp-2"
             :class="
               size === 'hero'
@@ -346,7 +348,7 @@ onUnmounted(() => {
             "
           >
             {{ slide.post.title || '未命名' }}
-          </h1>
+          </component>
           <!-- description 后台未填时接口返回 null，为空即整段隐藏 -->
           <p
             class="text-gray-300 line-clamp-2"
