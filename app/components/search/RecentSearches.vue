@@ -32,21 +32,28 @@ const emit = defineEmits<{
     </div>
 
     <div v-if="items.length > 0" class="flex flex-wrap gap-2.5">
-      <button
+      <div
         v-for="item in items"
         :key="item.id"
-        class="group inline-flex items-center gap-2 px-4 py-2 bg-surface border border-line rounded-full text-[13px] text-fg hover:border-brand transition-colors cursor-pointer"
-        @click="emit('select', item.keyword)"
+        class="inline-flex max-w-full items-center rounded-full border border-line bg-surface text-sm text-fg hover:border-brand"
       >
-        <span class="i-lucide-clock-3 w-3.5 h-3.5 text-fg-subtle" />
-        {{ item.keyword }}
-        <span
-          class="i-lucide-x w-3.5 h-3.5 text-fg-subtle group-hover:text-fg transition-colors"
-          role="button"
-          aria-label="删除该搜索记录"
-          @click.stop="emit('remove', item.id)"
-        />
-      </button>
+        <button
+          type="button"
+          class="inline-flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-l-full pl-3 pr-1 hover:text-brand"
+          @click="emit('select', item.keyword)"
+        >
+          <span class="i-lucide-clock-3 h-4 w-4 shrink-0 text-fg-muted" aria-hidden="true" />
+          <span class="truncate">{{ item.keyword }}</span>
+        </button>
+        <button
+          type="button"
+          class="grid h-11 w-10 shrink-0 cursor-pointer place-items-center rounded-r-full text-fg-muted hover:text-fg"
+          :aria-label="`删除搜索记录：${item.keyword}`"
+          @click="emit('remove', item.id)"
+        >
+          <span class="i-lucide-x h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
     </div>
     <p v-else class="text-[13px] text-fg-subtle">暂无最近搜索，试着输入关键词吧</p>
   </section>

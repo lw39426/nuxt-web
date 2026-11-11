@@ -76,6 +76,7 @@ const loadRegionCharacters = async (slug: string) => {
       const rawChars = apiRegion.characters || [];
       const chars = rawChars.map((c) => ({
         id: c.id,
+        code: c.code,
         name: c.name,
         element: c.element || '',
         cv_cn: c.cv_cn || '',
@@ -139,6 +140,14 @@ const charCount = computed(() => regions.value[currentRegionSlug.value]?.charact
 
 // URL 中的 char 参数兜底：非法或越界时钳制到有效区间，避免页面进入"暂无角色"死状态
 const charIndex = computed(() => {
+  const characters = regions.value[currentRegionSlug.value]?.characters ?? [];
+  if (typeof route.query.character === 'string') {
+    const identifier = route.query.character;
+    const match = characters.findIndex(
+      (char) => char.code === identifier || String(char.id) === identifier
+    );
+    if (match >= 0) return match;
+  }
   const raw = Number((route.query.char as string) ?? 0);
   const idx = Number.isFinite(raw) ? Math.trunc(raw) : 0;
   const count = charCount.value;
@@ -279,7 +288,7 @@ const changeRegion = (value: string | number | boolean | null) => {
 const switchCharacter = (index: number) => {
   // Prevent animation if clicking the same character
   if (index === charIndex.value) return;
-  router.push({ query: { ...route.query, char: index } });
+  router.push({ query: { ...route.query, character: undefined, char: index } });
 };
 
 // --- 循环切换：末尾再前进回到第一个，开头再后退到最后一个 ---

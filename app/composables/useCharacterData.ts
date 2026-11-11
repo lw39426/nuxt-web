@@ -2,6 +2,7 @@
 
 export interface Character {
   id: number | string
+  code?: string
   name: string
   element: string
   cv_cn: string // 中文配音
@@ -129,6 +130,7 @@ export const useCharacterData = () => {
           bgNight: apiRegion.bg_night_url || '',
           characters: (apiRegion.characters || []).map((apiChar: any) => ({
             id: apiChar.id,
+            code: apiChar.code,
             name: apiChar.name,
             element: apiChar.element,
             cv_cn: apiChar.cv_cn || '',
