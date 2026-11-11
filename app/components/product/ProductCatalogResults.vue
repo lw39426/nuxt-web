@@ -65,7 +65,12 @@
             </div>
           </button>
 
-          <ProductCard v-for="product in item.products" :key="product.code" :product="product" />
+          <ProductCard
+            v-for="product in item.products"
+            :key="product.code"
+            :product="product"
+            compact-on-mobile
+          />
         </div>
       </section>
     </div>

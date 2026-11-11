@@ -1,8 +1,8 @@
 <template>
-  <div class="group relative flex flex-col h-full">
+  <div class="group relative flex flex-col h-full" :class="{ 'catalog-card': compactOnMobile }">
     <!-- Image Container -->
     <div
-      class="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-surface-muted sm:aspect-auto sm:h-[256px]"
+      class="card-media relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-surface-muted sm:aspect-auto sm:h-[256px]"
     >
       <NuxtLink :to="productDetailPath" class="block w-full h-full mx-auto">
         <UiImage
@@ -12,17 +12,19 @@
           :dark-fallback="'/images/pro_loading_dark.svg'"
           loading="lazy"
           decoding="async"
-          class="w-full h-full object-contain p-4 sm:p-8"
+          class="card-image w-full h-full object-contain p-4 sm:p-8"
         />
       </NuxtLink>
 
       <!-- Floating Actions -->
       <div
-        class="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-2 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+        class="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-2 card-actions transition-opacity duration-200"
       >
         <!-- Favorite Button -->
         <button
-          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface dark:bg-white/20 shadow-md flex items-center justify-center text-fg-muted dark:text-fg hover:text-red-500 hover:bg-elevated transition-colors disabled:opacity-60"
+          class="w-10 h-10 rounded-full bg-surface shadow-sm ring-1 ring-line flex items-center justify-center text-fg-muted dark:text-fg hover:text-red-500 hover:bg-elevated transition-colors disabled:opacity-60"
+          :aria-label="isFavorite ? '取消收藏' : '收藏'"
+          :aria-pressed="isFavorite"
           :disabled="favoritePending"
           @click.stop="toggleFavorite"
         >
@@ -37,7 +39,7 @@
         <!-- Compare Button：加入 / 移出对比栏 -->
         <button
           v-if="!inCompare || !isComparePage"
-          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface dark:bg-white/20 shadow-md flex items-center justify-center transition-colors disabled:opacity-60"
+          class="w-10 h-10 rounded-full bg-surface shadow-sm ring-1 ring-line flex items-center justify-center transition-colors disabled:opacity-60"
           :class="
             inCompare
               ? 'text-accent'
@@ -141,6 +143,7 @@ import { useCompareStore } from '~/stores/compare';
 import { formatPriceFromCent } from '~/utils/format';
 
 const props = defineProps<{
+  compactOnMobile?: boolean;
   product: Product;
 }>();
 
@@ -216,3 +219,38 @@ const toggleFavorite = async () => {
   }
 };
 </script>
+
+<style scoped>
+@media (width < 768px) {
+  .catalog-card .card-media {
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .catalog-card .card-image {
+    padding: 0.625rem;
+  }
+
+  .catalog-card .card-actions {
+    inset: 0.375rem 0.375rem auto auto;
+    gap: 0.25rem;
+  }
+
+  .catalog-card .card-actions button {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  .card-actions {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .group:hover .card-actions,
+  .group:focus-within .card-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+</style>

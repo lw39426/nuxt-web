@@ -135,8 +135,8 @@ useResizeObserver(track, () => goTo(selectedPage.value));
 
 .category-art {
   display: grid;
-  width: clamp(2rem, 10vw, 2.75rem);
-  height: clamp(2rem, 10vw, 2.75rem);
+  width: clamp(2.25rem, 11vw, 3rem);
+  height: clamp(2.25rem, 11vw, 3rem);
   place-items: center;
   overflow: hidden;
   border-radius: 0.65rem;
@@ -183,6 +183,11 @@ useResizeObserver(track, () => goTo(selectedPage.value));
 }
 
 @media (max-width: 767px) {
+  .category-entry {
+    gap: 0.25rem;
+    padding-block: 0.25rem;
+  }
+
   .category-track {
     scroll-snap-type: x mandatory;
     overscroll-behavior-x: contain;
@@ -194,7 +199,7 @@ useResizeObserver(track, () => goTo(selectedPage.value));
     flex: 0 0 100%;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     align-content: start;
-    gap: 0.35rem 0.2rem;
+    gap: 0.125rem 0.2rem;
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
