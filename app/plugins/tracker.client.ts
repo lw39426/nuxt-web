@@ -22,7 +22,7 @@ function normalizeExposeValue(value: TrackExposeBindingValue | undefined) {
 export default defineNuxtPlugin(async (nuxtApp) => {
   const publicConfig = useRuntimeConfig().public.tracker
 
-  const sentry = nuxtApp.$sentry as SentryApi | undefined
+  const sentry = nuxtApp.$sentry
 
   const endpoint = publicConfig.endpoint || ''
   const enabled = Boolean(publicConfig.enabled) && Boolean(endpoint)
