@@ -129,6 +129,7 @@ const heroPosts = ref<Banner[]>([]);
 const heroPending = ref(true);
 const heroFailed = ref(false);
 
+// 加载轮播图
 const fetchHeroPosts = async (): Promise<Banner[] | null> => {
   try {
     const data = await getBanners({ placement_key: 'blog_top_banner', client_type: 'web' });
@@ -316,7 +317,7 @@ onMounted(() => {
         :posts="heroPosts"
         :pending="heroPending"
         :failed="heroFailed"
-        class="aspect-[4/3] md:aspect-[16/11] md:max-h-[60vh] rounded-3xl mb-6"
+        class="aspect-[8/5] sm:aspect-[16/7] lg:aspect-[16/6] md:max-h-[60vh] mb-6"
         @retry="loadHeroPosts"
       />
 
