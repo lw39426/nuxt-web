@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHomeApi } from '~/composables/api/home';
 import type { Article } from '~/types/blog';
 import { formatDate } from '~/utils/format';
 
@@ -9,8 +10,6 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   articles: () => []
 });
-
-const displayArticles = computed(() => props.articles.slice(0, 6));
 
 const fallbackArticles = [
   {
@@ -76,23 +75,22 @@ const fallbackArticles = [
 ];
 
 const finalArticles = computed(() => {
-  return displayArticles.value.length > 0 ? displayArticles.value : fallbackArticles;
+  return (props.articles.length > 0 ? props.articles : fallbackArticles).slice(0, 3);
 });
 
-/**
- * 轮播取前 3 篇，其余以后以索引列表展示。
- * 字段按轮播组件的 Banner 契约命名：图片走 image_url，跳详情把完整路径写进 link_target
- */
-const carouselPosts = computed(() =>
-  finalArticles.value.slice(0, 3).map((article: any) => ({
-    id: article.id,
-    title: article.title,
-    description: article.description,
-    image_url: article.image,
-    link_type: 'ARTICLE',
-    link_target: `/blog/${article.code || article.id}`,
-    created_at: formatDate(article.published_date)
-  }))
+const { getBanners } = useHomeApi();
+const {
+  data: banners,
+  status: bannerStatus,
+  refresh: refreshBanners
+} = await useLazyAsyncData(
+  'home-news-banners',
+  async () => {
+    const data = await getBanners({ placement_key: 'home_top_banner', client_type: 'web' });
+    if (!Array.isArray(data?.banners)) throw new Error('Invalid home banner response');
+    return data.banners;
+  },
+  { default: () => [] }
 );
 
 /** 标签配色与文章详情页底部保持一致：文字实色 + 33% 描边 + 8% 底色 */
@@ -111,7 +109,7 @@ const tagStyle = (color?: string) => {
     <div class="section-container">
       <!-- 标题区：移动端把「查看全部」浮到眉题右侧，桌面端保持原布局 -->
       <UiSectionHeader
-        class="relative mb-6 max-md:[&>div:last-child]:absolute max-md:[&>div:last-child]:right-0 max-md:[&>div:last-child]:top-0 md:mb-14"
+        class="relative mb-6 max-md:[&>div:last-child]:absolute max-md:[&>div:last-child]:right-0 max-md:[&>div:last-child]:top-0 md:mb-14 lg:mb-10"
         tone="muted"
         label="资讯中心"
         title="最新资讯"
@@ -129,18 +127,21 @@ const tagStyle = (color?: string) => {
       </UiSectionHeader>
 
       <!-- 左右布局：左侧 Hero 轮播 + 右侧索引列表 -->
-      <div class="grid lg:grid-cols-2 gap-5">
+      <div class="grid lg:grid-cols-[1.15fr_1fr] gap-5 lg:gap-4">
         <!-- 左侧：尺寸由本页控制（与右列同高），字号用 compact 半栏排版 -->
         <BlogHeroCarousel
-          :posts="carouselPosts"
+          :posts="banners"
+          :pending="bannerStatus === 'pending'"
+          :failed="bannerStatus === 'error'"
           size="compact"
           heading-tag="h3"
-          class="aspect-[4/3] md:aspect-[16/8] lg:aspect-[16/11] rounded-3xl"
+          class="self-start aspect-[8/5] md:aspect-[16/8] lg:aspect-[16/9] lg:self-center"
+          @retry="refreshBanners()"
         />
 
         <!-- 右侧：轮播之外的资讯。移动端为细分隔线索引，桌面端为独立卡片 -->
         <div class="flex flex-col gap-0 md:gap-5">
-          <template v-for="(article, idx) in finalArticles.slice(3)" :key="article.id">
+          <template v-for="(article, idx) in finalArticles" :key="article.id">
             <div v-if="idx > 0" class="h-px bg-line/70 md:hidden" aria-hidden="true" />
             <NuxtLink
               :to="`/blog/${article.code || article.id}`"
