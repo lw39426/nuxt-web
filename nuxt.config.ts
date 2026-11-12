@@ -184,6 +184,9 @@ export default defineNuxtConfig({
     compressPublicAssets: isProd ? { gzip: true, brotli: true } : false
   },
   routeRules: {
+    '/hero02-desktop-v1.webp': {
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+    },
     // 静态图片资源：长缓存（图片内容一经发布不再变更）
     '/products/**': {
       headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }

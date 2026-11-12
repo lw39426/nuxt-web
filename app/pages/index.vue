@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import desktopHeroPreview from '~/assets/hero02-desktop-preview.webp?inline';
 import { useHomeApi } from '~/composables/api/home';
 import FeaturedCharacters from '~/components/home/FeaturedCharacters.vue';
 import AiAssistant from '~/components/home/AiAssistant.vue';
@@ -34,18 +35,31 @@ const featuredCharacters = computed(() => homeData.value?.hot_products || []);
 const featuredTagName = computed(() => homeData.value?.featured?.tag_name || '精选角色');
 const articles = computed(() => homeData.value?.articles || []);
 
+const desktopHeroImage = '/hero02-desktop-v1.webp';
+const mobileHeroImage = '/hero02-mobile.webp';
 const heroImage = useTemplateRef<HTMLImageElement>('heroImage');
-const heroImageReady = shallowRef(false);
+const decodedHeroImage = shallowRef('');
 
+/**
+ * 图片解码后，显示英雄图片
+ * - 等待英雄图片解码完成后，将其标记为可显示。
+ * - 解码失败时保留底色，不抛出异常。
+ *
+ * @returns {Promise<void>}
+ */
 const revealHeroImage = async () => {
   const image = heroImage.value;
-  if (!image || heroImageReady.value) return;
+  const source = image?.currentSrc;
+  if (!image || !source) return;
+
+  const pathname = new URL(source).pathname;
+  if (decodedHeroImage.value === pathname) return;
 
   try {
     await image.decode();
-    heroImageReady.value = true;
+    if (image.currentSrc === source) decodedHeroImage.value = pathname;
   } catch {
-    // 图片无法加载时，手机端继续显示首屏底色。
+    // 图片无法解码时，保留首屏底色。
   }
 };
 
@@ -73,17 +87,21 @@ const submitSearch = () => {
       <!-- 背景图 -->
       <picture
         class="bg-image-hero absolute -top-[60px] h-[calc(100%_+_60px)] w-full md:-top-20 md:h-full"
+        :style="{ '--hero-desktop-preview': `url(${desktopHeroPreview})` }"
       >
-        <source media="(width < 768px)" srcset="/hero02-mobile.webp" />
+        <source media="(width < 768px)" :srcset="mobileHeroImage" />
         <img
           ref="heroImage"
           class="hero-image block h-full w-full object-cover object-center"
-          :class="{ 'hero-image-ready': heroImageReady }"
+          :class="{
+            'hero-image-desktop-ready': decodedHeroImage === desktopHeroImage,
+            'hero-image-mobile-ready': decodedHeroImage === mobileHeroImage
+          }"
           loading="eager"
           fetchpriority="high"
           decoding="async"
-          src="/hero02.jpeg"
-          alt=""
+          :src="desktopHeroImage"
+          alt="YouMi 角色百科"
           @load="revealHeroImage"
         />
       </picture>
@@ -182,16 +200,26 @@ const submitSearch = () => {
   );
 }
 
+.hero-image {
+  opacity: 0;
+}
+
+@media (width >= 768px) {
+  .bg-image-hero {
+    background: center / cover no-repeat var(--hero-desktop-preview);
+  }
+
+  .hero-image-desktop-ready {
+    opacity: 1;
+  }
+}
+
 @media (width < 768px) {
   .bg-image-hero {
     background: linear-gradient(180deg, #cbd3f5 0%, #e7def7 45%, #f5e8f3 75%);
   }
 
-  .hero-image {
-    opacity: 0;
-  }
-
-  .hero-image-ready {
+  .hero-image-mobile-ready {
     opacity: 1;
   }
 }
