@@ -2,6 +2,8 @@
 import type { Banner } from '~/composables/api/home';
 import { NuxtLink } from '#components';
 
+const placeholderImage = '/images/blog-cover-placeholder.webp';
+
 /**
  * 轮播数据契约：字段名照抄 Banner 接口，真实响应可直接传入（结构兼容，多余字段不影响赋值）。
  * banner 接口后续新增展示字段时，在这里补字段名 + 模板加一处消费即可。
@@ -14,12 +16,15 @@ type CarouselItem = Pick<
 const props = withDefaults(
   defineProps<{
     posts: CarouselItem[];
+    pending?: boolean;
+    failed?: boolean;
     /** hero：桌面端大号排版（博客页全宽）；compact：半栏小号排版 */
     size?: 'hero' | 'compact';
     headingTag?: 'h1' | 'h3';
   }>(),
   { size: 'hero', headingTag: 'h1' }
 );
+const emit = defineEmits<{ retry: [] }>();
 
 /** 窗口式轨道中的一格：slot 0 / 1 / 2 对应上一张 / 当前 / 下一张 */
 type Slide = { post: CarouselItem; slot: 0 | 1 | 2 };
@@ -281,13 +286,27 @@ onUnmounted(() => {
     @mousedown="onMouseDown"
     @click.capture="onClickCapture"
   >
-    <!-- 数据未加载时的默认占位（保持容器比例，避免布局塌陷） -->
-    <div
-      v-if="posts.length === 0"
-      class="absolute inset-0 bg-gradient-to-br from-gray-800 to-black"
-    >
-      <div class="absolute inset-0 flex items-center justify-center">
-        <div class="i-carbon-image text-8xl text-white/10"></div>
+    <div v-if="posts.length === 0" class="absolute inset-0 bg-gray-900 text-white">
+      <UiImage
+        :src="placeholderImage"
+        alt=""
+        decoding="async"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
+      <div
+        class="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-3 bg-gradient-to-t from-black/90 to-transparent p-4 pt-10 md:p-6 md:pt-12"
+      >
+        <p class="text-sm font-medium" role="status">
+          {{ pending ? '正在加载轮播…' : failed ? '轮播加载失败' : '暂无轮播内容' }}
+        </p>
+        <button
+          v-if="failed && !pending"
+          type="button"
+          class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          @click="emit('retry')"
+        >
+          重试
+        </button>
       </div>
     </div>
 
@@ -312,7 +331,8 @@ onUnmounted(() => {
       >
         <!-- 底层背景图 -->
         <UiImage
-          :src="slide.post.image_url || '/images/placeholder.svg'"
+          :src="slide.post.image_url"
+          :fallback="placeholderImage"
           :alt="slide.post.title || '未命名'"
           :loading="slide.slot === 1 ? 'eager' : 'lazy'"
           :fetchpriority="slide.slot === 1 ? 'high' : 'auto'"

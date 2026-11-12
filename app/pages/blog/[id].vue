@@ -74,7 +74,7 @@ function articleToBlogPost(article: Article): BlogPost {
     title: article.title || '无标题',
     excerpt: article.description || '',
     category: article.category_name || '',
-    image: article.image || '/images/placeholder.svg',
+    image: article.image || '/images/blog-cover-placeholder.webp',
     date: formatDate(article.published_date),
     author: {
       // 优先取作者名字符串，其次取发布者昵称，最后佚名

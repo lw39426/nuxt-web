@@ -47,7 +47,7 @@ function articleToBlogPost(article: Article): BlogPost {
     title: article.title || '无标题',
     excerpt: article.description || '',
     category: article.category_name || '',
-    image: article.image || '/images/placeholder.svg',
+    image: article.image || '/images/blog-cover-placeholder.webp',
     date: formatDate(article.published_date),
     author: {
       // 优先取作者名字符串，其次取发布者昵称，最后佚名
@@ -126,21 +126,34 @@ const showInitialSkeleton = computed(
 
 /** Hero 轮播数据：banner 接口原始响应，字段不做裁剪，组件直接消费 */
 const heroPosts = ref<Banner[]>([]);
+const heroPending = ref(true);
+const heroFailed = ref(false);
 
-/** 加载 Hero 轮播数据：走 banner 接口（blog_top_banner 位，web 端），失败静默由占位兜底 */
-const loadHeroPosts = async () => {
+const fetchHeroPosts = async (): Promise<Banner[] | null> => {
   try {
     const data = await getBanners({ placement_key: 'blog_top_banner', client_type: 'web' });
-    heroPosts.value = Array.isArray(data?.banners) ? data.banners : [];
+    return Array.isArray(data?.banners) ? data.banners : null;
   } catch (err) {
     console.error('Failed to load hero banners:', err);
+    return null;
   }
+};
+
+const setHeroPosts = (posts: Banner[] | null) => {
+  heroPosts.value = posts ?? [];
+  heroFailed.value = posts === null;
+  heroPending.value = false;
+};
+
+const loadHeroPosts = async () => {
+  if (heroPending.value) return;
+  heroPending.value = true;
+  setHeroPosts(await fetchHeroPosts());
 };
 
 /**
  * 首屏数据 SSR 预取：banner、分类、标签、文章列表并发请求，
- * 让 HTML 直接带内容，避免「先进占位、再等接口二次填充」。
- * 非关键请求失败降级为空；文章列表失败整体返回 null，交给客户端重试。
+ * 分别保留各请求的结果，避免文章列表失败时丢掉轮播和筛选数据。
  */
 const { data: initialData } = await useAsyncData('blog-index', async () => {
   const firstPageParams = {
@@ -150,10 +163,7 @@ const { data: initialData } = await useAsyncData('blog-index', async () => {
   };
 
   const [banners, categories, tags, articles] = await Promise.all([
-    getBanners({ placement_key: 'blog_top_banner', client_type: 'web' }).catch((err) => {
-      console.error('Failed to load hero banners:', err);
-      return null;
-    }),
+    fetchHeroPosts(),
     fetchCategories().catch((err) => {
       console.error('Failed to load categories:', err);
       return [];
@@ -171,7 +181,6 @@ const { data: initialData } = await useAsyncData('blog-index', async () => {
     })
   ] as const);
 
-  if (!articles) return null;
   return { banners, categories, tags, articles };
 });
 
@@ -179,7 +188,7 @@ const { data: initialData } = await useAsyncData('blog-index', async () => {
 const initial = initialData.value;
 categoryList.value = Array.isArray(initial?.categories) ? initial.categories : [];
 tagList.value = Array.isArray(initial?.tags) ? initial.tags : [];
-heroPosts.value = Array.isArray(initial?.banners?.banners) ? initial.banners.banners : [];
+if (initial) setHeroPosts(initial.banners);
 
 if (initial?.articles) {
   const articles = Array.isArray(initial.articles.articles) ? initial.articles.articles : [];
@@ -286,13 +295,15 @@ useIntersectionObserver(
   }
 );
 
-// 首屏数据已由 useAsyncData 预取；仅在预取失败时退回客户端加载
+// 轮播请求失败由用户重试，文章列表继续保留原有的客户端重试。
 onMounted(() => {
-  if (initialData.value) return;
-  loadCategories();
-  loadTags();
-  loadHeroPosts();
-  loadArticles();
+  if (!initial) {
+    loadCategories();
+    loadTags();
+    heroPending.value = false;
+    loadHeroPosts();
+  }
+  if (!initial?.articles) loadArticles();
 });
 </script>
 
@@ -303,7 +314,10 @@ onMounted(() => {
            尺寸/圆角/间距由页面控制，全宽下桌面端封顶 60% 屏高 -->
       <BlogHeroCarousel
         :posts="heroPosts"
+        :pending="heroPending"
+        :failed="heroFailed"
         class="aspect-[4/3] md:aspect-[16/11] md:max-h-[60vh] rounded-3xl mb-6"
+        @retry="loadHeroPosts"
       />
 
       <!-- 筛选器: 分类标签Filter Tabs -->
