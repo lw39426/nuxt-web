@@ -280,6 +280,44 @@ const ARTICLES: MockArticle[] = [
   }
 ]
 
+// 用长短不一的名称覆盖窄屏换行与筛选分页。
+const previewTopics = [
+  '角色档案',
+  '世界观解析',
+  '动画新番',
+  '经典作品回顾',
+  '影视改编',
+  '漫画推荐',
+  '幕后制作访谈',
+  '声优与配乐',
+  '设定考据',
+  '剧情分析',
+  '周边收藏指南',
+  '读者来稿'
+]
+previewTopics.forEach((name, index) => {
+  const id = 100 + index
+  ARTICLE_CATEGORIES.push({
+    id,
+    name,
+    parent_id: null,
+    is_displayed: 1,
+    sort_order: id,
+    children: []
+  })
+  ARTICLES.push({
+    ...ARTICLES[0]!,
+    id,
+    code: `mock-blog-${id}`,
+    title: `${name}：本周专题导读`,
+    description: `阅读「${name}」专题，了解作品背景、角色故事与相关延伸内容。`,
+    image: '/images/blog-cover-placeholder.webp',
+    category_id: id,
+    category_name: name,
+    tags: [{ id, name, color: '#6950a1', weight: 1, type: 2 }]
+  })
+})
+
 /** 获取文章分类列表 */
 export const getMockArticleCategories = (): MockArticleCategory[] => ARTICLE_CATEGORIES
 
