@@ -46,7 +46,7 @@ const {
   onClickCapture
 } = useStackedCarousel(() => props.posts.length);
 
-// 按循环距离确定左右层级。只有两张时，桌面额外显示同一张侧卡的左侧预览。
+// 按循环距离确定左右层级。只有两张时，额外显示同一张侧卡的左侧预览。
 const visibleSlides = computed(() =>
   props.posts.flatMap((post, itemIndex) => {
     const count = props.posts.length;
@@ -386,15 +386,10 @@ const visibleSlides = computed(() =>
     inset-inline-end: 0;
   }
 }
-@media (width < 1024px) {
-  .carousel-card.is-mirrored {
-    display: none;
-  }
-}
 @media (pointer: coarse) {
   .carousel-dot {
-    width: 44px;
-    height: 44px;
+    width: 28px;
+    height: 32px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
