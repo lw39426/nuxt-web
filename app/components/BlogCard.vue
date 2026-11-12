@@ -11,9 +11,14 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
 </script>
 
 <template>
-  <NuxtLink :to="`/blog/${blogPost.code}`" class="group flex flex-col h-full gap-4 cursor-pointer">
+  <NuxtLink
+    :to="`/blog/${blogPost.code}`"
+    class="blog-card group flex min-w-0 flex-col h-full gap-4 cursor-pointer"
+  >
     <!-- Image Container 图片部分 -->
-    <div class="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-surface">
+    <div
+      class="blog-card-cover relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-surface"
+    >
       <UiImage
         :src="blogPost.image"
         :alt="blogPost.title"
@@ -24,7 +29,7 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
     </div>
 
     <!-- Content 内容部分-->
-    <div class="flex flex-col flex-1 gap-3">
+    <div class="blog-card-content flex min-w-0 flex-col flex-1 gap-3">
       <!-- Category -->
       <div class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
         {{ blogPost.category }}
@@ -32,13 +37,13 @@ const authorAvatar = computed(() => props.blogPost.author?.avatar || '');
 
       <!-- Title -->
       <h3
-        class="text-xl font-bold text-fg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+        class="blog-card-title break-words text-xl font-bold text-fg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
       >
         {{ blogPost.title }}
       </h3>
 
       <!-- Excerpt -->
-      <p class="text-sm text-fg-muted line-clamp-2">
+      <p class="break-words text-sm leading-relaxed text-fg-muted line-clamp-2">
         {{ blogPost.excerpt }}
       </p>
 

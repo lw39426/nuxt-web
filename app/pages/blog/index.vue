@@ -317,83 +317,46 @@ onMounted(() => {
         :posts="heroPosts"
         :pending="heroPending"
         :failed="heroFailed"
-        class="aspect-[8/5] sm:aspect-[16/7] lg:aspect-[16/6] md:max-h-[60vh] mb-6"
+        class="aspect-[8/5] sm:aspect-[16/7] lg:aspect-[16/6] md:max-h-[60vh] mb-4 sm:mb-6"
         @retry="loadHeroPosts"
       />
 
-      <!-- 筛选器: 分类标签Filter Tabs -->
-      <div
-        class="flex flex-wrap items-center justify-start gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide"
-      >
-        <button
-          class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-          :class="[
-            activeCategory === null
-              ? 'bg-fg text-canvas'
-              : 'bg-surface-muted text-fg-muted hover:bg-fg hover:text-canvas'
+      <div class="mb-6 sm:mb-12 space-y-3">
+        <BlogFilterPanel
+          label="分类"
+          always-expanded
+          :options="[
+            { value: null, label: '全部文章' },
+            ...categoryList.map((cat) => ({ value: cat.id, label: cat.name }))
           ]"
-          @click="selectCategory(null)"
-        >
-          全部文章
-        </button>
-        <button
-          v-for="cat in categoryList"
-          :key="cat.id"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-          :class="[
-            activeCategory === cat.id
-              ? 'bg-fg text-canvas'
-              : 'bg-surface-muted text-fg-muted hover:bg-fg hover:text-canvas'
+          :selected="activeCategory"
+          @select="(value) => selectCategory(value === null ? null : Number(value))"
+        />
+        <BlogFilterPanel
+          v-if="tagList.length"
+          label="标签"
+          subtle
+          :options="[
+            { value: null, label: '全部标签' },
+            ...tagList.map((tag) => ({
+              value: tag.name,
+              label: tag.name,
+              color: tag.color || undefined
+            }))
           ]"
-          @click="selectCategory(cat.id)"
-        >
-          {{ cat.name }}
-        </button>
-        <!-- RSS 订阅按钮，未来可设置为用户订阅、加载更多 -->
-        <button class="p-2 text-fg-subtle hover:text-fg">
-          <div class="i-carbon-rss w-5 h-5"></div>
-        </button>
-      </div>
-
-      <!-- 标签筛选行：无标签数据时整行隐藏 -->
-      <div v-if="tagList.length > 0" class="flex flex-wrap items-center gap-2 mb-12">
-        <div class="i-carbon-tag w-4 h-4 text-fg-subtle shrink-0"></div>
-        <button
-          v-for="tag in tagList"
-          :key="tag.id"
-          class="px-3 py-1 rounded-full text-xs font-medium border transition-all"
-          :class="[
-            activeTag === tag.name
-              ? 'text-white border-transparent bg-[var(--tag-color)]'
-              : 'border-line text-fg-muted hover:text-white hover:border-transparent hover:bg-[var(--tag-color)]'
-          ]"
-          :style="{ '--tag-color': tag.color || '#6B7280' }"
-          @click="selectTag(tag.name)"
-        >
-          {{ tag.name }}
-        </button>
-        <UButton
-          v-if="activeTag"
-          class="bg-btn-lpurple text-btn-lpurple-text hover:bg-btn-lpurple-hover"
-          variant="soft"
-          size="sm"
-          @click="selectTag(null)"
-        >
-          <template #leading>
-            <span class="i-carbon-reset w-4 h-4" />
-          </template>
-          清除标签
-        </UButton>
+          :selected="activeTag"
+          @select="(value) => selectTag(value === null ? null : String(value))"
+        />
       </div>
 
       <!-- 首屏加载骨架：与 BlogCard 同构占位，避免白屏等待 -->
       <div
         v-if="showInitialSkeleton"
-        class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20"
+        class="blog-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8 md:gap-y-12 mb-8 md:mb-20"
         aria-hidden="true"
       >
         <div v-for="i in 6" :key="i" class="flex flex-col gap-4 animate-pulse">
-          <div class="aspect-[16/9] w-full rounded-2xl bg-surface-muted"></div>
+          <div class="aspect-[2/1] sm:aspect-[16/9] w-full rounded-2xl bg-surface-muted"></div>
           <div class="flex flex-col gap-3">
             <div class="h-3 w-16 rounded bg-surface-muted"></div>
             <div class="h-6 w-4/5 rounded bg-surface-muted"></div>
@@ -419,7 +382,10 @@ onMounted(() => {
       </div>
 
       <!-- 文章内容布局Blog Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mb-20">
+      <div
+        v-else
+        class="blog-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8 md:gap-y-12 mb-8 md:mb-20"
+      >
         <BlogCard v-for="blogPost in displayedPosts" :key="blogPost.id" :blog-post="blogPost" />
       </div>
 
@@ -427,7 +393,7 @@ onMounted(() => {
       <div
         v-if="!isEmpty && !showInitialSkeleton"
         ref="loadMoreTrigger"
-        class="flex justify-center mt-12 py-8"
+        class="flex justify-center mt-4 md:mt-12 py-6 md:py-8"
       >
         <div v-if="isLoading" class="flex items-center gap-2 text-fg-muted">
           <div class="i-carbon-circle-dash w-6 h-6 animate-spin"></div>
@@ -442,6 +408,26 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.blog-grid :deep(.blog-card) {
+  min-width: 0;
+}
+@media (width < 640px) {
+  .blog-grid :deep(.blog-card) {
+    gap: 12px;
+  }
+  .blog-grid :deep(.blog-card-cover) {
+    aspect-ratio: 2 / 1;
+    border-radius: 14px;
+  }
+  .blog-grid :deep(.blog-card-content) {
+    gap: 8px;
+  }
+  .blog-grid :deep(.blog-card-title) {
+    font-size: 18px;
+    line-height: 1.5;
+  }
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
