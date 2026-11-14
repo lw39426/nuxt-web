@@ -77,7 +77,7 @@
       <div
         v-show="filtersOpen && availableGroups.length"
         :id="filterPanelId"
-        class="filter-panel mt-3 space-y-3 rounded-xl border border-line bg-surface p-3 sm:space-y-4 sm:px-5 sm:py-4"
+        class="filter-panel mt-2 space-y-2 rounded-xl border border-line bg-surface p-3 sm:space-y-4 sm:px-5 sm:py-4"
       >
         <div
           role="tablist"
