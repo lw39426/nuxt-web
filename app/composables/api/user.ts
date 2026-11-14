@@ -16,6 +16,7 @@ export interface UserInfo {
 /** 更新用户信息请求体 */
 export interface UpdateUserInfoPayload {
   nickname?: string
+  email?: string
   gender?: number
   birthday?: string
   description?: string

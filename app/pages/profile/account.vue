@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import PageHeader from '~/components/ui/PageHeader.vue';
-import { useUserApi } from '~/composables/api/user';
+import { useUserApi, type UserInfo } from '~/composables/api/user';
 import { useCheckinApi } from '~/composables/api/checkin';
-import { getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date';
+import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
 
 const { getInfo, updateInfo } = useUserApi();
 
@@ -23,8 +23,6 @@ const genderOptions = [
 
 const form = ref({
   nickname: '',
-  username: '',
-  phone: '',
   email: '',
   gender: undefined as string | undefined,
   birthday: '',
@@ -47,23 +45,37 @@ const getGenderLabel = (gender: string | undefined) => {
   return '保密';
 };
 
-/** 生日上限：不允许选择未来日期 */
-const maxBirthday = today(getLocalTimeZone());
+const account = shallowRef({ username: '', phone: '', createdAt: '', avatar: '' });
+const registrationFormatter = new Intl.DateTimeFormat('zh-CN', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'Asia/Shanghai'
+});
+const registrationDate = computed(() => {
+  const date = new Date(account.value.createdAt);
+  return Number.isNaN(date.getTime()) ? '未提供' : registrationFormatter.format(date);
+});
 
-/** 生日字符串（YYYY-MM-DD）↔ UInputDate 的 DateValue 双向转换 */
-const birthdayValue = computed<DateValue | undefined>({
-  get: () => {
-    const raw = form.value.birthday?.slice(0, 10);
-    if (!raw) return undefined;
-    try {
-      return parseDate(raw);
-    } catch {
-      return undefined;
-    }
-  },
-  set: (value) => {
-    form.value.birthday = value ? value.toString() : '';
+const maxBirthday = computed(() => today(getLocalTimeZone()));
+const birthdayValue = computed(() => {
+  try {
+    return form.value.birthday ? parseDate(form.value.birthday) : undefined;
+  } catch {
+    return undefined;
   }
+});
+const birthdayLabel = computed(() => {
+  const date = birthdayValue.value;
+  return date ? `${date.year}年${date.month}月${date.day}日` : '';
+});
+const emailInput = useTemplateRef<{ inputRef: HTMLInputElement | null }>('emailInput');
+
+const toProfileForm = (data: UserInfo) => ({
+  nickname: data.nickname || '',
+  email: data.email || '',
+  gender: data.gender == null ? undefined : String(data.gender),
+  birthday: data.birthday?.slice(0, 10) || '',
+  description: data.description || ''
 });
 
 /** 加载用户资料 */
@@ -73,15 +85,13 @@ const loadProfile = async () => {
   try {
     const data = await getInfo();
     if (data) {
-      const loaded = {
-        nickname: data.nickname || '',
+      account.value = {
         username: data.username || '',
         phone: data.phone || '',
-        email: data.email || '',
-        gender: data.gender ? String(data.gender) : undefined,
-        birthday: data.birthday || '',
-        description: data.description || ''
+        createdAt: data.create_at || '',
+        avatar: data.avatar?.trim() || ''
       };
+      const loaded = toProfileForm(data);
       form.value = { ...loaded };
       originalForm.value = { ...loaded };
     }
@@ -112,19 +122,45 @@ const handleEnterEdit = () => {
 
 /** 保存资料：校验后调用更新接口，成功后退出编辑模式 */
 const handleSave = async () => {
+  if (isSaving.value) return;
   if (!form.value.nickname?.trim()) {
     toast.add({ title: '请填写昵称', color: 'error' });
     return;
   }
+  const email = form.value.email.trim();
+  if (emailInput.value?.inputRef?.validity.typeMismatch) {
+    toast.add({ title: '请输入有效的邮箱地址', color: 'error' });
+    emailInput.value.inputRef.focus();
+    return;
+  }
+  if (form.value.birthday > maxBirthday.value.toString()) {
+    toast.add({ title: '生日不能晚于今天', color: 'error' });
+    return;
+  }
+
+  const submitted = { ...form.value, nickname: form.value.nickname.trim(), email };
+  const emailChanged = email !== originalForm.value.email.trim();
   isSaving.value = true;
   try {
     await updateInfo({
-      nickname: form.value.nickname.trim(),
+      nickname: submitted.nickname,
+      ...(emailChanged ? { email } : {}),
       gender: form.value.gender ? Number(form.value.gender) : undefined,
       birthday: form.value.birthday || undefined,
       description: form.value.description?.trim() || undefined
     });
-    originalForm.value = { ...form.value };
+    if (emailChanged) {
+      const latest = await getInfo();
+      const savedEmail = latest?.email?.trim() ?? '';
+      if (latest) originalForm.value = toProfileForm(latest);
+      if (!latest || savedEmail.toLowerCase() !== email.toLowerCase()) {
+        toast.add({ title: '未确认邮箱更新，请检查后重试', color: 'error' });
+        return;
+      }
+      submitted.email = savedEmail;
+    }
+    form.value = submitted;
+    originalForm.value = { ...submitted };
     isEditing.value = false;
     toast.add({ title: '保存成功', color: 'success' });
   } catch {
@@ -206,31 +242,59 @@ onMounted(() => {
         <div class="p-4 sm:p-8">
           <div class="flex flex-col lg:flex-row gap-5 sm:gap-10">
             <!-- 头像区 -->
-            <div class="flex items-center gap-4 sm:flex-col sm:gap-0 shrink-0 lg:pt-2">
-              <button
-                type="button"
-                class="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-skin focus-visible:ring-offset-2 focus-visible:ring-offset-surface transition-transform duration-200"
-                :class="isEditing ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'"
-                :disabled="!isEditing"
-                :aria-label="isEditing ? '更换头像' : '头像'"
-                @click="handleChangeAvatar"
-              >
-                <div
-                  class="w-14 h-14 sm:w-28 sm:h-28 rounded-full bg-skin-solid flex items-center justify-center font-bold text-2xl sm:text-5xl ring-4 ring-surface"
+            <div class="shrink-0 lg:w-40 lg:pt-2">
+              <div class="flex items-center gap-4 lg:flex-col lg:gap-3">
+                <button
+                  type="button"
+                  class="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-skin focus-visible:ring-offset-2 focus-visible:ring-offset-surface transition-transform duration-200"
+                  :class="isEditing ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'"
+                  :disabled="!isEditing"
+                  :aria-label="isEditing ? '更换头像' : '头像'"
+                  @click="handleChangeAvatar"
                 >
-                  {{ form.nickname?.charAt(0) || form.username?.charAt(0) || '用' }}
-                </div>
-                <span
-                  class="absolute bottom-0 right-0 w-6 h-6 sm:bottom-1 sm:right-1 sm:w-9 sm:h-9 bg-surface rounded-full border-2 border-line shadow-md flex items-center justify-center transition-all duration-200"
-                  :class="isEditing ? 'group-hover:bg-skin-soft group-hover:border-skin' : ''"
-                >
+                  <UAvatar
+                    :src="account.avatar || undefined"
+                    alt=""
+                    class="size-14 overflow-hidden bg-skin-solid ring-4 ring-surface sm:size-28"
+                    :ui="{ image: 'object-cover' }"
+                  >
+                    <span class="font-bold text-2xl sm:text-5xl">
+                      {{ form.nickname?.charAt(0) || account.username?.charAt(0) || '用' }}
+                    </span>
+                  </UAvatar>
                   <span
-                    class="i-carbon-camera w-4 h-4 transition-colors duration-200"
-                    :class="isEditing ? 'text-fg-muted group-hover:text-skin' : 'text-fg-muted'"
-                  />
-                </span>
-              </button>
-              <p class="text-xs sm:text-sm text-fg-muted sm:mt-4">头像上传即将开放</p>
+                    class="absolute bottom-0 right-0 w-6 h-6 sm:bottom-1 sm:right-1 sm:w-9 sm:h-9 bg-surface rounded-full border-2 border-line shadow-md flex items-center justify-center transition-all duration-200"
+                    :class="isEditing ? 'group-hover:bg-skin-soft group-hover:border-skin' : ''"
+                  >
+                    <span
+                      class="i-carbon-camera w-4 h-4 transition-colors duration-200"
+                      :class="isEditing ? 'text-fg-muted group-hover:text-skin' : 'text-fg-muted'"
+                    />
+                  </span>
+                </button>
+                <p class="text-xs sm:text-sm text-fg-muted">头像上传即将开放</p>
+              </div>
+              <dl
+                class="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm lg:grid-cols-1"
+              >
+                <div class="min-w-0">
+                  <dt class="text-xs text-fg-muted">用户名（账号）</dt>
+                  <dd class="mt-1 break-all text-fg">{{ account.username || '未提供' }}</dd>
+                </div>
+                <div class="min-w-0">
+                  <dt class="text-xs text-fg-muted">手机号</dt>
+                  <dd class="mt-1 break-all text-fg">{{ account.phone || '未绑定' }}</dd>
+                </div>
+                <div class="col-span-2 lg:col-span-1">
+                  <dt class="text-xs text-fg-muted">注册时间</dt>
+                  <dd class="mt-1 text-fg">
+                    <time v-if="registrationDate !== '未提供'" :datetime="account.createdAt">
+                      {{ registrationDate }}
+                    </time>
+                    <span v-else>{{ registrationDate }}</span>
+                  </dd>
+                </div>
+              </dl>
             </div>
 
             <!-- 信息网格：使用相对定位 + 绝对定位层叠，避免 CLS 布局跳动 -->
@@ -241,21 +305,9 @@ onMounted(() => {
                 :class="{ 'opacity-0 invisible': isEditing }"
               >
                 <div class="form-field-wrap">
-                  <label class="form-field-label">用户名</label>
-                  <div class="form-field-display">
-                    {{ form.username || '-' }}
-                  </div>
-                </div>
-                <div class="form-field-wrap">
                   <label class="form-field-label">昵称</label>
                   <div class="form-field-display">
                     {{ form.nickname || '-' }}
-                  </div>
-                </div>
-                <div class="form-field-wrap">
-                  <label class="form-field-label">手机号</label>
-                  <div class="form-field-display">
-                    {{ form.phone || '-' }}
                   </div>
                 </div>
                 <div class="form-field-wrap">
@@ -273,7 +325,7 @@ onMounted(() => {
                 <div class="form-field-wrap">
                   <label class="form-field-label">生日</label>
                   <div class="form-field-display">
-                    {{ form.birthday || '-' }}
+                    {{ birthdayLabel || '-' }}
                   </div>
                 </div>
                 <div class="form-field-wrap sm:col-span-2">
@@ -290,13 +342,6 @@ onMounted(() => {
                 :class="{ 'opacity-0 invisible pointer-events-none': !isEditing }"
               >
                 <div class="form-field-wrap">
-                  <label class="form-field-label">用户名</label>
-                  <div class="form-field-display form-field-display--locked">
-                    {{ form.username || '-' }}
-                    <span class="i-carbon-locked form-field-lock-icon" aria-hidden="true" />
-                  </div>
-                </div>
-                <div class="form-field-wrap">
                   <label for="profile-nickname" class="form-field-label">
                     <span class="text-red-500 mr-0.5">*</span>昵称
                   </label>
@@ -308,18 +353,16 @@ onMounted(() => {
                   />
                 </div>
                 <div class="form-field-wrap">
-                  <label class="form-field-label">手机号</label>
-                  <div class="form-field-display form-field-display--locked">
-                    {{ form.phone || '-' }}
-                    <span class="i-carbon-locked form-field-lock-icon" aria-hidden="true" />
-                  </div>
-                </div>
-                <div class="form-field-wrap">
-                  <label class="form-field-label">邮箱</label>
-                  <div class="form-field-display form-field-display--locked">
-                    {{ form.email || '-' }}
-                    <span class="i-carbon-locked form-field-lock-icon" aria-hidden="true" />
-                  </div>
+                  <label for="profile-email" class="form-field-label">邮箱</label>
+                  <UInput
+                    id="profile-email"
+                    ref="emailInput"
+                    v-model="form.email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="请输入邮箱"
+                    variant="none"
+                  />
                 </div>
                 <div class="form-field-wrap">
                   <label class="form-field-label">性别</label>
@@ -332,27 +375,37 @@ onMounted(() => {
                   />
                 </div>
                 <div class="form-field-wrap">
-                  <label class="form-field-label">生日</label>
-                  <!-- UInputDate 的 DateField 分段渲染在本页 Transition+KeepAlive 结构下
-                       会导致 vnode 卸载崩溃（内容区被清空），故用 Popover + 日历选择 -->
+                  <span id="profile-birthday-label" class="form-field-label">生日</span>
                   <UPopover :content="{ align: 'start' }">
                     <UButton
-                      :variant="undefined"
                       color="neutral"
+                      variant="ghost"
                       trailing-icon="i-carbon-calendar"
-                      aria-label="选择生日"
+                      aria-labelledby="profile-birthday-label profile-birthday-value"
                       class="w-full justify-between font-normal"
-                      :ui="{ trailingIcon: 'ms-auto text-fg-muted' }"
                     >
-                      <span :class="form.birthday ? '' : 'text-fg-subtle'">
-                        {{ form.birthday || '请选择生日' }}
+                      <span
+                        id="profile-birthday-value"
+                        :class="{ 'text-fg-subtle': !birthdayLabel }"
+                      >
+                        {{ birthdayLabel || '请选择生日' }}
                       </span>
                     </UButton>
                     <template #content="{ close }">
                       <UCalendar
-                        v-model="birthdayValue"
+                        :model-value="birthdayValue"
                         :max-value="maxBirthday"
-                        @update:model-value="() => close()"
+                        locale="zh-CN"
+                        weekday-format="short"
+                        :week-starts-on="1"
+                        prevent-deselect
+                        @update:model-value="
+                          (value) => {
+                            if (!value) return;
+                            form.birthday = value.toString();
+                            close();
+                          }
+                        "
                       />
                     </template>
                   </UPopover>
@@ -398,9 +451,9 @@ onMounted(() => {
           icon-bg="bg-skin-soft"
           icon-color="text-skin"
           title="手机号"
-          :subtitle="form.phone ? `已绑定 · ${form.phone}` : '未绑定'"
+          :subtitle="account.phone ? `已绑定 · ${account.phone}` : '未绑定'"
           subtitle-class="text-skin"
-          :action-text="form.phone ? '更换' : '绑定'"
+          :action-text="account.phone ? '更换' : '绑定'"
           action-class="text-fg-muted"
           @action="handleBindClick('phone')"
         />
@@ -488,6 +541,7 @@ onMounted(() => {
   align-items: center;
   width: 100%;
   overflow-wrap: anywhere;
+  min-width: 0;
   min-height: 42px;
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
@@ -519,25 +573,8 @@ onMounted(() => {
 }
 
 /**
- * 编辑层锁定字段（用户名/手机号/邮箱）：
- * 后端更新接口不接收这些字段，编辑态以展示框 + 锁图标呈现，避免"能改但不生效"
- */
-.form-field-display--locked {
-  gap: 0.5rem;
-  color: var(--fg-muted);
-}
-
-.form-field-lock-icon {
-  flex-shrink: 0;
-  width: 1rem;
-  height: 1rem;
-  margin-left: auto;
-  color: var(--fg-subtle);
-}
-
-/**
  * ---------- 编辑层控件皮肤（Nuxt UI v4 data-slot 选择器） ----------
- * UInput/USelect/UTextarea 的交互元素与 UInputDate 的根元素均带
+ * UInput/USelect/UTextarea 和日期触发按钮的交互元素均带
  * data-slot="base"；组件已设 variant="none" 去掉自带背景描边，
  * 由这里统一绘制成与 .form-field-display 完全同规格的外观，
  * 两层叠放切换时宽度/高度/圆角/字号零差异。
@@ -548,6 +585,7 @@ onMounted(() => {
 }
 
 .form-field-wrap :deep([data-slot='base']) {
+  min-width: 0;
   min-height: 42px;
   padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
@@ -575,16 +613,6 @@ onMounted(() => {
   background-color: var(--surface);
   border-color: rgba(var(--skin-accent-rgb), 0.45);
   box-shadow: 0 0 0 3px rgba(var(--skin-accent-rgb), 0.18);
-}
-
-/* 日期分段输入（UInputDate 内部）：还原为裸文本段，继承容器皮肤 */
-.form-field-wrap :deep([data-slot='segment']) {
-  min-height: 0;
-  padding: 0;
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  outline: none;
 }
 
 /* 简介多行编辑：与展示层 --textarea 同高同排版 */
