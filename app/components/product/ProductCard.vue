@@ -23,7 +23,6 @@
         <!-- Favorite Button -->
         <button
           class="w-10 h-10 rounded-full bg-surface shadow-sm ring-1 ring-line flex items-center justify-center text-fg-muted dark:text-fg transition-colors disabled:opacity-60"
-          :class="{ 'hover:text-red-500 hover:bg-elevated': !compactOnMobile }"
           :aria-label="isFavorite ? '取消收藏' : '收藏'"
           :aria-pressed="isFavorite"
           :disabled="favoritePending"
@@ -32,7 +31,6 @@
           <div
             :class="[
               isFavorite ? 'i-carbon-favorite-filled' : 'i-carbon-favorite',
-              { 'text-red-500': isFavorite && !compactOnMobile },
               'text-base sm:text-xl'
             ]"
           />
@@ -41,12 +39,7 @@
         <!-- Compare Button：加入 / 移出对比栏 -->
         <button
           v-if="!inCompare || !isComparePage"
-          class="w-10 h-10 rounded-full bg-surface shadow-sm ring-1 ring-line flex items-center justify-center transition-colors disabled:opacity-60"
-          :class="
-            inCompare
-              ? 'text-accent'
-              : 'text-fg-muted dark:text-fg hover:text-accent hover:bg-elevated'
-          "
+          class="w-10 h-10 rounded-full bg-surface shadow-sm ring-1 ring-line flex items-center justify-center text-fg-muted dark:text-fg transition-colors disabled:opacity-60"
           :aria-label="inCompare ? '移出对比' : '加入对比'"
           :aria-pressed="inCompare"
           @click.stop="toggleCompare"
@@ -222,8 +215,8 @@ const toggleFavorite = async () => {
 </script>
 
 <style scoped>
-.catalog-card .card-actions button:hover,
-.catalog-card .card-actions button[aria-pressed='true'] {
+.card-actions button:hover,
+.card-actions button[aria-pressed='true'] {
   background-color: var(--skin-chip-bg);
   color: var(--skin-ink-strong);
 }
