@@ -14,7 +14,7 @@ const openRegister = () => uiStore.openAuthModal('register');
 
 // --- Login State ---
 const loginForm = ref({
-  email: '',
+  username: '',
   password: '',
   captcha: '',
   rememberMe: false
@@ -38,7 +38,6 @@ const registerForm = ref({
 
 // --- Common State ---
 const captchaImage = ref('');
-const captchaKey = ref('');
 const captchaError = ref(false);
 const showPassword = ref(false);
 const isLoading = ref(false);
@@ -46,18 +45,28 @@ const isLoading = ref(false);
 // --- Login Mode & Phone Login State ---
 const loginMode = ref<'username' | 'phone'>('username');
 const phoneForm = ref({
-  phone: '13111111111',
-  password: '111111',
+  phone: '',
   code: ''
 });
 const smsCountdown = ref(0);
 const smsLoading = ref(false);
 let smsTimer: ReturnType<typeof setInterval> | null = null;
 
+const isValidPhone = (value: string) => /^1[3-9]\d{9}$/.test(value);
+
+const notifyInvalidLogin = (description: string) => {
+  useToast().add({
+    id: 'auth-login-validation',
+    title: '请检查登录信息',
+    description,
+    color: 'error'
+  });
+};
+
 const sendSmsCode = async () => {
   if (smsCountdown.value > 0 || smsLoading.value) return;
   const phone = phoneForm.value.phone.trim();
-  if (!/^1[3-9]\d{9}$/.test(phone)) {
+  if (!isValidPhone(phone)) {
     const toast = useToast();
     toast.add({
       id: 'auth-sms-phone-error',
@@ -94,18 +103,26 @@ const sendSmsCode = async () => {
 };
 
 const handlePhoneLogin = async () => {
+  if (isLoading.value) return;
+  const phone = phoneForm.value.phone.trim();
+  const code = phoneForm.value.code.trim();
+  if (!isValidPhone(phone)) {
+    notifyInvalidLogin('请输入正确的 11 位手机号');
+    return;
+  }
+  if (!/^\d{6}$/.test(code)) {
+    notifyInvalidLogin('请输入 6 位数字短信验证码');
+    return;
+  }
   isLoading.value = true;
   try {
-    const res = await loginByPhone({
-      phone: phoneForm.value.phone.trim(),
-      code: phoneForm.value.code.trim()
-    });
+    const res = await loginByPhone({ phone, code });
 
     if (res && res.access_token) {
       authStore.setAuth({
         token: res.access_token,
         refreshToken: res.refresh_token,
-        user: res.user || { id: 0, username: phoneForm.value.phone }
+        user: res.user || { id: 0, username: phone }
       });
       close();
     }
@@ -136,7 +153,6 @@ const fetchCaptcha = async () => {
     const res = await getCode();
     if (res && res.image) {
       captchaImage.value = res.image;
-      captchaKey.value = res.captcha_key;
     }
   } catch (error) {
     console.error('Failed to fetch captcha:', error);
@@ -144,7 +160,7 @@ const fetchCaptcha = async () => {
   }
 };
 
-// 弹窗打开、或在打开状态下切换登录/注册视图时，重新拉取验证码。
+// 弹窗打开或切换视图时重新拉取图形验证码。
 // 合并为单个 watch：openAuthModal 会同时修改 open 与 view，
 // 数组形式的 watch 对同一批次的多个变更只触发一次回调，避免重复请求。
 watch([isOpen, currentView], ([open]) => {
@@ -175,24 +191,31 @@ watch(isOpen, (newVal: any) => {
 
 watch(account, (value: string) => {
   if (value) {
-    loginForm.value.email = value;
+    loginForm.value.username = value;
     loginForm.value.password = accountOptions.find((item) => item.value === value)?.password || '';
   }
 });
 
 const handleLogin = async () => {
+  if (isLoading.value) return;
+  const username = loginForm.value.username.trim();
+  const password = loginForm.value.password;
+  if (!username || !password.trim()) {
+    notifyInvalidLogin(!username ? '请输入用户名' : '请输入密码');
+    return;
+  }
   isLoading.value = true;
   try {
     const res = await loginByUsername({
-      username: loginForm.value.email,
-      password: loginForm.value.password
+      username,
+      password
     });
 
     if (res && res.access_token) {
       authStore.setAuth({
         token: res.access_token,
         refreshToken: res.refresh_token,
-        user: { id: 0, username: loginForm.value.email }
+        user: res.user || { id: 0, username }
       });
       close();
     }
@@ -205,7 +228,6 @@ const handleLogin = async () => {
       description: error.message || '系统繁忙，请稍后再试',
       color: 'error'
     });
-    fetchCaptcha();
   } finally {
     isLoading.value = false;
   }
@@ -322,8 +344,10 @@ const handleRegister = async () => {
                     <label for="login" class="sr-only">用户名</label>
                     <input
                       id="login"
-                      v-model="loginForm.email"
+                      v-model="loginForm.username"
                       type="text"
+                      autocomplete="username"
+                      required
                       placeholder="请输入用户名"
                       class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                     />
@@ -336,6 +360,8 @@ const handleRegister = async () => {
                         id="password"
                         v-model="loginForm.password"
                         :type="showPassword ? 'text' : 'password'"
+                        autocomplete="current-password"
+                        required
                         placeholder="密码"
                         class="h-12 w-full rounded-xl border border-line bg-surface px-4 pr-12 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
                       />
@@ -403,6 +429,8 @@ const handleRegister = async () => {
                       id="phone"
                       v-model="phoneForm.phone"
                       type="tel"
+                      autocomplete="tel-national"
+                      required
                       maxlength="11"
                       placeholder="请输入手机号"
                       class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
@@ -416,6 +444,9 @@ const handleRegister = async () => {
                         id="sms-code"
                         v-model="phoneForm.code"
                         type="text"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        required
                         maxlength="6"
                         placeholder="短信验证码"
                         class="h-12 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-fg-subtle outline-none transition duration-200 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 lg:h-11 lg:text-sm"
