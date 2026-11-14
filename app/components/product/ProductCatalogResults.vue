@@ -49,9 +49,7 @@
             />
 
             <div class="absolute inset-0 p-4 md:p-8 flex flex-col justify-end z-20">
-              <span
-                class="text-xl md:text-3xl lg:text-4xl font-bold text-white leading-tight group-hover:text-blue-200 transition-colors"
-              >
+              <span class="text-xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">
                 {{ item.category }}
               </span>
               <div
@@ -100,7 +98,7 @@
       <button
         v-if="hasActiveFilters"
         type="button"
-        class="px-4 py-2 rounded-full bg-accent text-white text-sm hover:opacity-90 cursor-pointer"
+        class="px-4 py-2 rounded-full bg-skin-solid text-sm hover:opacity-90 cursor-pointer"
         @click="emit('clear-filters')"
       >
         清空筛选

@@ -22,7 +22,8 @@
       >
         <!-- Favorite Button -->
         <button
-          class="w-10 h-10 rounded-full bg-surface shadow-sm ring-1 ring-line flex items-center justify-center text-fg-muted dark:text-fg hover:text-red-500 hover:bg-elevated transition-colors disabled:opacity-60"
+          class="w-10 h-10 rounded-full bg-surface shadow-sm ring-1 ring-line flex items-center justify-center text-fg-muted dark:text-fg transition-colors disabled:opacity-60"
+          :class="{ 'hover:text-red-500 hover:bg-elevated': !compactOnMobile }"
           :aria-label="isFavorite ? '取消收藏' : '收藏'"
           :aria-pressed="isFavorite"
           :disabled="favoritePending"
@@ -30,7 +31,8 @@
         >
           <div
             :class="[
-              isFavorite ? 'i-carbon-favorite-filled text-red-500' : 'i-carbon-favorite',
+              isFavorite ? 'i-carbon-favorite-filled' : 'i-carbon-favorite',
+              { 'text-red-500': isFavorite && !compactOnMobile },
               'text-base sm:text-xl'
             ]"
           />
@@ -46,11 +48,10 @@
               : 'text-fg-muted dark:text-fg hover:text-accent hover:bg-elevated'
           "
           :aria-label="inCompare ? '移出对比' : '加入对比'"
+          :aria-pressed="inCompare"
           @click.stop="toggleCompare"
         >
-          <div
-            :class="['i-carbon-compare', 'text-base sm:text-xl', inCompare ? 'text-accent' : '']"
-          />
+          <div class="i-carbon-compare text-base sm:text-xl" />
         </button>
       </div>
     </div>
@@ -221,6 +222,12 @@ const toggleFavorite = async () => {
 </script>
 
 <style scoped>
+.catalog-card .card-actions button:hover,
+.catalog-card .card-actions button[aria-pressed='true'] {
+  background-color: var(--skin-chip-bg);
+  color: var(--skin-ink-strong);
+}
+
 @media (width < 768px) {
   .catalog-card .card-media {
     height: auto;

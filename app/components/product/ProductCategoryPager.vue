@@ -123,13 +123,13 @@ useResizeObserver(track, () => goTo(selectedPage.value));
 
 .category-entry:focus-visible,
 .category-pagination button:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--skin-accent);
   outline-offset: -2px;
 }
 
 .category-entry[aria-pressed='true'] {
-  background: var(--brand-soft);
-  color: var(--fg);
+  background: var(--skin-chip-bg);
+  color: var(--skin-ink-strong);
   font-weight: 600;
 }
 
@@ -179,7 +179,7 @@ useResizeObserver(track, () => goTo(selectedPage.value));
 
 .category-pagination button[aria-current='page'] span {
   width: 1rem;
-  background: var(--accent);
+  background: var(--skin-accent);
 }
 
 @media (max-width: 767px) {

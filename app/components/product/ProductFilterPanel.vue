@@ -24,7 +24,7 @@
           <button
             v-if="activeFilterCount"
             type="button"
-            class="min-h-11 shrink-0 rounded-lg px-2 text-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
+            class="min-h-11 shrink-0 rounded-lg px-2 text-sm text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
             @click="emit('clear-filters')"
           >
             重置
@@ -32,7 +32,7 @@
           <button
             v-if="availableGroups.length"
             type="button"
-            class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line px-3 text-sm font-medium text-fg hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-accent"
+            class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line px-3 text-sm font-medium text-fg hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
             :aria-expanded="filtersOpen"
             :aria-controls="filterPanelId"
             @click="filtersOpen = !filtersOpen"
@@ -41,7 +41,7 @@
             {{ filtersOpen ? '收起筛选' : '筛选' }}
             <span
               v-if="activeFilterCount"
-              class="rounded-full bg-brand-soft px-1.5 text-xs tabular-nums"
+              class="filter-skin-chip rounded-full px-1.5 text-xs tabular-nums"
               :aria-label="`已选 ${activeFilterCount} 项`"
             >
               {{ activeFilterCount }}
@@ -59,13 +59,13 @@
         <span
           v-for="tag in activeTags"
           :key="`${tag.key}-${tag.value}`"
-          class="inline-flex max-w-full items-center gap-1 rounded-full bg-brand-soft py-0.5 pl-2.5 pr-1 text-xs text-fg"
+          class="filter-skin-chip inline-flex max-w-full items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-xs"
         >
           <span class="shrink-0">{{ tag.label }}</span>
           <span class="min-w-0 break-words font-medium">{{ tag.value }}</span>
           <button
             type="button"
-            class="grid size-7 shrink-0 place-items-center rounded-full hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+            class="filter-remove grid size-7 shrink-0 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
             :aria-label="`移除${tag.label}筛选 ${tag.value}`"
             @click="emit('toggle-filter', tag.key, tag.value)"
           >
@@ -88,7 +88,7 @@
           <div class="relative isolate flex" :style="{ '--active-tab': activeGroupIndex }">
             <span
               aria-hidden="true"
-              class="filter-tab-indicator pointer-events-none absolute inset-y-0 left-0 -z-10 rounded-lg bg-surface shadow-sm"
+              class="filter-skin-chip filter-tab-indicator pointer-events-none absolute inset-y-0 left-0 -z-10 rounded-lg shadow-sm"
             />
             <button
               v-for="group in availableGroups"
@@ -96,8 +96,10 @@
               :key="group.key"
               type="button"
               role="tab"
-              class="filter-tab inline-flex min-h-10 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg px-1 text-sm font-medium motion-safe:transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-              :class="activeGroupKey === group.key ? 'text-fg' : 'text-fg-muted hover:text-fg'"
+              class="filter-tab inline-flex min-h-10 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-lg px-1 text-sm font-medium motion-safe:transition-colors focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
+              :class="
+                activeGroupKey === group.key ? 'filter-tab-selected' : 'text-fg-muted hover:text-fg'
+              "
               :aria-selected="activeGroupKey === group.key"
               :aria-controls="`${filterPanelId}-group-${group.key}`"
               :tabindex="activeGroupKey === group.key ? 0 : -1"
@@ -124,11 +126,11 @@
               v-for="option in group.options"
               :key="option"
               type="button"
-              class="min-h-10 max-w-full break-words rounded-full border px-3 py-1.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+              class="min-h-10 max-w-full break-words rounded-full px-3 py-1.5 text-sm font-medium motion-safe:transition-colors focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
               :class="
                 isSelected(group.key, option)
-                  ? 'border-accent bg-brand-soft font-semibold text-fg'
-                  : 'border-line text-fg-muted hover:bg-surface-muted hover:text-fg'
+                  ? 'filter-skin-chip'
+                  : 'text-fg-muted hover:bg-surface-muted hover:text-fg'
               "
               :aria-pressed="isSelected(group.key, option)"
               @click="emit('toggle-filter', group.key, option)"
@@ -214,6 +216,19 @@ function isSelected(key: ProductFilterKey, option: string): boolean {
 </script>
 
 <style scoped>
+.filter-skin-chip {
+  background-color: var(--skin-chip-bg);
+  color: var(--skin-ink-strong);
+}
+
+.filter-tab-selected {
+  color: var(--skin-ink-strong);
+}
+
+.filter-remove:hover {
+  background-color: var(--skin-chip-hover);
+}
+
 .filter-panel {
   --filter-tab-width: 4.25rem;
   /* 控制选中底色滑动速度 */
