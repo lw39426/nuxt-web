@@ -48,6 +48,11 @@ const menuItems = [
 
 // 组件变量状态管理
 const isScrolled = ref(false);
+/** 页面可关闭滚动变形；forceCapsule 继续支持固定胶囊形态。 */
+const isCapsule = computed(() => {
+  if (route.meta.navbarScrollBehavior === 'static') return false;
+  return Boolean(route.meta.forceCapsule) || isScrolled.value;
+});
 const isMobileMenuOpen = ref(false);
 const sentinelRef = ref<HTMLElement | null>(null);
 
@@ -91,30 +96,10 @@ const handleIntersection = (entries: IntersectionObserverEntry[]) => {
   const entry = entries[0];
   if (!entry) return;
 
-  // 强制胶囊态页面忽略滚动状态，恒定为胶囊
-  isScrolled.value = route.meta.forceCapsule ? true : !entry.isIntersecting;
+  isScrolled.value = !entry.isIntersecting;
 };
 
-// 监听强制胶囊态的路由 meta 变化（同一组件在软导航间复用时）
-watch(
-  () => route.meta.forceCapsule,
-  (newVal) => {
-    if (newVal) {
-      isScrolled.value = true;
-    } else {
-      // 退出强制胶囊：依据哨兵当前是否已滚出视口决定形态，避免停留在错误状态
-      const el = sentinelRef.value;
-      isScrolled.value = el ? el.getBoundingClientRect().bottom <= 0 : false;
-    }
-  }
-);
-
 onMounted(() => {
-  // 强制胶囊态页面初始直接落位为胶囊
-  if (route.meta.forceCapsule) {
-    isScrolled.value = true;
-  }
-
   // IntersectionObserver 监听哨兵，替代高频 scroll 事件，降低滚动开销。
   // observe 后会立即触发一次回调，天然完成初始状态落位（刷新时恢复滚动位置也不会抖动）
   observer = new IntersectionObserver(handleIntersection, {
@@ -144,11 +129,13 @@ onUnmounted(() => {
   <!-- 占位元素：外层导航改为 fixed 后脱离文档流，此处在正常流中占据等高空间，
        将页面内容顶到导航下方（等效原 sticky 的占位行为）。强制胶囊态的沉浸式页面不占位。 -->
   <div
-    v-if="!route.meta.forceCapsule"
+    v-if="route.meta.navbarScrollBehavior === 'static' || !route.meta.forceCapsule"
     :class="
-      route.path === '/about' || route.path === '/profile' || route.path.startsWith('/profile/')
-        ? 'h-[70px] md:h-[90px]'
-        : 'h-[60px] md:h-[80px]'
+      route.meta.fullViewport
+        ? 'navbar-viewport-spacer'
+        : route.path === '/about' || route.path === '/profile' || route.path.startsWith('/profile/')
+          ? 'h-[70px] md:h-[90px]'
+          : 'h-[60px] md:h-[80px]'
     "
     aria-hidden="true"
   />
@@ -161,7 +148,7 @@ onUnmounted(() => {
 
   <!-- 外层容器：始终 fixed 悬浮。脱离文档流后，导航壳的宽度/内边距过渡只重排自身，
        不触发整页 reflow —— 这是流畅切换的关键（参考 LongCat 的实现思路）。 -->
-  <div class="fixed top-[10px] left-0 right-0 z-50 w-full">
+  <div class="navbar-fixed-position fixed left-0 right-0 z-50 w-full">
     <!-- 点击面板外关闭：只覆盖导航栏以下区域，不拦截栏内按钮。
          nav 因 translateZ(0) 是独立层叠上下文，面板的 z-10 无法越出它参与比较，
          故必须显式给 nav 指定高于遮罩 z-0 的层级，否则遮罩会盖住面板吃掉菜单点击 -->
@@ -178,7 +165,7 @@ onUnmounted(() => {
            避免 UnoCSS 同优先级工具类（如 max-w-3xl / max-w-7xl）互相覆盖导致状态错乱。 -->
       <div
         class="nav-shell w-full flex items-center justify-between px-6 py-2 md:px-8 md:py-2"
-        :class="{ 'is-capsule': isScrolled }"
+        :class="{ 'is-capsule': isCapsule }"
       >
         <!-- 内容层 -->
         <div class="flex items-center justify-between w-full">
@@ -460,6 +447,15 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.navbar-fixed-position {
+  top: calc(10px + var(--app-viewport-top, 0px));
+}
+
+.navbar-viewport-spacer {
+  height: var(--app-navbar-space);
+  flex: none;
+}
+
 nav {
   /* 提升为独立合成层，滚动时不参与父层重绘 */
   transform: translateZ(0);

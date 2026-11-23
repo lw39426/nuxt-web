@@ -1,9 +1,13 @@
 <template>
-  <div class="font-sans text-fg bg-canvas selection:bg-brand-soft flex flex-col min-h-screen">
+  <div
+    ref="layoutRoot"
+    class="app-layout font-sans text-fg bg-canvas selection:bg-brand-soft flex flex-col min-h-screen"
+    :class="{ 'app-layout--viewport': $route.meta.fullViewport }"
+  >
     <!-- 导航栏 -->
     <AppNavbarLayout v-if="!$route.meta.hideNavbar" />
 
-    <div class="flex-1">
+    <div class="app-layout__content flex-1">
       <slot />
     </div>
 
@@ -20,7 +24,7 @@
     </ClientOnly>
 
     <!-- 全局悬浮对比栏（加入对比角色后出现） -->
-    <CompareBar />
+    <CompareBar v-if="!$route.meta.hideCompareBar" />
 
     <!-- 小星AI入口 -->
     <NuxtLink
@@ -46,11 +50,36 @@
 <script setup lang="ts">
 // 仅在开发环境挂载 FPS 面板，生产构建会被 tree-shake 掉
 const isDev = import.meta.dev;
+const layoutRoot = useTemplateRef<HTMLElement>('layoutRoot');
+const route = useRoute();
+useViewportLayout(layoutRoot, () => Boolean(route.meta.fullViewport));
 
 // 首屏预取价格开关：SSR 阶段即确定价格显隐，避免客户端二次渲染出现价格闪现
 await prefetchPriceSwitch();
 </script>
 <style scoped>
+.app-layout--viewport {
+  --app-navbar-space: 76px;
+  height: 100vh;
+  position: fixed;
+  inset-inline: 0;
+  top: var(--app-viewport-top, 0px);
+  height: var(--app-viewport-height, 100dvh);
+  min-height: 0;
+  overflow: hidden;
+}
+.app-layout--viewport .app-layout__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .app-layout--viewport {
+    --app-navbar-space: 96px;
+  }
+}
+
 @media (max-width: 1023px) {
   .profile-mobile-utility {
     display: none;
