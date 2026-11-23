@@ -1,10 +1,12 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type {
+  ProductBrand,
   ProductCatalogFilters,
   ProductCategory,
   ProductFilterKey,
   ProductSeriesGroup
 } from '~/types/product'
+import { useBrandApi } from '~/composables/api/brand'
 import { useCategoryApi } from '~/composables/api/category'
 import {
   applyProductFilters,
@@ -42,11 +44,13 @@ function parseCategoryId(value: unknown): number | null {
   return Number.isFinite(id) && id > 0 ? id : null
 }
 
+/** 从 URL 恢复各维度筛选，品牌值为 code 而非名称。 */
 function parseFilters(query: QueryRecord): ProductCatalogFilters {
   return {
     character_type: toArray(query.type),
     era: toArray(query.era),
-    tag: toArray(query.tag)
+    tag: toArray(query.tag),
+    brand: toArray(query.brand)
   }
 }
 
@@ -56,11 +60,13 @@ function sameArray(a: string[], b: string[]): boolean {
   return b.every((item) => set.has(item))
 }
 
+/** 比较筛选状态，避免 URL 与品牌多选状态之间重复同步。 */
 function sameFilters(a: ProductCatalogFilters, b: ProductCatalogFilters): boolean {
   return (
     sameArray(a.character_type, b.character_type) &&
     sameArray(a.era, b.era) &&
-    sameArray(a.tag, b.tag)
+    sameArray(a.tag, b.tag) &&
+    sameArray(a.brand, b.brand)
   )
 }
 
@@ -71,11 +77,15 @@ function sameQuery(a: Record<string, string>, b: Record<string, string>): boolea
   return aKeys.every((key) => a[key] === b[key])
 }
 
+/** 组合商品目录、真实品牌选项与 URL 驱动的前端筛选状态。 */
 export async function useProductCatalog() {
   const route = useRoute()
   const router = useRouter()
-  const toast = import.meta.client ? useToast() : null
+  // 客户端标记；happy-dom 等测试环境未注入 import.meta.client 时回退到 window 判断
+  const isClient = import.meta.client || typeof window !== 'undefined'
+  const toast = isClient ? useToast() : null
   const { getProductCatalog, getProducts } = useCategoryApi()
+  const { getEnabledBrands } = useBrandApi()
 
   const selectedCategoryId = ref<number | null>(parseCategoryId(route.query.category))
   const selectedFilters = ref<ProductCatalogFilters>(parseFilters(route.query as QueryRecord))
@@ -88,6 +98,16 @@ export async function useProductCatalog() {
     if (id != null) void loadCategory(id)
   })
 
+  const {
+    data: brandData,
+    error: brandError,
+    status: brandStatus,
+    refresh: refreshBrands
+  } = useAsyncData('product-brands', () => getEnabledBrands(), {
+    default: () => [] as ProductBrand[],
+    lazy: true
+  })
+
   const { data: catalogData, error: catalogError } = await useAsyncData(
     'product-catalog',
     () => getProductCatalog(),
@@ -96,6 +116,9 @@ export async function useProductCatalog() {
     }
   )
 
+  const brands = computed<ProductBrand[]>(() => brandData.value || [])
+  const brandsLoading = computed(() => brandStatus.value === 'pending')
+  const brandsError = computed(() => (brandError.value ? '品牌加载失败，请重试' : ''))
   const categories = computed<ProductCategory[]>(() => catalogData.value?.categories || [])
   const allSeries = computed<ProductSeriesGroup[]>(() => catalogData.value?.series || [])
   const allProducts = computed(() => allSeries.value.flatMap((series) => series.products))
@@ -115,9 +138,11 @@ export async function useProductCatalog() {
     return allSeries.value.filter((series) => series.categoryId === id)
   })
 
-  const filterGroups = computed(() => buildProductFilterGroups(allProducts.value))
+  const filterGroups = computed(() => buildProductFilterGroups(allProducts.value, brands.value))
   const series = computed(() => applyProductFilters(activeSeries.value, selectedFilters.value))
-  const activeFilterTags = computed(() => buildActiveFilterTags(selectedFilters.value))
+  const activeFilterTags = computed(() =>
+    buildActiveFilterTags(selectedFilters.value, brands.value)
+  )
   const activeFilterCount = computed(() => countActiveFilters(selectedFilters.value))
   const filteredCharacterCount = computed(() => countSeriesProducts(series.value))
   const totalCharacters = computed(() =>
@@ -125,6 +150,11 @@ export async function useProductCatalog() {
   )
   const hasActiveFilters = computed(() => activeFilterCount.value > 0)
   const hasCategoryFilter = computed(() => selectedCategoryId.value != null)
+
+  /** 重新加载全部品牌，不清除当前品牌选择或其他筛选。 */
+  function retryBrands() {
+    if (brandStatus.value !== 'pending') void refreshBrands()
+  }
 
   async function fetchCategorySeries(id: number): Promise<ProductSeriesGroup> {
     const first = await getProducts(id, { page: 1, pageSize: CATEGORY_PAGE_SIZE })
@@ -172,7 +202,7 @@ export async function useProductCatalog() {
       const item = await fetchCategorySeries(id)
       categoryCache.set(id, item)
     } catch {
-      if (import.meta.client) {
+      if (isClient) {
         toast?.add({
           id: 'product-category-error',
           title: '加载失败',
@@ -192,6 +222,7 @@ export async function useProductCatalog() {
     if (id != null) void loadCategory(id)
   }
 
+  /** 切换同维度多选项；品牌选项保存 code。 */
   function toggleFilter(key: ProductFilterKey, option: string) {
     const list = selectedFilters.value[key]
     const index = list.indexOf(option)
@@ -202,6 +233,7 @@ export async function useProductCatalog() {
     }
   }
 
+  /** 重置品牌及其他属性筛选，保留已选分类。 */
   function clearFilters() {
     selectedFilters.value = createEmptyProductFilters()
   }
@@ -210,6 +242,7 @@ export async function useProductCatalog() {
     selectCategory(null)
   }
 
+  /** 将已选筛选序列化到 URL，品牌多选用逗号分隔 code。 */
   function buildQuery(): Record<string, string> {
     const query: Record<string, string> = {}
     if (selectedCategoryId.value != null) query.category = String(selectedCategoryId.value)
@@ -222,9 +255,13 @@ export async function useProductCatalog() {
     if (selectedFilters.value.tag.length > 0) {
       query.tag = selectedFilters.value.tag.join(',')
     }
+    if (selectedFilters.value.brand.length > 0) {
+      query.brand = selectedFilters.value.brand.join(',')
+    }
     return query
   }
 
+  /** 读取页面负责的 URL 参数，保留其他页面参数的既有语义。 */
   function readQuery(): Record<string, string> {
     const query: Record<string, string> = {}
     const raw = route.query as QueryRecord
@@ -236,13 +273,15 @@ export async function useProductCatalog() {
     if (era.length > 0) query.era = era.join(',')
     const tag = toArray(raw.tag)
     if (tag.length > 0) query.tag = tag.join(',')
+    const brand = toArray(raw.brand)
+    if (brand.length > 0) query.brand = brand.join(',')
     return query
   }
 
   watch(
     [selectedCategoryId, selectedFilters],
     () => {
-      if (!import.meta.client) return
+      if (!isClient) return
       const next = buildQuery()
       if (sameQuery(next, readQuery())) return
       const merged = { ...(route.query as Record<string, any>) }
@@ -250,6 +289,7 @@ export async function useProductCatalog() {
       delete merged.type
       delete merged.era
       delete merged.tag
+      delete merged.brand
       Object.assign(merged, next)
       router.replace({ query: merged })
     },
@@ -271,7 +311,7 @@ export async function useProductCatalog() {
     }
   )
 
-  if (import.meta.client) {
+  if (isClient) {
     watch(
       catalogError,
       (error) => {
@@ -298,8 +338,11 @@ export async function useProductCatalog() {
     filteredCharacterCount,
     totalCharacters,
     categoryLoading,
+    brandsLoading,
+    brandsError,
     hasActiveFilters,
     hasCategoryFilter,
+    retryBrands,
     selectCategory,
     toggleFilter,
     clearFilters,

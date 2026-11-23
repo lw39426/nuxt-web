@@ -104,14 +104,20 @@ export interface ProductSeriesGroup {
   total: number
 }
 
-/** 角色筛选维度 */
-export type ProductFilterKey = 'character_type' | 'era' | 'tag'
+/** 角色筛选维度；品牌筛选值使用品牌 code。 */
+export type ProductFilterKey = 'character_type' | 'era' | 'tag' | 'brand'
+
+/** 筛选候选项，区分实际筛选值与展示名称。 */
+export interface ProductFilterOption {
+  value: string
+  label: string
+}
 
 /** 筛选维度候选项 */
 export interface ProductFilterOptionGroup {
   key: ProductFilterKey
   label: string
-  options: string[]
+  options: ProductFilterOption[]
 }
 
 /** 已选筛选标签 */
@@ -119,6 +125,7 @@ export interface ProductActiveFilterTag {
   key: ProductFilterKey
   label: string
   value: string
+  displayValue: string
 }
 
 /** 筛选状态 */

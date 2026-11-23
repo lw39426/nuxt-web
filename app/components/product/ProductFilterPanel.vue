@@ -1,3 +1,82 @@
+<script setup lang="ts">
+import { computed, shallowRef, useId } from 'vue';
+import type {
+  ProductActiveFilterTag,
+  ProductCatalogFilters,
+  ProductCategory,
+  ProductFilterKey,
+  ProductFilterOptionGroup
+} from '~/types/product';
+
+const props = defineProps<{
+  categories: ProductCategory[];
+  selectedCategoryId: number | null;
+  filterGroups: ProductFilterOptionGroup[];
+  selectedFilters: ProductCatalogFilters;
+  activeTags: ProductActiveFilterTag[];
+  activeFilterCount: number;
+  resultCount: number;
+  brandsLoading: boolean;
+  brandsError: string;
+}>();
+
+const emit = defineEmits<{
+  'select-category': [id: number | null];
+  'toggle-filter': [key: ProductFilterKey, option: string];
+  'clear-filters': [];
+  'retry-brands': [];
+}>();
+
+const filtersOpen = shallowRef(false);
+const filterPanelId = useId();
+const availableGroups = computed(() =>
+  props.filterGroups.filter((group) => group.options.length || group.key === 'brand')
+);
+const selectedGroupKey = shallowRef<ProductFilterKey>();
+const activeGroupIndex = computed(() =>
+  Math.max(
+    0,
+    availableGroups.value.findIndex((group) => group.key === selectedGroupKey.value)
+  )
+);
+const activeGroupKey = computed(() => availableGroups.value[activeGroupIndex.value]?.key);
+
+/** 用方向键及 Home/End 切换筛选标签，并移动键盘焦点。 */
+function onTabKeydown(event: KeyboardEvent) {
+  const groups = availableGroups.value;
+  const current = activeGroupIndex.value;
+
+  let next: number;
+  switch (event.key) {
+    case 'ArrowLeft':
+      next = (current + groups.length - 1) % groups.length;
+      break;
+    case 'ArrowRight':
+      next = (current + 1) % groups.length;
+      break;
+    case 'Home':
+      next = 0;
+      break;
+    case 'End':
+      next = groups.length - 1;
+      break;
+    default:
+      return;
+  }
+
+  const group = groups[next];
+  if (!group) return;
+  event.preventDefault();
+  selectedGroupKey.value = group.key;
+  document.getElementById(`${filterPanelId}-tab-${group.key}`)?.focus();
+}
+
+/** 以候选项实际值判定选中，品牌按 code 比较而非名称。 */
+function isSelected(key: ProductFilterKey, option: string): boolean {
+  return props.selectedFilters[key].includes(option);
+}
+</script>
+
 <template>
   <div class="bg-canvas">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
@@ -62,11 +141,11 @@
           class="filter-skin-chip inline-flex max-w-full items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-xs"
         >
           <span class="shrink-0">{{ tag.label }}</span>
-          <span class="min-w-0 break-words font-medium">{{ tag.value }}</span>
+          <span class="min-w-0 break-words font-medium">{{ tag.displayValue }}</span>
           <button
             type="button"
             class="filter-remove grid size-7 shrink-0 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
-            :aria-label="`移除${tag.label}筛选 ${tag.value}`"
+            :aria-label="`移除${tag.label}筛选 ${tag.displayValue}`"
             @click="emit('toggle-filter', tag.key, tag.value)"
           >
             <span class="i-carbon-close w-4 h-4 inline-block" />
@@ -82,10 +161,10 @@
         <div
           role="tablist"
           aria-label="筛选类别"
-          class="inline-flex max-w-full rounded-xl bg-surface-muted p-1 align-top"
+          class="flex w-fit max-w-full overflow-x-auto rounded-xl bg-surface-muted p-1 align-top"
           @keydown="onTabKeydown"
         >
-          <div class="relative isolate flex" :style="{ '--active-tab': activeGroupIndex }">
+          <div class="relative isolate flex shrink-0" :style="{ '--active-tab': activeGroupIndex }">
             <span
               aria-hidden="true"
               class="filter-skin-chip filter-tab-indicator pointer-events-none absolute inset-y-0 left-0 -z-10 rounded-lg shadow-sm"
@@ -119,23 +198,44 @@
           :key="group.key"
           role="tabpanel"
           :aria-labelledby="`${filterPanelId}-tab-${group.key}`"
+          :aria-busy="group.key === 'brand' && brandsLoading"
           class="filter-tab-panel min-w-0"
         >
+          <template v-if="group.key === 'brand'">
+            <p v-if="brandsLoading" role="status" class="py-2 text-sm text-fg-muted">
+              正在加载品牌…
+            </p>
+            <div
+              v-else-if="brandsError"
+              role="alert"
+              class="flex flex-wrap items-center gap-2 text-sm text-fg-muted"
+            >
+              <p>{{ brandsError }}</p>
+              <button
+                type="button"
+                class="min-h-11 rounded-lg px-3 text-sm font-medium text-fg hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
+                @click="emit('retry-brands')"
+              >
+                重试品牌
+              </button>
+            </div>
+            <p v-else-if="!group.options.length" class="py-2 text-sm text-fg-muted">暂无启用品牌</p>
+          </template>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="option in group.options"
-              :key="option"
+              :key="option.value"
               type="button"
               class="min-h-10 max-w-full break-words rounded-full px-3 py-1.5 text-sm font-medium motion-safe:transition-colors focus-visible:outline-2 focus-visible:outline-[var(--skin-accent)]"
               :class="
-                isSelected(group.key, option)
+                isSelected(group.key, option.value)
                   ? 'filter-skin-chip'
                   : 'text-fg-muted hover:bg-surface-muted hover:text-fg'
               "
-              :aria-pressed="isSelected(group.key, option)"
-              @click="emit('toggle-filter', group.key, option)"
+              :aria-pressed="isSelected(group.key, option.value)"
+              @click="emit('toggle-filter', group.key, option.value)"
             >
-              {{ option }}
+              {{ option.label }}
             </button>
           </div>
         </div>
@@ -143,77 +243,6 @@
     </div>
   </section>
 </template>
-
-<script setup lang="ts">
-import type {
-  ProductActiveFilterTag,
-  ProductCatalogFilters,
-  ProductCategory,
-  ProductFilterKey,
-  ProductFilterOptionGroup
-} from '~/types/product';
-
-const props = defineProps<{
-  categories: ProductCategory[];
-  selectedCategoryId: number | null;
-  filterGroups: ProductFilterOptionGroup[];
-  selectedFilters: ProductCatalogFilters;
-  activeTags: ProductActiveFilterTag[];
-  activeFilterCount: number;
-  resultCount: number;
-}>();
-
-const emit = defineEmits<{
-  'select-category': [id: number | null];
-  'toggle-filter': [key: ProductFilterKey, option: string];
-  'clear-filters': [];
-}>();
-
-const filtersOpen = shallowRef(false);
-const filterPanelId = useId();
-const availableGroups = computed(() => props.filterGroups.filter((group) => group.options.length));
-const selectedGroupKey = shallowRef<ProductFilterKey>();
-const activeGroupIndex = computed(() =>
-  Math.max(
-    0,
-    availableGroups.value.findIndex((group) => group.key === selectedGroupKey.value)
-  )
-);
-const activeGroupKey = computed(() => availableGroups.value[activeGroupIndex.value]?.key);
-
-function onTabKeydown(event: KeyboardEvent) {
-  const groups = availableGroups.value;
-  const current = activeGroupIndex.value;
-
-  let next: number;
-  switch (event.key) {
-    case 'ArrowLeft':
-      next = (current + groups.length - 1) % groups.length;
-      break;
-    case 'ArrowRight':
-      next = (current + 1) % groups.length;
-      break;
-    case 'Home':
-      next = 0;
-      break;
-    case 'End':
-      next = groups.length - 1;
-      break;
-    default:
-      return;
-  }
-
-  const group = groups[next];
-  if (!group) return;
-  event.preventDefault();
-  selectedGroupKey.value = group.key;
-  document.getElementById(`${filterPanelId}-tab-${group.key}`)?.focus();
-}
-
-function isSelected(key: ProductFilterKey, option: string): boolean {
-  return props.selectedFilters[key].includes(option);
-}
-</script>
 
 <style scoped>
 .filter-skin-chip {

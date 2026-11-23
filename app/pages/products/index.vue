@@ -11,8 +11,11 @@ const {
   filteredCharacterCount,
   totalCharacters,
   categoryLoading,
+  brandsLoading,
+  brandsError,
   hasActiveFilters,
   hasCategoryFilter,
+  retryBrands,
   selectCategory,
   toggleFilter,
   clearFilters,
@@ -22,7 +25,7 @@ const {
 useSeoMeta({
   title: '角色图鉴',
   description:
-    '浏览 YouMi 角色图鉴，按作品系列、角色类型、年代与标签筛选，收录动漫与影视中的海量角色档案、能力设定与人物关系。'
+    '浏览 YouMi 角色图鉴，按作品系列、品牌、角色类型、年代与标签筛选，收录动漫与影视中的海量角色档案、能力设定与人物关系。'
 });
 </script>
 
@@ -38,9 +41,12 @@ useSeoMeta({
       :active-tags="activeFilterTags"
       :active-filter-count="activeFilterCount"
       :result-count="filteredCharacterCount"
+      :brands-loading="brandsLoading"
+      :brands-error="brandsError"
       @select-category="selectCategory"
       @toggle-filter="toggleFilter"
       @clear-filters="clearFilters"
+      @retry-brands="retryBrands"
     />
 
     <div class="bg-canvas pt-4 md:pt-8">
