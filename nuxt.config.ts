@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const isProd = process.env.NODE_ENV === 'production'
+const apiSecretBase = process.env.NUXT_API_SECRET_BASE || 'http://127.0.0.1:5050/api/v1'
 
 function envNumber(key: string, fallback: number): number {
   const raw = process.env[key]
@@ -144,13 +145,14 @@ export default defineNuxtConfig({
     // 仅服务端可用：后端地址（含路由前缀），BFF 层直连
     // - 本地: http://127.0.0.1:5050/api/v1（直连 Flask）
     // - 线上: http://127.0.0.1:5050/api/v1（服务器回环地址直连 Flask）
-    apiSecretBase: process.env.NUXT_API_SECRET_BASE || 'http://127.0.0.1:5050/api/v1',
+    apiSecretBase,
     // 搜索位于 /api/search，可单独配置上游完整地址。
     apiSearchUrl: process.env.NUXT_API_SEARCH_URL || '',
     // 仅服务端可用：BFF 请求 Flask 的超时时间（毫秒）
     apiTimeout: envNumber('NUXT_API_TIMEOUT', 8000),
     priceSwitchDefault: false,
     public: {
+      chatSocketOrigin: process.env.NUXT_PUBLIC_CHAT_SOCKET_ORIGIN || '',
       // 站点正式域名（供客户端读取，与 site.url 保持同源）
       siteUrl,
       // 是否启用 Mock 模式（true=强制 Mock，false=优先调 Flask 并在失败时降级）
@@ -180,6 +182,14 @@ export default defineNuxtConfig({
     strict: true
   },
   nitro: {
+    devProxy: {
+      '/socket.io': {
+        target: new URL('/socket.io', apiSecretBase).href,
+        changeOrigin: true,
+        xfwd: true,
+        ws: true
+      }
+    },
     // 生产环境对静态资源启用 gzip/brotli 预压缩，减小传输体积
     compressPublicAssets: isProd ? { gzip: true, brotli: true } : false
   },

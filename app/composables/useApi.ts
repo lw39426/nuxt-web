@@ -16,6 +16,12 @@ export interface ApiResponse<T> {
 
 export interface ApiRequestOptions {
   suppressErrorToast?: boolean
+  /**
+   * 请求作用域：相同指纹的请求默认复用同一 Promise；传入不同作用域可避免
+   * 不同会话（如切换账号后）误用旧账号仍在执行的请求结果。
+   * 不传时保持既有全局去重行为，其他调用方无需改动。
+   */
+  scope?: string
 }
 
 /**
@@ -120,8 +126,9 @@ export function useApi() {
     options: any,
     requestOptions: ApiRequestOptions = {}
   ): Promise<T> {
-    // 生成唯一请求指纹 (Method + URL + Params + Body)
-    const requestKey = `${options.method || 'GET'}_${url}_${JSON.stringify(options.params || {})}_${JSON.stringify(options.body || {})}`
+    // 生成唯一请求指纹 (Method + URL + Params + Body)；作用域用于隔离不同会话
+    const scope = requestOptions.scope ? `_${requestOptions.scope}` : ''
+    const requestKey = `${options.method || 'GET'}_${url}_${JSON.stringify(options.params || {})}_${JSON.stringify(options.body || {})}${scope}`
 
     // 如果已经有完全相同的请求在进行中，直接复用它的 Promise，防止并发竞态
     if (requestLocks.has(requestKey)) {

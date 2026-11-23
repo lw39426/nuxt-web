@@ -1,7 +1,8 @@
 import { useAuthStore } from '~/stores/auth'
 import { useUiStore } from '~/stores/ui'
 
-export default defineNuxtRouteMiddleware((_to) => {
+/** 恢复真实登录态并校验受保护页面，未登录时进入现有登录流程。 */
+export default defineNuxtRouteMiddleware(() => {
   const authStore = useAuthStore()
   const uiStore = useUiStore()
 

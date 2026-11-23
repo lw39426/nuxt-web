@@ -20,6 +20,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: '个人资料', icon: 'i-carbon-user', path: '/profile/account' },
+  { name: '消息中心', icon: 'i-carbon-chat', path: '/chat' },
   { name: '每日签到', icon: 'i-carbon-calendar', path: '/profile/checkin' },
   // { name: '我的订单', icon: 'i-carbon-package', path: '/profile/orders' },
   // { name: '地址管理', icon: 'i-carbon-location', path: '/profile/addresses' },

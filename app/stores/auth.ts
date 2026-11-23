@@ -5,6 +5,8 @@ import { useCookie } from '#imports'
 export interface AuthUser {
   id: number
   username: string
+  nickname?: string | null
+  avatar?: string | null
 }
 
 export const useAuthStore = defineStore('auth', () => {
