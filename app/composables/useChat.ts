@@ -433,7 +433,7 @@ export function useChat() {
     clearTimer(ack.temp_id)
 
     if (ack.success === true) {
-      if (isValidId(ack.message_id)) {
+      if (isValidId(ack.message_id) && active.value === item.room) {
         merge([
           {
             id: ack.message_id,

@@ -14,7 +14,7 @@ const props = withDefaults(
     group?: boolean;
     showStatus?: boolean;
   }>(),
-  { size: 'md', group: false, showStatus: false }
+  { participant: undefined, name: undefined, size: 'md', group: false, showStatus: false }
 );
 
 const dimensions = { xs: 28, sm: 36, md: 44, lg: 84 } as const;

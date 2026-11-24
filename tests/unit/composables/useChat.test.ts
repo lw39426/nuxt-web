@@ -221,6 +221,26 @@ describe('useChat 真实传输', () => {
     teardown()
   })
 
+  it('切换会话后旧消息的成功回执只确认发送，不写入当前消息区', async () => {
+    apiGet.mockResolvedValue({ rooms: [], messages: [], pagination: { has_next: false } })
+    const chat = await setup()
+    fakeSocket.trigger('connected', { user_id: 1, user_type: 'NormalUser' })
+    await chat.select(1)
+    expect(chat.send('旧会话消息')).toBe(true)
+    const temp = fakeSocket.emitted.find((e) => e.event === 'send_message')?.payload.temp_id
+    await chat.select(2)
+    fakeSocket.trigger('message_ack', {
+      temp_id: temp,
+      success: true,
+      message_id: 100,
+      timestamp: '2026-11-19T03:00:00Z'
+    })
+    expect(chat.active.value).toBe(2)
+    expect(chat.messages.value).toEqual([])
+    expect(Object.keys(chat.pending)).toEqual([])
+    teardown()
+  })
+
   it('ACK 先到再收到 new_message 时只保留一条，且不擦除真实 sender', async () => {
     apiGet
       .mockResolvedValueOnce({
