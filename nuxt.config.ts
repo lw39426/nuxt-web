@@ -34,6 +34,10 @@ const sentryEnabled = process.env.NUXT_PUBLIC_SENTRY_ENABLED
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-11-27',
+  experimental: {
+    appManifest: true,
+    checkOutdatedBuildInterval: 120000
+  },
   colorMode: {
     preference: 'system',
     fallback: 'light',
@@ -194,6 +198,9 @@ export default defineNuxtConfig({
     compressPublicAssets: isProd ? { gzip: true, brotli: true } : false
   },
   routeRules: {
+    '/_nuxt/builds/latest.json': {
+      headers: { 'Cache-Control': 'no-store' }
+    },
     '/hero02-desktop-v1.webp': {
       headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
     },

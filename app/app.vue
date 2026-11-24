@@ -8,6 +8,7 @@
       <NuxtPage />
     </NuxtLayout>
     <ClientOnly>
+      <AppUpdateNotice />
       <AppGlobalLoader />
       <AuthModal />
     </ClientOnly>
