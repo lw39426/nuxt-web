@@ -7,6 +7,7 @@ export interface AuthUser {
   username: string
   nickname?: string | null
   avatar?: string | null
+  bg_cover?: string | null
 }
 
 export const useAuthStore = defineStore('auth', () => {

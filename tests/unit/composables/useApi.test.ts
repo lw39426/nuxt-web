@@ -86,6 +86,14 @@ describe('useApi', () => {
     return { api, cookieStore, useCookie, stubToastAdd }
   }
 
+  /** 将用户模块接入真实 useApi 包装器，验证改密请求的实际鉴权选项。 */
+  async function freshUserApi() {
+    await freshApi()
+    vi.stubGlobal('useApi', () => api)
+    const { useUserApi } = await import('~/composables/api/user')
+    return useUserApi()
+  }
+
   beforeEach(() => {
     mockClient.mockReset()
     $fetch.mockReset()
@@ -274,5 +282,85 @@ describe('useApi', () => {
 
     await api.get('/secure')
     expect(stubToastAdd).not.toHaveBeenCalled()
+  })
+
+  it.each(['参数错误', '旧密码错误'])('改密返回 400 %s 时保留登录态和业务消息', async (message) => {
+    const { updatePassword } = await freshUserApi()
+    useCookie('auth_token').value = 'current_at'
+    useCookie('refresh_token').value = 'current_rt'
+    const { authState, authStore, uiStore } = getFakeStores()
+    authState.token.value = 'current_at'
+    authState.refreshToken.value = 'current_rt'
+    mockClient.mockRejectedValueOnce({ status: 400, data: { message } })
+
+    await expect(
+      updatePassword({ oldPassword: 'wrong', newPassword: 'new-password' })
+    ).rejects.toMatchObject({ code: 400, message })
+    expect(mockClient).toHaveBeenCalledTimes(1)
+    expect($fetch).not.toHaveBeenCalled()
+    expect(authStore.clearAuth).not.toHaveBeenCalled()
+    expect(uiStore.openAuthModal).not.toHaveBeenCalled()
+    expect(authState.token.value).toBe('current_at')
+    expect(authState.refreshToken.value).toBe('current_rt')
+    expect(useCookie('auth_token').value).toBe('current_at')
+    expect(useCookie('refresh_token').value).toBe('current_rt')
+    expect(stubToastAdd).not.toHaveBeenCalled()
+  })
+
+  it('改密返回 401 时正常刷新并重试原请求', async () => {
+    const { updatePassword } = await freshUserApi()
+    useCookie('refresh_token').value = 'rt_valid'
+    const payload = { oldPassword: 'old-password', newPassword: 'new-password' }
+    mockClient
+      .mockRejectedValueOnce({ status: 401, data: { message: '访问令牌失效' } })
+      .mockResolvedValueOnce({ code: 200, message: '密码修改成功，请重新登录', data: null })
+    $fetch.mockResolvedValueOnce({ code: 200, data: { access_token: 'new_at' } })
+
+    await expect(updatePassword(payload)).resolves.toBeNull()
+    expect($fetch).toHaveBeenCalledTimes(1)
+    expect($fetch).toHaveBeenCalledWith('/api/v1/auth/refreshToken', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer rt_valid' }
+    })
+    expect(mockClient).toHaveBeenCalledTimes(2)
+    expect(mockClient).toHaveBeenNthCalledWith(2, '/user/updatePassword', {
+      method: 'POST',
+      body: payload
+    })
+    expect(stubToastAdd).not.toHaveBeenCalled()
+  })
+
+  it('改密刷新后返回 400 时不清除登录态或重复显示全局提示', async () => {
+    const { updatePassword } = await freshUserApi()
+    useCookie('refresh_token').value = 'rt_valid'
+    mockClient
+      .mockRejectedValueOnce({ status: 401, data: { message: '访问令牌失效' } })
+      .mockRejectedValueOnce({ status: 400, data: { message: '旧密码错误' } })
+    $fetch.mockResolvedValueOnce({ code: 200, data: { access_token: 'new_at' } })
+
+    await expect(
+      updatePassword({ oldPassword: 'wrong', newPassword: 'new-password' })
+    ).rejects.toMatchObject({ code: 400, message: '旧密码错误' })
+    expect($fetch).toHaveBeenCalledTimes(1)
+    expect(mockClient).toHaveBeenCalledTimes(2)
+    expect(getFakeStores().authStore.clearAuth).not.toHaveBeenCalled()
+    expect(getFakeStores().uiStore.openAuthModal).not.toHaveBeenCalled()
+    expect(stubToastAdd).not.toHaveBeenCalled()
+  })
+
+  it('同一上传接口的不同 FormData 不会共用请求', async () => {
+    await freshApi()
+    const first = new FormData()
+    first.append('file', 'first-image')
+    const second = new FormData()
+    second.append('file', 'second-image')
+    mockClient.mockResolvedValueOnce({ code: 200, data: { avatar: '/one.png' } })
+    mockClient.mockResolvedValueOnce({ code: 200, data: { avatar: '/two.png' } })
+    const result = await Promise.all([
+      api.post('/user/avatar', first),
+      api.post('/user/avatar', second)
+    ])
+    expect(mockClient).toHaveBeenCalledTimes(2)
+    expect(result).toEqual([{ avatar: '/one.png' }, { avatar: '/two.png' }])
   })
 })

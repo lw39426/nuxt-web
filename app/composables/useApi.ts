@@ -2,6 +2,8 @@ import { useAuthStore } from '~/stores/auth'
 import { useUiStore } from '~/stores/ui'
 import { useCookie, useToast } from '#imports'
 
+let uploadRequestSequence = 0
+
 export interface ApiError {
   code?: number
   message: string
@@ -15,6 +17,7 @@ export interface ApiResponse<T> {
 }
 
 export interface ApiRequestOptions {
+  skipAuthRefresh?: boolean
   suppressErrorToast?: boolean
   /**
    * 请求作用域：相同指纹的请求默认复用同一 Promise；传入不同作用域可避免
@@ -89,7 +92,8 @@ export function useApi() {
     const err: ApiError = {
       message: isNetworkError
         ? '网络连接失败，请检查网络后重试'
-        : rawMessage || '系统繁忙，请稍后再试',
+        : (statusCode === 413 ? '图片超出服务器上传限制，请缩小后重试' : rawMessage) ||
+          '系统繁忙，请稍后再试',
       code: statusCode
     }
 
@@ -127,8 +131,9 @@ export function useApi() {
     requestOptions: ApiRequestOptions = {}
   ): Promise<T> {
     // 生成唯一请求指纹 (Method + URL + Params + Body)；作用域用于隔离不同会话
+    const uploadScope = options.body instanceof FormData ? `_upload_${++uploadRequestSequence}` : ''
     const scope = requestOptions.scope ? `_${requestOptions.scope}` : ''
-    const requestKey = `${options.method || 'GET'}_${url}_${JSON.stringify(options.params || {})}_${JSON.stringify(options.body || {})}${scope}`
+    const requestKey = `${options.method || 'GET'}_${url}_${JSON.stringify(options.params || {})}_${JSON.stringify(options.body || {})}${scope}${uploadScope}`
 
     // 如果已经有完全相同的请求在进行中，直接复用它的 Promise，防止并发竞态
     if (requestLocks.has(requestKey)) {
@@ -153,7 +158,7 @@ export function useApi() {
         const isUnauthorized = statusCode === 401
 
         // 非 401 错误，直接走全局错误处理
-        if (!isUnauthorized) {
+        if (!isUnauthorized || requestOptions.skipAuthRefresh) {
           return handleError(e, requestOptions.suppressErrorToast)
         }
 
@@ -227,7 +232,7 @@ export function useApi() {
             }
             return retryResponse.data
           } catch (retryErr) {
-            return handleError(retryErr)
+            return handleError(retryErr, requestOptions.suppressErrorToast)
           }
         } else {
           // 刷新失败，说明登录已经失效
@@ -267,7 +272,7 @@ export function useApi() {
    */
   function post<T>(
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, any> | FormData,
     requestOptions?: ApiRequestOptions
   ): Promise<T> {
     return request<T>(url, { method: 'POST', body }, requestOptions)
@@ -278,7 +283,7 @@ export function useApi() {
    */
   function put<T>(
     url: string,
-    body?: Record<string, any>,
+    body?: Record<string, any> | FormData,
     requestOptions?: ApiRequestOptions
   ): Promise<T> {
     return request<T>(url, { method: 'PUT', body }, requestOptions)
