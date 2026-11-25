@@ -260,7 +260,13 @@ onUnmounted(() => {
                   class="nav-avatar flex h-9 w-9 items-center justify-center rounded-full bg-skin-solid text-sm font-bold"
                   aria-hidden="true"
                 >
-                  {{ avatarLetter }}
+                  <UAvatar
+                    :src="authStore.user?.avatar || undefined"
+                    :text="avatarLetter"
+                    alt=""
+                    class="size-full bg-transparent"
+                    :ui="{ image: 'object-cover', fallback: 'text-inherit font-bold' }"
+                  />
                 </span>
               </NuxtLink>
               <div
@@ -276,7 +282,13 @@ onUnmounted(() => {
                   aria-label="打开用户菜单"
                   @click="toggleDropdown"
                 >
-                  {{ avatarLetter }}
+                  <UAvatar
+                    :src="authStore.user?.avatar || undefined"
+                    :text="avatarLetter"
+                    alt=""
+                    class="size-full bg-transparent"
+                    :ui="{ image: 'object-cover', fallback: 'text-inherit font-bold' }"
+                  />
                 </button>
               </div>
             </template>
@@ -339,7 +351,13 @@ onUnmounted(() => {
               <div
                 class="nav-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-skin-solid text-sm font-bold"
               >
-                {{ avatarLetter }}
+                <UAvatar
+                  :src="authStore.user?.avatar || undefined"
+                  :text="avatarLetter"
+                  alt=""
+                  class="size-full bg-transparent"
+                  :ui="{ image: 'object-cover', fallback: 'text-inherit font-bold' }"
+                />
               </div>
               <div class="min-w-0">
                 <p class="truncate text-[15px] font-semibold text-fg">

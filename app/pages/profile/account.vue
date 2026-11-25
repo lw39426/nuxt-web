@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth';
 import PageHeader from '~/components/ui/PageHeader.vue';
 import { useUserApi, type UserInfo } from '~/composables/api/user';
 import { useCheckinApi } from '~/composables/api/checkin';
 import { getLocalTimeZone, parseDate, today } from '@internationalized/date';
 
-const { getInfo, updateInfo } = useUserApi();
+const { getInfo, updateInfo, uploadImage } = useUserApi();
 
 const toast = useToast();
+const auth = useAuthStore();
+const imageInput = useTemplateRef<HTMLInputElement>('imageInput');
+const uploadTarget = shallowRef<'avatar' | 'bgCover'>('avatar');
+const uploading = shallowRef(false);
+const pendingImage = shallowRef<File>();
+const pendingImageUrl = shallowRef('');
 
 const isLoading = ref(true);
 const isEditing = ref(false);
@@ -45,7 +52,7 @@ const getGenderLabel = (gender: string | undefined) => {
   return '保密';
 };
 
-const account = shallowRef({ username: '', phone: '', createdAt: '', avatar: '' });
+const account = shallowRef({ username: '', phone: '', createdAt: '', avatar: '', cover: '' });
 const registrationFormatter = new Intl.DateTimeFormat('zh-CN', {
   dateStyle: 'medium',
   timeStyle: 'short',
@@ -78,8 +85,9 @@ const toProfileForm = (data: UserInfo) => ({
   description: data.description || ''
 });
 
-/** 加载用户资料 */
+/** 加载用户资料，并同步当前账号的封面；迟到的读取不覆盖新上传结果。 */
 const loadProfile = async () => {
+  const currentUser = auth.user;
   isLoading.value = true;
   error.value = false;
   try {
@@ -89,8 +97,17 @@ const loadProfile = async () => {
         username: data.username || '',
         phone: data.phone || '',
         createdAt: data.create_at || '',
-        avatar: data.avatar?.trim() || ''
+        avatar: data.avatar?.trim() || '',
+        cover: data.bg_cover?.trim() || ''
       };
+      if (
+        currentUser &&
+        auth.user === currentUser &&
+        data.id === currentUser.id &&
+        data.bg_cover !== undefined
+      ) {
+        auth.setAuth({ user: { ...currentUser, bg_cover: account.value.cover } });
+      }
       const loaded = toProfileForm(data);
       form.value = { ...loaded };
       originalForm.value = { ...loaded };
@@ -146,8 +163,8 @@ const handleSave = async () => {
       nickname: submitted.nickname,
       ...(emailChanged ? { email } : {}),
       gender: form.value.gender ? Number(form.value.gender) : undefined,
-      birthday: form.value.birthday || undefined,
-      description: form.value.description?.trim() || undefined
+      birthday: form.value.birthday,
+      description: form.value.description.trim()
     });
     if (emailChanged) {
       const latest = await getInfo();
@@ -161,6 +178,7 @@ const handleSave = async () => {
     }
     form.value = submitted;
     originalForm.value = { ...submitted };
+    if (auth.user) auth.setAuth({ user: { ...auth.user, nickname: submitted.nickname } });
     isEditing.value = false;
     toast.add({ title: '保存成功', color: 'success' });
   } catch {
@@ -176,11 +194,48 @@ const handleCancel = () => {
   isEditing.value = false;
 };
 
-/** 更换头像：当前仅提示，待接入上传接口 */
-const handleChangeAvatar = () => {
-  if (!isEditing.value) return;
-  toast.add({ title: '头像上传功能即将开放', color: 'neutral' });
-};
+function chooseImage(target: 'avatar' | 'bgCover') {
+  if (uploading.value || isSaving.value) return;
+  uploadTarget.value = target;
+  imageInput.value?.click();
+}
+function discardPendingImage() {
+  pendingImage.value = undefined;
+  if (pendingImageUrl.value) URL.revokeObjectURL(pendingImageUrl.value);
+  pendingImageUrl.value = '';
+}
+async function onImageChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  if (!file || uploading.value) return;
+  discardPendingImage();
+  pendingImage.value = file;
+  pendingImageUrl.value = URL.createObjectURL(file);
+}
+async function confirmImageUpload() {
+  const file = pendingImage.value;
+  if (!file || uploading.value) return;
+  const target = uploadTarget.value;
+  uploading.value = true;
+  try {
+    const result = await uploadImage(file, target);
+    const url = target === 'avatar' ? result.avatar : result.bg_cover;
+    if (!url) throw new Error('上传响应未返回图片地址，请刷新资料确认');
+    account.value = { ...account.value, [target === 'avatar' ? 'avatar' : 'cover']: url };
+    if (target === 'avatar' && auth.user) auth.setAuth({ user: { ...auth.user, avatar: url } });
+    toast.add({ title: '图片已更新', color: 'success' });
+  } catch (error) {
+    toast.add({
+      title: error instanceof Error ? error.message : '图片上传失败，请重试',
+      color: 'error'
+    });
+  } finally {
+    uploading.value = false;
+    discardPendingImage();
+  }
+}
+onBeforeUnmount(discardPendingImage);
 
 /** 账号绑定/更换：当前仅提示，待接入各平台绑定流程 */
 const handleBindClick = (_target: string) => {
@@ -195,6 +250,14 @@ onMounted(() => {
 
 <template>
   <div class="account-page">
+    <input
+      ref="imageInput"
+      type="file"
+      class="hidden"
+      accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"
+      aria-label="选择资料图片"
+      @change="onImageChange"
+    />
     <PageHeader title="个人资料" subtitle="管理您的账户信息和偏好设置" />
 
     <div v-if="isLoading" class="flex justify-center py-20">
@@ -226,6 +289,7 @@ onMounted(() => {
             color="primary"
             size="sm"
             :loading="isSaving"
+            :disabled="uploading"
             @click="handleSave"
           >
             保存
@@ -247,10 +311,9 @@ onMounted(() => {
                 <button
                   type="button"
                   class="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-skin focus-visible:ring-offset-2 focus-visible:ring-offset-surface transition-transform duration-200"
-                  :class="isEditing ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'"
-                  :disabled="!isEditing"
-                  :aria-label="isEditing ? '更换头像' : '头像'"
-                  @click="handleChangeAvatar"
+                  :disabled="uploading || isSaving"
+                  aria-label="更换头像"
+                  @click="chooseImage('avatar')"
                 >
                   <UAvatar
                     :src="account.avatar || undefined"
@@ -272,7 +335,9 @@ onMounted(() => {
                     />
                   </span>
                 </button>
-                <p class="text-xs sm:text-sm text-fg-muted">头像上传即将开放</p>
+                <p class="text-xs sm:text-sm text-fg-muted">
+                  {{ uploading ? '正在上传…' : '点击头像更换' }}
+                </p>
               </div>
               <dl
                 class="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm lg:grid-cols-1"
@@ -451,9 +516,11 @@ onMounted(() => {
           icon-bg="bg-skin-soft"
           icon-color="text-skin"
           title="手机号"
-          :subtitle="account.phone ? `已绑定 · ${account.phone}` : '未绑定'"
+          :subtitle="
+            account.phone ? `已绑定 · ${account.phone}（暂不支持更换）` : '手机号绑定暂未开放'
+          "
           subtitle-class="text-skin"
-          :action-text="account.phone ? '更换' : '绑定'"
+          action-text=""
           action-class="text-fg-muted"
           @action="handleBindClick('phone')"
         />
@@ -492,6 +559,36 @@ onMounted(() => {
         </div>
       </ProfileCard>
     </div>
+
+    <UModal
+      :open="!!pendingImage"
+      title="确认更换资料图片"
+      :description="
+        uploadTarget === 'bgCover' ? '确认后会立即更新个人封面。' : '确认后会立即更新头像。'
+      "
+      :ui="{ content: 'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' }"
+      @update:open="(open: boolean) => !open && discardPendingImage()"
+    >
+      <template #body>
+        <img
+          v-if="pendingImageUrl"
+          :src="pendingImageUrl"
+          alt="待上传图片预览"
+          class="max-h-72 w-full rounded-xl object-contain"
+        />
+        <p class="mt-3 text-sm text-fg-muted">{{ pendingImage?.name }}</p>
+      </template>
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="soft" :disabled="uploading" @click="discardPendingImage"
+            >取消</UButton
+          >
+          <UButton color="primary" :loading="uploading" @click="confirmImageUpload"
+            >确认并上传</UButton
+          >
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
