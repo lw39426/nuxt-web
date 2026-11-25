@@ -16,14 +16,16 @@ import {
   isSameChatParticipant
 } from '~/utils/chat';
 import ChatAvatar from './ChatAvatar.vue';
+import { useUserApi, type PublicUserInfo } from '~/composables/api/user';
 
 const props = withDefaults(
   defineProps<{
+    visible?: boolean;
     room?: ChatRoom;
     self?: ChatParticipant;
     participant?: ChatParticipant;
   }>(),
-  { room: undefined, self: undefined, participant: undefined }
+  { visible: true, room: undefined, self: undefined, participant: undefined }
 );
 
 const emit = defineEmits<{
@@ -34,9 +36,55 @@ const emit = defineEmits<{
 /** 群聊未选中成员时展示概览，显式传入的参与者始终优先。 */
 const isGroupOverview = computed(() => props.room?.type === 'group' && !props.participant);
 
+const { getPublicInfo } = useUserApi();
+const publicInfo = shallowRef<PublicUserInfo>();
+const profileLoading = shallowRef(false);
+const profileError = shallowRef(false);
+const retry = shallowRef(0);
+watch(
+  () => [props.visible, props.participant?.type, props.participant?.id, retry.value] as const,
+  async ([visible, type, id], _, onCleanup) => {
+    let current = true;
+    onCleanup(() => {
+      current = false;
+    });
+    publicInfo.value = undefined;
+    profileError.value = false;
+    profileLoading.value = false;
+    if (!visible || type !== 'NormalUser' || !Number.isSafeInteger(id) || !id || id <= 0) return;
+    profileLoading.value = true;
+    try {
+      const data = await getPublicInfo(id);
+      if (current) publicInfo.value = data;
+    } catch {
+      if (current) profileError.value = true;
+    } finally {
+      if (current) profileLoading.value = false;
+    }
+  },
+  { immediate: true }
+);
+const resolvedParticipant = computed(() =>
+  publicInfo.value
+    ? {
+        ...props.participant,
+        name: publicInfo.value.nickname || publicInfo.value.username || props.participant?.name,
+        avatar: publicInfo.value.avatar || props.participant?.avatar
+      }
+    : props.participant
+);
+const registeredAt = computed(() => {
+  const raw = publicInfo.value?.create_at;
+  if (!raw || Number.isNaN(new Date(raw).getTime())) return CHAT_MISSING;
+  return new Intl.DateTimeFormat('zh-CN', {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Shanghai'
+  }).format(new Date(raw));
+});
+
 /** 从参与者的真实字段派生资料，缺失信息统一占位且不展示无效 ID。 */
 const profile = computed(() => {
-  const participant = props.participant;
+  const participant = resolvedParticipant.value;
   const role = getChatRole(participant);
   const presence = getChatPresence(participant);
   const id = participant?.id;
@@ -107,13 +155,23 @@ const members = computed(() => {
       <UIcon name="i-lucide-arrow-left" class="chat-user-panel__icon" aria-hidden="true" />
       返回群聊概览
     </button>
+    <p v-if="profileLoading" class="text-sm text-fg-muted" role="status">正在加载公开资料…</p>
+    <div v-else-if="profileError" class="text-sm text-fg-muted" role="alert">
+      公开资料加载失败 <UButton variant="ghost" size="sm" @click="retry++">重试</UButton>
+    </div>
+    <img
+      v-if="publicInfo?.bg_cover"
+      :src="publicInfo.bg_cover"
+      alt="用户封面"
+      class="h-24 w-full rounded-xl object-cover"
+    />
     <div
       class="chat-user-panel__profile"
       :class="{ 'chat-user-panel__profile--group': isGroupOverview }"
     >
       <p class="chat-user-panel__profile-kind">{{ isGroupOverview ? '群聊概览' : '用户资料' }}</p>
       <ChatAvatar v-if="isGroupOverview" :name="overview.name" size="lg" group />
-      <ChatAvatar v-else :participant="participant" size="lg" show-status />
+      <ChatAvatar v-else :participant="resolvedParticipant" size="lg" show-status />
       <h3 class="chat-user-panel__name">{{ isGroupOverview ? overview.name : profile.name }}</h3>
       <div class="chat-user-panel__badges">
         <span class="chat-user-panel__badge">{{
@@ -135,17 +193,29 @@ const members = computed(() => {
 
     <dl class="chat-user-panel__details">
       <template v-if="!isGroupOverview">
-        <div class="chat-user-panel__detail">
-          <dt class="chat-user-panel__label">用户 ID</dt>
-          <dd class="chat-user-panel__value chat-user-panel__id">{{ profile.id }}</dd>
-        </div>
+        <template v-if="publicInfo">
+          <div class="chat-user-panel__detail">
+            <dt class="chat-user-panel__label">账号</dt>
+            <dd class="chat-user-panel__value">{{ publicInfo.username || CHAT_MISSING }}</dd>
+          </div>
+          <div class="chat-user-panel__detail">
+            <dt class="chat-user-panel__label">性别</dt>
+            <dd class="chat-user-panel__value">
+              {{ publicInfo.gender === 1 ? '男' : publicInfo.gender === 2 ? '女' : '保密' }}
+            </dd>
+          </div>
+          <div class="chat-user-panel__detail">
+            <dt class="chat-user-panel__label">注册时间</dt>
+            <dd class="chat-user-panel__value">{{ registeredAt }}</dd>
+          </div>
+          <div class="chat-user-panel__detail">
+            <dt class="chat-user-panel__label">个人简介</dt>
+            <dd class="chat-user-panel__value">{{ publicInfo.description || CHAT_MISSING }}</dd>
+          </div>
+        </template>
         <div class="chat-user-panel__detail">
           <dt class="chat-user-panel__label">社区身份</dt>
           <dd class="chat-user-panel__value">{{ profile.role }}</dd>
-        </div>
-        <div class="chat-user-panel__detail">
-          <dt class="chat-user-panel__label">最近活跃</dt>
-          <dd class="chat-user-panel__value">{{ profile.lastSeen }}</dd>
         </div>
       </template>
       <template v-else>

@@ -471,6 +471,7 @@ function onKeydown(event: KeyboardEvent) {
       <Transition name="chat-panel">
         <ChatUserPanel
           v-if="activeRoom"
+          :visible="showProfile"
           :room="activeRoom"
           :self="self"
           :participant="panelParticipant"
@@ -492,7 +493,7 @@ function onKeydown(event: KeyboardEvent) {
   min-height: 0;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 12px 20px max(16px, env(safe-area-inset-bottom));
+  padding: 0 20px 12px max(16px, env(safe-area-inset-bottom));
   overflow: hidden;
   box-sizing: border-box;
 }
