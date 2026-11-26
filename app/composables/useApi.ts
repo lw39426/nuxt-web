@@ -31,13 +31,20 @@ export interface ApiRequestOptions {
  * 创建通用的 API 客户端，自动附加 baseURL、凭据与 Bearer Token
  */
 // 全局的静默刷新锁，防止多个 401 请求触发多次 refresh
-let refreshPromise: Promise<boolean> | null = null
+const clientRefreshState: { promise: Promise<boolean> | null } = { promise: null }
 // 全局错误提示防抖缓存，避免满屏弹窗
 const errorToastCache = new Set<string>()
 // 全局请求队列（Promise Lock 机制），防止完全相同的并发请求
-const requestLocks = new Map<string, Promise<any>>()
+const clientRequestLocks = new Map<string, Promise<any>>()
 
 export function useApi() {
+  // SSR 不能复用其他用户的请求或刷新任务；浏览器内保持原有去重行为。
+  const requestLocks = import.meta.server ? new Map<string, Promise<any>>() : clientRequestLocks
+  const refreshState = import.meta.server
+    ? { promise: null as Promise<boolean> | null }
+    : clientRefreshState
+  // 仅 SSR 透传当前请求的 UA；浏览器仍由自身自动发送，禁止手动覆盖。
+  const requestHeaders = import.meta.server ? useRequestHeaders(['user-agent']) : {}
   // 所有请求均走 Nuxt 自身的 API 路由（server/api/）
   const authStore = import.meta.client ? useAuthStore() : null
   const uiStore = import.meta.client ? useUiStore() : null
@@ -56,6 +63,7 @@ export function useApi() {
   const client = $fetch.create({
     baseURL,
     credentials: 'include',
+    headers: requestHeaders,
     // 关闭 ofetch 默认重试：ofetch 对 GET 请求在 502/503/504 等状态下会自动重试 1 次，
     // 导致同一个接口在后端不可用时发出两次请求。重试与降级已由 BFF 层统一处理。
     retry: 0,
@@ -64,10 +72,9 @@ export function useApi() {
       // 优先从内存状态中获取 token，其次从 cookie 获取
       const t = authStore?.token || tokenCookie.value
       if (t) {
-        options.headers = {
-          ...(options.headers || {}),
-          Authorization: `Bearer ${t}`
-        } as any
+        const headers = new Headers(options.headers)
+        headers.set('Authorization', `Bearer ${t}`)
+        options.headers = headers
       }
     }
   })
@@ -163,16 +170,16 @@ export function useApi() {
         }
 
         // 处理 401 静默刷新
-        if (!refreshPromise) {
+        if (!refreshState.promise) {
           // 如果当前没有刷新任务，发起刷新
-          refreshPromise = new Promise((resolve) => {
+          refreshState.promise = new Promise((resolve) => {
             if (import.meta.dev) {
               console.log('🔄 检测到 401，开始静默刷新 Token...')
             }
             const rt = refreshTokenCookie.value
 
             if (!rt) {
-              refreshPromise = null
+              refreshState.promise = null
               resolve(false)
               return
             }
@@ -185,6 +192,7 @@ export function useApi() {
                   {
                     method: 'POST',
                     headers: {
+                      ...requestHeaders,
                       Authorization: `Bearer ${rt}`
                     }
                   }
@@ -213,14 +221,14 @@ export function useApi() {
                 resolve(false)
               } finally {
                 // 请求完成，释放锁
-                refreshPromise = null
+                refreshState.promise = null
               }
             })()
           })
         }
 
         // 等待刷新结果（不管是第一个发起刷新的请求，还是后续被挂起的并发请求，都 await 同一个 Promise）
-        const refreshSuccess = await refreshPromise
+        const refreshSuccess = await refreshState.promise
 
         if (refreshSuccess) {
           // 刷新成功后，重试原请求

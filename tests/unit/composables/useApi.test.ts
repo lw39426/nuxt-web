@@ -126,6 +126,15 @@ describe('useApi', () => {
     expect(mockClient).toHaveBeenCalledWith('/things', { method: 'POST', body: { name: 'x' } })
   })
 
+  it('浏览器请求不手动设置 User-Agent', async () => {
+    await freshApi()
+    const options = $fetch.create.mock.calls[0][0]
+    expect(new Headers(options.headers).has('user-agent')).toBe(false)
+    const request = { headers: new Headers() }
+    options.onRequest({ options: request })
+    expect(request.headers.has('user-agent')).toBe(false)
+  })
+
   it('PUT 与 DELETE 正常工作', async () => {
     await freshApi()
     mockClient.mockResolvedValueOnce({ code: 200, data: 'u' })

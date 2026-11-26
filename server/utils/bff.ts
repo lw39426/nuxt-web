@@ -35,12 +35,16 @@ export function resolveAuthToken(event: H3Event): string | null {
 
 /**
  * 构造转发给 Flask 的请求头
- * 注入 Bearer Token 与真实客户端 IP，便于后端鉴权与日志追踪
+ * 注入 Bearer Token、原始 User-Agent 与真实客户端 IP，便于后端鉴权与日志追踪
  */
 function buildForwardHeaders(event: H3Event, forwardCookie: boolean): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: 'application/json'
   }
+
+  // 必须从当前 event 读取，不能使用服务端 fetch 默认 UA 或跨请求缓存。
+  const userAgent = getHeader(event, 'user-agent')
+  if (userAgent) headers['User-Agent'] = userAgent
 
   const token = resolveAuthToken(event)
   if (token) {
