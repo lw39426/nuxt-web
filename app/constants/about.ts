@@ -32,11 +32,7 @@ export const aboutScrollMedia = {
   motion: '(prefers-reduced-motion: no-preference)'
 }
 
-export const stats: Stat[] = [
-  { num: 2, unit: '年', label: '经验' },
-  { num: 42, unit: '+', label: '项目' },
-  { num: 12, unit: 'k', label: '提交' }
-]
+export const stats: Stat[] = [{ num: 2, unit: '年', label: '开发经验' }]
 
 export const skills: Skill[] = [
   { name: 'Vue / Nuxt', top: '10%', left: '20%', fontSize: '1.1rem' },
@@ -49,51 +45,51 @@ export const skills: Skill[] = [
 
 export const timeline: TimelineEvent[] = [
   {
-    year: '2019',
-    title: '踏入代码世界',
-    desc: '第一次接触 Vue.js，写下人生第一个 Hello World。',
+    year: '从好奇出发',
+    title: '保持学习的热情',
+    desc: '多问一个为什么，多试一种可能，让新的想法慢慢生长。',
     tag: '起点'
   },
   {
-    year: '2021',
-    title: '全栈转型',
-    desc: '深入 Node.js 与数据库设计，开始承担完整的产品周期。',
-    tag: '蜕变'
+    year: '在尝试中前进',
+    title: '把想法付诸实践',
+    desc: '从一个小功能、一处小细节开始，在动手的过程中寻找答案。',
+    tag: '实践'
   },
   {
-    year: '2023',
-    title: '独立开发者',
-    desc: '发布首款独立产品，一周内登上 Product Hunt 日榜前十。',
-    tag: '里程碑'
+    year: '向更好的体验靠近',
+    title: '用心打磨每个细节',
+    desc: '让表达更清晰，让使用更顺手，带着耐心继续完善手中的作品。',
+    tag: '继续'
   }
 ]
 
 export const works: Work[] = [
   {
-    title: 'NarrativeOS',
-    desc: '基于 AI 的故事创作平台',
-    tags: ['Nuxt', 'AI'],
+    title: 'uni-app 小程序与 Flutter',
+    desc: '使用 uni-app 开发小程序，使用 Flutter 构建跨平台应用，完成页面搭建、接口对接与移动端交互。',
+    tags: ['uni-app', '微信小程序', 'Flutter', 'Dart'],
     icon: '◈',
     color: '#c084fc'
   },
   {
-    title: 'FlowBoard',
-    desc: '可视化任务管理工具',
-    tags: ['Vue', 'GSAP'],
+    title: 'Vue 管理端与用户端',
+    desc: '搭建管理后台和用户界面，处理表单、列表、路由与状态管理，兼顾业务功能和使用体验。',
+    tags: ['Vue', 'TypeScript', 'Pinia'],
     icon: '◉',
     color: '#38bdf8'
   },
   {
-    title: 'EchoMetrics',
-    desc: '实时数据分析面板',
-    tags: ['Node', 'WS'],
+    title: 'Nuxt 网站开发',
+    desc: '使用 Nuxt 构建网站，结合服务端渲染、响应式布局与 SEO 配置，让内容更容易被访问和发现。',
+    tags: ['Nuxt', 'SSR', 'SEO'],
     icon: '◎',
     color: '#4ade80'
   },
   {
-    title: 'PixelForge',
-    desc: '浏览器内图像处理引擎',
-    tags: ['WASM', 'Canvas'],
+    title: 'Python / Node.js',
+    desc: '编写后端接口和实用脚本，处理数据、连接数据库与外部服务，为前端页面提供支持。',
+    tags: ['Python', 'Node.js', 'REST API'],
     icon: '◆',
     color: '#fb923c'
   }

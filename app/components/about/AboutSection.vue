@@ -82,12 +82,13 @@ onBeforeUnmount(disposeCounters);
       <p
         class="font-['Space_Mono',monospace] text-sm text-purple-600 dark:text-purple-400 tracking-[0.1em] mb-8"
       >
-        全栈开发者 · 创意工程师
+        写代码，也关心使用的感受
       </p>
 
       <div class="text-black/60 dark:text-white/60 leading-[2] text-[1.1rem] font-light">
         <p>
-          热爱将复杂问题简化为优雅方案。在代码与设计的交汇处寻找平衡，相信技术应当服务于人，而非相反。
+          你好，我是入梦。有两年开发经验，喜欢把想法一点点做成可以使用的东西。
+          从功能实现到界面细节，希望每一次尝试都能让页面更清晰、操作更顺手。
         </p>
       </div>
 

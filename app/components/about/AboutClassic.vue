@@ -340,19 +340,19 @@ onUnmounted(() => {
         class="works-watermark absolute font-['Space_Mono',monospace] text-[clamp(5rem,15vw,15rem)] font-bold text-black/[0.03] dark:text-white/[0.02] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none tracking-wider"
         aria-hidden="true"
       >
-        WORKS
+        STACK
       </div>
 
       <div ref="worksHeader" class="text-center z-10 mb-8 md:mb-16">
         <div
           class="font-['Space_Mono',monospace] text-xs tracking-[0.2em] text-purple-600 dark:text-purple-400 mb-4 uppercase"
         >
-          04 / 代表作品
+          04 / 技术栈
         </div>
         <h2
           class="font-['Noto_Serif_SC',serif] text-[clamp(2.5rem,4vw,4rem)] font-bold m-0 text-gray-900 dark:text-white"
         >
-          用代码构建的世界
+          把想法变成现实
         </h2>
       </div>
 
