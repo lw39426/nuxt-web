@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Banner } from '~/composables/api/home';
 import { NuxtLink } from '#components';
+import UIcon from '@nuxt/ui/components/Icon.vue';
 
 const placeholderImage = '/images/blog-cover-placeholder.webp';
 
@@ -110,19 +111,23 @@ const visibleSlides = computed(() =>
         class="absolute inset-0 h-full w-full object-cover"
       />
       <div
-        class="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-3 bg-gradient-to-t from-black/90 to-transparent p-4 pt-10 md:p-6 md:pt-12"
+        class="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-2 bg-gradient-to-t from-black/90 to-transparent p-4 pt-10 md:p-6 md:pt-12"
       >
         <p class="text-sm font-medium" role="status">
-          {{ pending ? '正在加载轮播…' : failed ? '轮播加载失败' : '暂无轮播内容' }}
+          {{ pending ? '正在加载轮播…' : failed ? '轮播组件开小差啦，加载失败' : '暂无轮播内容' }}
         </p>
-        <button
+        <!-- 加载失败时以图标作为重试入口；保留点击、键盘操作与无障碍标签 -->
+        <UIcon
           v-if="failed && !pending"
-          type="button"
-          class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          name="i-lucide-refresh-cw"
+          class="h-4 w-4 cursor-pointer text-white hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          role="button"
+          tabindex="0"
+          aria-label="重试"
           @click="emit('retry')"
-        >
-          重试
-        </button>
+          @keydown.enter.prevent="emit('retry')"
+          @keydown.space.prevent="emit('retry')"
+        />
       </div>
     </div>
 

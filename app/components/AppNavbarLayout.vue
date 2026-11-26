@@ -134,7 +134,7 @@ onUnmounted(() => {
       route.meta.fullViewport
         ? 'navbar-viewport-spacer'
         : route.path === '/about' || route.path === '/profile' || route.path.startsWith('/profile/')
-          ? 'h-[70px] md:h-[90px]'
+          ? 'h-[70px] md:h-[80px]'
           : 'h-[60px] md:h-[80px]'
     "
     aria-hidden="true"
