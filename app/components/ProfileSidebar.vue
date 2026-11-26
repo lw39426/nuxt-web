@@ -32,7 +32,7 @@ const menuItems: MenuItem[] = [
   // { name: '我的订单', icon: 'i-carbon-package', path: '/profile/orders' },
   // { name: '地址管理', icon: 'i-carbon-location', path: '/profile/addresses' },
   { name: '我的收藏', icon: 'i-carbon-favorite', path: '/profile/favorites' },
-  { name: '角色图鉴', icon: 'i-carbon-grid', path: '/profile/collection' },
+  { name: '实用工具', icon: 'i-carbon-tool-box', path: '/profile/tools' },
   { name: '浏览历史', icon: 'i-carbon-time', path: '/profile/history' },
   { name: '我的评论', icon: 'i-carbon-chat', path: '/profile/comments' },
   { name: '账号安全', icon: 'i-carbon-security', path: '/profile/security' }
@@ -42,7 +42,8 @@ const menuItems: MenuItem[] = [
  * 判断菜单项是否为当前激活路由
  * @param path 菜单项路径
  */
-const isActive = (path: string) => route.path === path;
+const isActive = (path: string) =>
+  route.path === path || (path === '/profile/favorites' && route.path === '/profile/collection');
 
 // 展示名优先取昵称（第三方登录），其次用户名，最后兜底「用户」
 const displayName = computed(() => authStore.user?.nickname || authStore.user?.username || '用户');

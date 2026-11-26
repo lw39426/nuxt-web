@@ -96,6 +96,12 @@ onMounted(loadCollection);
 
 <template>
   <div>
+    <NuxtLink
+      to="/profile/favorites"
+      class="mb-3 inline-flex min-h-11 items-center gap-1 text-sm text-fg-muted hover:text-skin"
+    >
+      <span class="i-carbon-chevron-left size-4" aria-hidden="true" />返回我的收藏
+    </NuxtLink>
     <PageHeader title="角色图鉴" subtitle="收集你遇见过的每一个角色" class="mt-2" />
 
     <!-- 加载中 -->

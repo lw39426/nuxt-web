@@ -54,7 +54,7 @@ onMounted(loadFavorites);
 
 <template>
   <div>
-    <PageHeader title="我的收藏" subtitle="管理您收藏的商品和文章" class="mt-2" />
+    <PageHeader title="我的收藏" subtitle="管理收藏的商品、文章与角色图鉴" class="mt-2" />
 
     <!-- 图鉴进度提示：跳转图鉴页 -->
     <NuxtLink
